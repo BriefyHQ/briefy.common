@@ -1,0 +1,6 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+    <!-- Events queue -->
+    <utility name="events.queue" component=".event.EventQueue" provides=".IQueue" />
+
+</configure>

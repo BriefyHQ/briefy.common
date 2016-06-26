@@ -1,0 +1,20 @@
+language: python
+python: 3.5
+sudo: false
+branches:
+  only:
+  - master
+  - develop
+services:
+- docker
+env:
+  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
+  - TOXENV=py35
+  - TOX_ENV=flake8
+install:
+- docker run -d -p 127.0.0.1:8080:8080 --name sqs ridelink/test-sqs:latest
+- pip install -r requirements/dev.txt
+script:
+- tox -e ${TOXENV}
+after_success:
+- make docs

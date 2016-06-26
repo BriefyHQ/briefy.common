@@ -1,0 +1,51 @@
+"""Briefy Common."""
+from setuptools import find_packages
+from setuptools import setup
+
+import os
+
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'README.rst')) as f:
+    README = f.read()
+with open(os.path.join(here, 'HISTORY.rst')) as f:
+    CHANGES = f.read()
+
+requires = [
+    'boto3',
+    'newrelic',
+    'requests',
+    'setuptools',
+    'wheel',
+    'zope.component',
+    'zope.configuration',
+    'zope.event',
+    'zope.interface',
+]
+
+test_requirements = [
+    'flake8',
+    'pytest'
+]
+
+setup(
+    name='briefy.common',
+    version='0.1.0',
+    description='Common utilities to be used by Briefy packages.',
+    long_description=README + '\n\n' + CHANGES,
+    classifiers=[
+        "Programming Language :: Python",
+    ],
+    author='Erico Andrei',
+    author_email='erico.andrei@ridelink.com',
+    url='https://github.com/BriefyHQ/briefy-common',
+    keywords='broker queue',
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    namespace_packages=['briefy', ],
+    include_package_data=True,
+    zip_safe=False,
+    test_suite='tests',
+    tests_require=test_requirements,
+    install_requires=requires,
+    entry_points="""""",
+)

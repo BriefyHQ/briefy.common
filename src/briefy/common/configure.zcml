@@ -1,0 +1,9 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+	<include package="zope.component" />
+
+	<include package=".queue" />
+	<include package=".worker" />
+	<include package=".workflow" />
+
+</configure>

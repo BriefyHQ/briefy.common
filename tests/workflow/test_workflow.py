@@ -1,0 +1,91 @@
+"""Tests for `briefy.common.workflow` package."""
+from base_workflow import Customer
+from base_workflow import CustomerWorkflow
+from base_workflow import User
+from briefy.common import workflow
+from datetime import datetime
+
+import pytest
+
+
+class TestWorkflow:
+    """Tests for Workflow."""
+
+    def test_workflow_inherits_from_base_workflow(self):
+        """Test if a new workflow inherits from base workflow."""
+        customer = Customer('12345')
+        wf = customer.workflow
+        assert isinstance(wf, CustomerWorkflow)
+        assert isinstance(wf, workflow.BriefyWorkflow)
+
+    def test_new_customer_gets_history(self):
+        """Test if a new customer will receive an initial transition."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        history = wf.history
+        assert len(history) == 1
+        assert history[0]['from'] == ''
+        assert history[0]['to'] == 'created'
+        assert history[0]['transition'] == ''
+        assert isinstance(history[0]['date'], datetime)
+
+    def test_state_key_unknown_state(self):
+        """Raise an error if document is in an unknown state."""
+        customer = Customer('12345')
+        customer.state = 'foobar'
+        with pytest.raises(workflow.WorkflowStateException) as excinfo:
+            wf = customer.workflow
+            wf.state
+        assert 'Unknown state' in str(excinfo.value)
+
+    def test_state_key_not_found(self):
+        """Raise an error if document does not have a state_key."""
+        customer = {}
+        with pytest.raises(workflow.WorkflowStateException) as excinfo:
+            CustomerWorkflow(customer)
+        assert 'Value for state on' in str(excinfo.value)
+
+    def test_transitions(self):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        assert wf.state == wf.pending
+
+    def test_transition_list(self):
+        """Test list of transitions for an object and an user."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert len(wf.transitions()) == 1
+        assert wf.transitions()['submit'].title, 'Submit'
+        wf.submit()
+
+        # Editor will not be able to transition from cre
+        editor = User('23456', roles=('editor', ))
+        wf.context = editor
+        assert len(wf.transitions()) == 2
+        assert wf.transitions()['approve'].title, 'Approve'
+        assert wf.transitions()['reject'].title, 'Reject'
+
+    def test_history(self):
+        """Test history for an object after some transitions."""
+        user = User('12345')
+        editor = User('23456', roles=('editor', ))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        wf.submit()
+        wf.context = editor
+        wf.approve()
+        history = wf.history
+        assert len(history) == 3
+        assert history[0]['to'] == 'created'
+        assert history[1]['to'] == 'pending'
+        assert history[2]['to'] == 'approved'
