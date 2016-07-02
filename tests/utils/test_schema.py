@@ -60,8 +60,8 @@ class TestDictionary:
         """Test serialization of None."""
         schema = self._makeOne()
         appstruct = colander.null
-        assert schema.serialize(DummySchemaNode(None), appstruct) == appstruct
-        assert schema.serialize(DummySchemaNode(None), None) == appstruct
+        assert schema.serialize(DummySchemaNode(None), appstruct) is None
+        assert schema.serialize(DummySchemaNode(None), None) is None
 
     def test_serialize_wrong_value(self):
         """Test serialization of wrong types."""
@@ -107,8 +107,8 @@ class TestList:
         """Test serialization of None."""
         schema = self._makeOne()
         appstruct = colander.null
-        assert schema.serialize(DummySchemaNode(None), appstruct) == appstruct
-        assert schema.serialize(DummySchemaNode(None), None) == appstruct
+        assert schema.serialize(DummySchemaNode(None), appstruct) is None
+        assert schema.serialize(DummySchemaNode(None), None) is None
 
     def test_serialize_wrong_value(self):
         """Test serialization of wrong types."""

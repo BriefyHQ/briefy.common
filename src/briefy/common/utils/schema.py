@@ -10,7 +10,7 @@ class Dictionary(SchemaType):
     def serialize(self, node, appstruct):
         """Serialize the schema type."""
         if appstruct is null or appstruct is None:
-            return null
+            return None
         elif not (isinstance(appstruct, dict)):
             raise Invalid(node, '{} is not a dict'.format(appstruct))
         return appstruct
@@ -26,7 +26,7 @@ class List(SchemaType):
     def serialize(self, node, appstruct):
         """Serialize the schema type."""
         if appstruct is null or appstruct is None:
-            return null
+            return None
         elif not (isinstance(appstruct, list)):
             raise Invalid(node, '{} is not a list'.format(appstruct))
         return appstruct
