@@ -12,6 +12,7 @@ with open(os.path.join(here, 'HISTORY.rst')) as f:
 
 requires = [
     'boto3',
+    'colander',
     'newrelic',
     'requests',
     'setuptools',

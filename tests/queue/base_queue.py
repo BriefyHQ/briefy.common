@@ -61,18 +61,18 @@ class BaseTest:
         """Test _marshall_message."""
         queue = self._make_one()
         payload = self.get_payload()
-        resp = queue._prepare_sqs_payload(payload)
+        message = queue._message_klass(schema=queue.schema, body=payload)
+        resp = queue._prepare_sqs_payload(message)
         assert isinstance(resp, dict)
         assert isinstance(resp['MessageBody'], str)
 
     def test_get_messages(self):
         """Test get_messages."""
-        import json
         queue = self._make_one()
         payload = self.get_payload()
         resp = queue.write_message(payload)
         messages = queue.get_messages(num_messages=10)
         assert isinstance(messages, list)
         assert len(messages) == 1
-        assert messages[0].message_id == resp
-        assert json.loads(messages[0].body) == payload
+        assert messages[0].message.message_id == resp
+        assert messages[0].body == payload

@@ -1,6 +1,7 @@
 """Briefy Queue."""
 from botocore.exceptions import ClientError
 from briefy.common.config import SQS_REGION
+from briefy.common.queue.message import SQSMessage
 from datetime import datetime
 from zope.interface import Attribute
 from zope.interface import Interface
@@ -27,6 +28,8 @@ class Queue:
     region_name = SQS_REGION
     origin = ''
     _queue = None
+    _schema = None
+    _message_klass = SQSMessage
 
     def __init__(self, origin='briefy.common', logger_=None):
         """Initialize a Queue object."""
@@ -64,7 +67,22 @@ class Queue:
             self._queue = queue
         return queue
 
-    def get_messages(self, num_messages=1):
+    @property
+    def schema(self):
+        """Payload schema for this queue.
+
+        :returns: A Schema to be used to validate messages in this queue
+        :rtype: colander.MappingSchema
+        """
+        schema = self._schema
+        return schema
+
+    def _create_sqs_message(self, message=None, body=None):
+        """Create a new SQSMessage."""
+        klass = self._message_klass
+        return klass(self.schema, message, body)
+
+    def get_raw_messages(self, num_messages=1):
         """Return messages from the queue.
 
         :param num_messages: Number of messages to be returned
@@ -74,6 +92,25 @@ class Queue:
         """
         queue = self.queue
         messages = queue.receive_messages(MaxNumberOfMessages=num_messages)
+        return messages
+
+    def get_messages(self, num_messages=1):
+        """Return validated messages from the queue.
+
+        :param num_messages: Number of messages to be returned
+        :type num_messages: int
+        :returns: List of SQSMessages
+        :rtype: list
+        """
+        messages = []
+        raw_messages = self.get_raw_messages(num_messages)
+        for message in raw_messages:
+            try:
+                new_message = self._create_sqs_message(message=message)
+            except ValueError as e:
+                logger.exception('{}'.format(str(e)))
+            else:
+                messages.append(new_message)
         return messages
 
     def write_messages(self, messages=()):
@@ -96,7 +133,7 @@ class Queue:
         :rtype: dict
         """
         payload = {
-            'MessageBody': json.dumps(message),
+            'MessageBody': json.dumps(message.body),
             'MessageAttributes': {
                 'Origin': {'StringValue': self.origin, 'DataType': 'String'},
                 'Author': {'StringValue': self.__class__.__name__, 'DataType': 'String'},
@@ -112,7 +149,12 @@ class Queue:
         :type body: dict
         """
         queue = self.queue
-        payload = self._prepare_sqs_payload(body)
+        try:
+            message = self._create_sqs_message(body=body)
+        except ValueError as e:
+            logger.exception('{}'.format(str(e)))
+            raise e
+        payload = self._prepare_sqs_payload(message)
         response = queue.send_message(**payload)
         message_id = response.get('MessageId')
         return message_id.strip() if message_id else ''

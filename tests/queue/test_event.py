@@ -1,6 +1,9 @@
-"""Tests for `briefy.common.queue` package."""
+"""Tests for `briefy.common.queue.event` module."""
 from base_queue import BaseTest
 from briefy.common.queue.event import Queue
+from datetime import datetime
+
+import pytz
 
 
 class TestEventQueue(BaseTest):
@@ -13,7 +16,7 @@ class TestEventQueue(BaseTest):
         """Payload for the event queue."""
         return {
             'event_name': 'customer.event.created',
-            'created_at': '2016-06-21 18:34:22',
+            'created_at': datetime(2016, 6, 21, 18, 34, 22, tzinfo=pytz.utc),
             'guid': 'eebd5265-7201-4316-b996-722b977dbf32',
             'actor': '8cfe3809-30e5-4589-a8b2-32afd75483dd',
             'request_id': 'e8980ee1-37c3-43fc-8da0-973017f198ab',
