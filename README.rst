@@ -8,10 +8,10 @@ Broker Service codebase is tested using Travis CI
 ============ ======================================================================================================================== 
 Branch       Status
 ============ ========================================================================================================================
-`master`_     .. image:: https://travis-ci.com/BriefyHQ/briefy.common.svg?token=todo&branch=master
+`master`_     .. image:: https://travis-ci.com/BriefyHQ/briefy.common.svg?token=APuRM8itTuPw15pKpJWp&branch=master
                  :target: https://travis-ci.com/BriefyHQ/briefy.common
 
-`develop`_    .. image:: https://travis-ci.com/BriefyHQ/briefy.common.svg?token=todo&branch=develop
+`develop`_    .. image:: https://travis-ci.com/BriefyHQ/briefy.common.svg?token=APuRM8itTuPw15pKpJWp&branch=develop
                  :target: https://travis-ci.com/BriefyHQ/briefy.common
 ============ ========================================================================================================================
 
