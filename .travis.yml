@@ -8,8 +8,11 @@ branches:
 services:
 - docker
 env:
-  - TOXENV=py35 AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
-  - TOX_ENV=flake8 AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
+  global:
+  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
+  matrix:
+  - TOXENV=py35
+  - TOXENV=flake8
 install:
 - docker run -d -p 127.0.0.1:8080:8080 --name sqs ridelink/test-sqs:latest
 - pip install -r requirements/dev.txt
