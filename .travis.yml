@@ -20,3 +20,5 @@ script:
 - tox -e ${TOXENV}
 after_success:
 - make docs
+notifications:
+  slack: robyandjack:qxjOPwcrGEtVx3aCQBr812t9
