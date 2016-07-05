@@ -24,6 +24,13 @@ requires = [
     'zope.interface',
 ]
 
+requires_db = [
+    'alembic',
+    'psycopg2',
+    'sqlalchemy',
+    'zope.sqlalchemy',
+]
+
 test_requirements = [
     'flake8',
     'pytest'
@@ -49,5 +56,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     install_requires=requires,
+    extras_require={'db': requires_db},
     entry_points="""""",
 )
