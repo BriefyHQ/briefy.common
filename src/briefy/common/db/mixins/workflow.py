@@ -7,5 +7,14 @@ import sqlalchemy as sa
 class Workflow:
     """A mixin providing workflow information."""
 
-    state = sa.Column(sa.String(100))
+    _workflow = None
+
+    state = sa.Column(sa.String(100), default='created')
     state_history = sa.Column(JSONB())
+
+    @property
+    def workflow(self):
+        """Return the workflow applied to this class."""
+        workflow = self._workflow
+        if workflow:
+            return workflow(self)
