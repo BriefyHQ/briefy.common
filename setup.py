@@ -16,6 +16,7 @@ requires = [
     'newrelic',
     'requests',
     'setuptools',
+    'sqlalchemy',
     'wheel',
     'zope.component',
     'zope.configuration',
