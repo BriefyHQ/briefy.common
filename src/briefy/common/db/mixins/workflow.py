@@ -1,5 +1,5 @@
 """Workflow mixin."""
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy_utils import JSONType
 
 import sqlalchemy as sa
 
@@ -10,7 +10,7 @@ class Workflow:
     _workflow = None
 
     state = sa.Column(sa.String(100), default='created')
-    state_history = sa.Column(JSONB())
+    state_history = sa.Column(JSONType)
 
     @property
     def workflow(self):

@@ -17,6 +17,7 @@ requires = [
     'requests',
     'setuptools',
     'sqlalchemy',
+    'sqlalchemy-utils',
     'wheel',
     'zope.component',
     'zope.configuration',
