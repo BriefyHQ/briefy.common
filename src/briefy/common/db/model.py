@@ -26,7 +26,7 @@ class Base:
         :returns: An Object
         :rtype: object
         """
-        return cls.__session_.query(cls).get(key)
+        return cls.__session__.query(cls).get(key)
 
     def to_dict(self):
         """Return a dictionary with fields and values used by this Class.
