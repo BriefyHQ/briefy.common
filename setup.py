@@ -16,8 +16,6 @@ requires = [
     'newrelic',
     'requests',
     'setuptools',
-    'sqlalchemy',
-    'sqlalchemy-utils',
     'wheel',
     'zope.component',
     'zope.configuration',
@@ -29,6 +27,7 @@ requires_db = [
     'alembic',
     'psycopg2',
     'sqlalchemy',
+    'sqlalchemy-utils',
     'zope.sqlalchemy',
 ]
 
