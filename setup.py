@@ -14,6 +14,7 @@ requires = [
     'boto3',
     'colander',
     'newrelic',
+    'prettyconf',
     'requests',
     'setuptools',
     'wheel',
