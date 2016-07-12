@@ -1,14 +1,8 @@
 """Base tests for briefy.common.queue."""
 import boto3
 import botocore.endpoint
+from conftest import queue_url
 import os
-
-
-def get_url():
-    """Return the url for the SQS server."""
-    host = os.environ.get('SQS_IP', '127.0.0.1')
-    port = os.environ.get('SQS_PORT', '8080')
-    return 'http://{}:{}'.format(host, port)
 
 
 class BaseTest:
@@ -30,7 +24,7 @@ class BaseTest:
         """Setup test class."""
         class MockEndpoint(botocore.endpoint.Endpoint):
             def __init__(self, host, *args, **kwargs):
-                super().__init__(get_url(), *args, **kwargs)
+                super().__init__(queue_url(), *args, **kwargs)
 
         botocore.endpoint.Endpoint = MockEndpoint
 
