@@ -62,8 +62,8 @@ class BaseEvent:
         message_id = ''
         try:
             message_id = queue.write_message(payload)
-        except:
-            logger.error('Event {} not fired'.format(self.event_name), extra={'payload': payload})
+        except Exception as e:
+            logger.error('Event {} not fired. Exception: {}'.format(self.event_name, e), extra={'payload': payload})
         else:
             logger.debug('Event {} fired with message {}'.format(self.event_name, message_id))
 

@@ -1,6 +1,7 @@
 """Briefy Queue."""
 from botocore.exceptions import ClientError
 from briefy.common.config import SQS_REGION
+from briefy.common.utils.transformers import json_dumps
 from briefy.common.queue.message import SQSMessage
 from datetime import datetime
 from zope.interface import Attribute
@@ -127,13 +128,13 @@ class Queue:
     def _prepare_sqs_payload(self, message):
         """Prepare a SQS send payload.
 
-        :param message: A dictionary representing the message to be added to the queue
-        :type message: dict
+        :param message: A message wrapper representing the message to be added to the queue
+        :type message: `briefy.common.queue.message.Message`
         :returns: A dict with all parameters to the send_message method.
         :rtype: dict
         """
         payload = {
-            'MessageBody': json.dumps(message.body),
+            'MessageBody': json_dumps(message.body),
             'MessageAttributes': {
                 'Origin': {'StringValue': self.origin, 'DataType': 'String'},
                 'Author': {'StringValue': self.__class__.__name__, 'DataType': 'String'},

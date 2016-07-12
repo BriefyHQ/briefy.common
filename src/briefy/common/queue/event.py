@@ -17,7 +17,7 @@ class Schema(colander.MappingSchema):
     data = colander.SchemaNode(Dictionary())
     event_name = colander.SchemaNode(colander.String(), validator=validators.EventName)
     guid = colander.SchemaNode(colander.String(), validator=colander.uuid)
-    request_id = colander.SchemaNode(colander.String(), validator=colander.uuid)
+    request_id = colander.SchemaNode(colander.String(), validator=validators.empty_or(colander.uuid))
 
 
 @implementer(IQueue)

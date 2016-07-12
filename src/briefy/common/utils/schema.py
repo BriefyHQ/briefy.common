@@ -4,6 +4,23 @@ from colander import null
 from colander import SchemaType
 
 
+def validate_and_serialize(schema, data):
+    """Validates Python data using a colander schema
+
+    :param schema: Schema
+    :type schema: colander.SchemaType
+    :param data: entity data
+    :type data: dict
+    :returns: Colaner serialized data
+    :rtype: dict
+    :raises: `colander.Invalid`
+    """
+    # Colander only runs its validation on de-serialize
+    value = schema.serialize(data)
+    schema.deserialize(value)
+    return value
+
+
 class Dictionary(SchemaType):
     """A Dictionary schema type for colander."""
 

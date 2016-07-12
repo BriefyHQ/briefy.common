@@ -1,4 +1,7 @@
 """Briefy SQSMessage."""
+
+from briefy.common.utils.schema import validate_and_serialize
+
 import json
 import colander
 
@@ -14,7 +17,7 @@ class SQSMessage:
         """Initialize a Queue Message."""
         self._schema = schema
         if (message and body):
-            raise ValueError('You should provide only message or body')
+            raise ValueError('You should provide only one of message or body')
         elif (not message) and (not body):
             raise ValueError('You should provide a message or body')
         if message:
@@ -67,8 +70,7 @@ class SQSMessage:
         schema = self.schema
         if schema:
             try:
-                value = schema.serialize(value)
-                schema.deserialize(value)
+                value = validate_and_serialize(schema, value)
             except colander.Invalid as e:
                 raise ValueError('Not a valid message body: {}'.format(str(e)))
         self._body = value
