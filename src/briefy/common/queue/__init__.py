@@ -8,7 +8,6 @@ from zope.interface import Attribute
 from zope.interface import Interface
 
 import boto3
-import json
 import logging
 
 logger = logging.getLogger(__name__)

@@ -3,6 +3,7 @@ from briefy.common.queue import IQueue
 from zope.component import getUtility
 from zope.interface import Interface
 
+import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class BaseEvent:
         self.actor = actor
         self.guid = guid
         self.request_id = request_id
-        self.created_at = obj.created_at.isoformat()
+        self.created_at = obj.created_at
         self.data = obj.to_JSON()
 
     @property
@@ -57,13 +58,14 @@ class BaseEvent:
             'guid': self.guid,
             'created_at': self.created_at,
             'request_id': self.request_id,
-            'data': self.data,
+            'data': json.loads(self.data),
         }
         message_id = ''
         try:
             message_id = queue.write_message(payload)
         except Exception as e:
-            logger.error('Event {} not fired. Exception: {}'.format(self.event_name, e), extra={'payload': payload})
+            logger.error('Event {} not fired. Exception: {}'.format(self.event_name, e),
+                         extra={'payload': payload})
         else:
             logger.debug('Event {} fired with message {}'.format(self.event_name, message_id))
 

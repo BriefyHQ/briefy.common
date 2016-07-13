@@ -1,4 +1,5 @@
 """Helpers to transform data."""
+from uuid import UUID
 import datetime
 import decimal
 import json
@@ -16,6 +17,8 @@ class EnhancedJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, datetime.time):
             return obj.isoformat()
         elif isinstance(obj, decimal.Decimal):
+            return str(obj)
+        elif isinstance(obj, UUID):
             return str(obj)
         else:
             return super().default(obj)

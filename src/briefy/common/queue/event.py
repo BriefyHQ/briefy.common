@@ -12,12 +12,13 @@ import colander
 class Schema(colander.MappingSchema):
     """Payload for the event queue."""
 
-    actor = colander.SchemaNode(colander.String(), validator=colander.uuid)
+    actor = colander.SchemaNode(colander.String(), validator=validators.empty_or(colander.uuid))
     created_at = colander.SchemaNode(colander.DateTime())
     data = colander.SchemaNode(Dictionary())
     event_name = colander.SchemaNode(colander.String(), validator=validators.EventName)
     guid = colander.SchemaNode(colander.String(), validator=colander.uuid)
-    request_id = colander.SchemaNode(colander.String(), validator=validators.empty_or(colander.uuid))
+    request_id = colander.SchemaNode(colander.String(),
+                                     validator=validators.empty_or(colander.uuid))
 
 
 @implementer(IQueue)
