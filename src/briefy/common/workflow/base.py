@@ -251,6 +251,7 @@ class Workflow(metaclass=BaseWorkflow):
         """Try to get a value from object, given a name."""
         if obj and hasattr(obj, name):
             value = getattr(obj, name)
+        # FIXME: This will explode for an object without __contains__
         elif obj and name in obj:
             value = obj[name]
         elif swallow:

@@ -14,6 +14,7 @@ requires = [
     'boto3',
     'colander',
     'newrelic',
+    'prettyconf',
     'requests',
     'setuptools',
     'wheel',
@@ -21,6 +22,14 @@ requires = [
     'zope.configuration',
     'zope.event',
     'zope.interface',
+]
+
+requires_db = [
+    'alembic',
+    'psycopg2',
+    'sqlalchemy',
+    'sqlalchemy-utils',
+    'zope.sqlalchemy',
 ]
 
 test_requirements = [
@@ -48,5 +57,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     install_requires=requires,
+    extras_require={'db': requires_db},
     entry_points="""""",
 )
