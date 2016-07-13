@@ -1,6 +1,7 @@
 """Rests for briefy.common.queue.message."""
 from briefy.common.config import SQS_REGION
-from briefy.common.queue.message import SQSMessage
+from briefy.common.queue import IQueue
+from zope import component
 
 import boto3
 import botocore.endpoint
@@ -28,6 +29,7 @@ class BaseSQSTest:
         sqs = boto3.resource('sqs', region_name=SQS_REGION)
         sqs.create_queue(QueueName=name)
         self.queue = sqs.get_queue_by_name(QueueName=name)
+
         for message in self.queue.receive_messages(MaxNumberOfMessages=100):
             message.delete()
 
@@ -45,5 +47,17 @@ class BaseSQSTest:
         payload = {'MessageBody': body}
 
         self.queue.send_message(**payload)
+        return self.get_from_queue()
+
+    def get_from_queue(self):
         messages = self.queue.receive_messages(MaxNumberOfMessages=1)
         return messages[0]
+
+
+class BriefyQueueBaseTest(BaseSQSTest):
+
+    def _setup_queue(self):
+        super()._setup_queue()
+        from briefy.common.queue.event import EventQueue
+        EventQueue._queue = self.queue
+        component.provideUtility(EventQueue, IQueue, 'events.queue')

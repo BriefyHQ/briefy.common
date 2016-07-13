@@ -1,14 +1,10 @@
 """Rests for briefy.common.queue.message."""
-from base_queue import queue_url
-from briefy.common.config import SQS_REGION
 from briefy.common.queue.message import SQSMessage
 from conftest import BaseSQSTest
 from datetime import date
 from datetime import datetime
 
-import boto3
 import colander
-import botocore.endpoint
 import json
 import pytest
 
@@ -96,7 +92,6 @@ class TestSQSMessage(BaseSQSTest):
         assert 'No message available' in str(excinfo.value)
 
 
-
 class DateSchema(colander.MappingSchema):
     """Payload for this queue."""
 
@@ -119,7 +114,6 @@ class TestSQSMessageWithDateTime(BaseSQSTest):
 
     queue = None
     schema = DateSchema
-
 
     def test_message_queue_preserves_time_data(self):
         """Test message roundtrip with date and datetime values."""

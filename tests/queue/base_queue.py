@@ -2,7 +2,6 @@
 import boto3
 import botocore.endpoint
 from conftest import queue_url
-import os
 
 
 class BaseTest:
