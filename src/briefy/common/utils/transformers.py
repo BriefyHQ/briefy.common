@@ -1,5 +1,7 @@
 """Helpers to transform data."""
 from uuid import UUID
+
+import colander
 import datetime
 import decimal
 import json
@@ -20,6 +22,8 @@ class EnhancedJSONEncoder(json.JSONEncoder):
             return str(obj)
         elif isinstance(obj, UUID):
             return str(obj)
+        elif isinstance(obj, colander._null):
+            return None
         else:
             return super().default(obj)
 
