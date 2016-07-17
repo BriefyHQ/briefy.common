@@ -12,12 +12,13 @@ env:
   - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
   matrix:
   - TOXENV=py35
-  - TOXENV=flake8
 install:
 - docker run -d -p 127.0.0.1:8080:8080 --name sqs ridelink/test-sqs:latest
 - pip install -r requirements/dev.txt
+- pip install flake8
 script:
 - tox -e ${TOXENV}
+- flake8 src/briefy/common setup.py
 after_success:
 - make docs
 notifications:
