@@ -9,9 +9,10 @@ class QueueWorker(Worker):
     input_queue = None
     sleep = None
 
-    def __init__(self, logger_=None, sleep_=.5):
+    def __init__(self, input_queue, logger_=None, sleep_=.5):
         """Initialize the worker."""
         super().__init__(logger_, sleep_)
+        self.input_queue = input_queue
         queue = self.input_queue
         if not queue:
             raise ValueError('Queue Worker must have a queue')
