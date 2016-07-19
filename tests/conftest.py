@@ -9,6 +9,21 @@ import os
 import pytest
 
 
+
+# Python's unittest.mock assertions requires the exact parameters to the method
+# to match the assertion. That wpud bind the error messages to the test
+class MockLogger:
+    info_called = 0
+    exception_called = 0
+
+    def info(self, *args, **kw):
+        self.info_called += 1
+
+    def exception(self, *args, **kw):
+        self.exception_called += 1
+
+
+
 @pytest.fixture
 def queue_url():
     """Return the url for the SQS server."""
