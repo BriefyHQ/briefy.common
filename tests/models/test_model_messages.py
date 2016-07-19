@@ -14,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 import colander
 import json
 import pytest
+import re
 import sqlalchemy as sa
 
 
@@ -83,12 +84,19 @@ def new_simple():
 
 
 def test_model_is_created(new_simple, new_db):
+    """Asserts a model creation, persistance, retrieval and representation
+
+    :param new_simple: A Model object supplied by dependency injection
+    :type new_simple: SimpleModel
+    """
     x = new_simple
     new_db.add(x)
     new_db.commit()
     y = SimpleModel.query().all()[0]
-    assert y.name == x.name
-    assert y.birthday == x.birthday
+    z = SimpleModel.get(x.id)
+    assert x.name == y.name == z.name
+    assert x.birthday == y.birthday == z.birthday
+    assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))
 
 
 class TestSQSMessage(BriefyQueueBaseTest):
