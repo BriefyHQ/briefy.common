@@ -37,6 +37,14 @@ class TestJsonDumps:
         expected = '"2.35"'
         assert json_dumps(value) == expected
 
+    def test_serialize_colander_null(self):
+        """Test serialization of a colander.null."""
+        import colander
+
+        value = colander.null
+        expected = 'null'
+        assert json_dumps(value) == expected
+
     def test_serialize_default(self):
         """Test serialization of default object."""
         value = 2
