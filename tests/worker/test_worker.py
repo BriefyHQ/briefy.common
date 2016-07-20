@@ -21,13 +21,13 @@ def test_worker_is_not_isntantiated_without_a_process_method():
 
     """
     with pytest.raises(TypeError):
-        w = Worker()
+        Worker()
 
     class NonProcessWorker(Worker):
         name = 'Faulty'
 
     with pytest.raises(TypeError):
-        w = NonProcessWorker()
+        NonProcessWorker()
 
 
 def test_worker_is_not_isntantiated_without_a_name():
@@ -38,7 +38,7 @@ def test_worker_is_not_isntantiated_without_a_name():
             pass
 
     with pytest.raises(ValueError):
-        w = NonNamedWorker()
+        NonNamedWorker()
 
 
 def test_worker_calls_process_functions():

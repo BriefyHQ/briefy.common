@@ -16,11 +16,26 @@ class MockLogger:
     info_called = 0
     exception_called = 0
 
+    def __init__(self):
+        self.info_messages = []
+        self.exception_messages = []
+
     def info(self, *args, **kw):
+        self.info_messages.append(args[0])
         self.info_called += 1
 
     def exception(self, *args, **kw):
+        self.exception_messages.append(args[0])
         self.exception_called += 1
+
+    def debug(self, *args, **kw):
+        pass
+
+    def error(self, *args, **kw):
+        pass
+
+    def __call__(self, *args, **kw):
+        pass
 
 
 
