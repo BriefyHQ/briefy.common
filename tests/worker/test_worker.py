@@ -52,7 +52,7 @@ def test_worker_calls_process_functions():
 
 def test_worker_respect_run_interval():
     """Assert worker respects run_interval."""
-    tolerance = 0.1
+    tolerance = 0.2
     for w in (MinimalWorker(), MinimalWorker(run_interval=0.03)):
         start = time.time()
         w()
