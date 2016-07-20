@@ -1,3 +1,4 @@
+"""Tests for `briefy.common.worker.queue.QueueWorker`."""
 from briefy.common.worker import QueueWorker
 from conftest import MockLogger
 
@@ -15,7 +16,7 @@ import pytest
 # the tests here,as they are now,  do not take the non-deterministic
 # behavior into account and do fail if using the emulator
 
-# Reference: http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html
+# Reference: http://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html  # noqa
 
 # TODO: create integration tests and improve the code to
 # actually test using the emulator.
@@ -23,13 +24,16 @@ import pytest
 # coverage and behavior of code when messages are returned.
 
 
-
 class MinimalMessage:
+    """Minimal message."""
+
     def __init__(self, owner, body):
+        """Initialize the object."""
         self.body = body
         self.owner = owner
 
     def delete(self):
+        """Delete message from owner."""
         for i, message in enumerate(self.owner.messages):
             if message == self.body:
                 del self.owner.messages[i]
@@ -48,21 +52,26 @@ class DummyQueue:
         self.messages.append(payload)
 
     def get_messages(self):
+        """Return a list of MinimalMessage from this queue."""
         return [MinimalMessage(self, message) for message in self.messages]
 
 
 class MinimalQueueWorker(QueueWorker):
-    name = "Minimal"
+    """A Queue worker."""
+
+    name = 'Minimal'
     region_name = 'mock_region.east.1'
     _counter = 0
     _iterations = 1
     run_interval = 0.01
 
     def __init__(self, *args, **kw):
+        """Initialize the worker."""
         self._counter = 0
         super().__init__(*args, **kw)
 
     def process(self):
+        """Run tasks on this worker."""
         self._counter += 1
         if self._counter >= self._iterations:
             self.running = False
@@ -70,15 +79,16 @@ class MinimalQueueWorker(QueueWorker):
 
 
 class TestQueueWorker:
+    """Testcase for queue worker."""
 
     queue = DummyQueue
 
     def get_payload(self):
         """Return a payload for this queue."""
-        return {"message": "bar"}
-
+        return {'message': 'bar'}
 
     def test_queue_worker_needs_a_queue(self):
+        """Queue worker always needs a queue."""
         with pytest.raises(ValueError):
             MinimalQueueWorker(None)
 
@@ -94,7 +104,6 @@ class TestQueueWorker:
         queue.write_message(payload)
         w()
         assert len(list(queue.get_messages())) == 0
-
 
     def test_threaded_queue_worker_consume_messages(self):
         """Test write_message."""
