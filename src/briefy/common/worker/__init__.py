@@ -12,7 +12,7 @@ class Worker(metaclass=ABCMeta):
     """Base class for workers.
 
     Upon deriving from this, define a 'name' and the 'process' method.
-    RUn interval specifies the suspending time between two subsequent calls
+    'run_interval' specifies the suspending time between two subsequent calls
     to self.process.
 
     The default timing function is time.sleep (thus making of this a
@@ -74,6 +74,6 @@ class Worker(metaclass=ABCMeta):
     sleep = time.sleep
 
 # Make other workers available to common users
-from .queue import QueueWorker # noqa
+from .queue import QueueWorker  # noqa
 
 __all__ = [Worker, QueueWorker]

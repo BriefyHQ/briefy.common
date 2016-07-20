@@ -30,6 +30,7 @@ def test_worker_is_not_isntantiated_without_a_process_method():
         NonProcessWorker()
 
 
+
 def test_worker_is_not_isntantiated_without_a_name():
     """Asserts worker class needs a set name and"""
 
