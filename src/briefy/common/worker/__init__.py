@@ -76,4 +76,4 @@ class Worker(metaclass=ABCMeta):
 # Make other workers available to common users
 from .queue import QueueWorker  # noqa
 
-__all__ = [Worker, QueueWorker]
+__all__ = ['Worker', 'QueueWorker']
