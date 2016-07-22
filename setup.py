@@ -15,6 +15,7 @@ requires = [
     'colander',
     'newrelic',
     'prettyconf',
+    'pytz',
     'requests',
     'setuptools',
     'wheel',

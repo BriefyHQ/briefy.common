@@ -29,7 +29,12 @@ class TestWorkflow:
         assert history[0]['from'] == ''
         assert history[0]['to'] == 'created'
         assert history[0]['transition'] == ''
-        assert isinstance(history[0]['date'], datetime)
+        assert datetime.strptime(history[0]['date'][:19], '%Y-%m-%dT%H:%M:%S')
+
+    def test_workflow_state_repr_works(self):
+        """Test workfolow __repr__ works"""
+        customer = Customer('12345')
+        assert 'workflowstate' in repr(customer.workflow.state).lower()
 
     def test_state_key_unknown_state(self):
         """Raise an error if document is in an unknown state."""

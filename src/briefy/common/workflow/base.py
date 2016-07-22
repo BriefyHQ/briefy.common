@@ -6,6 +6,7 @@ from collections import OrderedDict
 from datetime import datetime
 from functools import wraps
 
+import pytz
 import weakref
 
 
@@ -317,7 +318,7 @@ class Workflow(metaclass=BaseWorkflow):
         self._safe_set(document, key, value, False)
 
     def _update_history(self, transition, state_from, state_to, actor=None):
-        now = datetime.now()
+        now = datetime.now(tz=pytz.timezone('UTC')).isoformat()
         document = self.document
         context = self.context
         if context and not actor:
