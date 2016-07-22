@@ -40,7 +40,7 @@ class SimpleWorkflow(BriefyWorkflow):
     created = WorkflowState('created', title='Created', description='Simple model created')
 
 
-class SimpleModel(Base, Mixin):
+class SimpleModel(Mixin, Base):
     """A possible customer or professional that visited briefy.co website."""
 
     __tablename__ = 'simple'
