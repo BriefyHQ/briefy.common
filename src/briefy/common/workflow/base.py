@@ -52,7 +52,7 @@ class WorkflowState(object):
     exception_transition = WorkflowTransitionException
     exception_permission = WorkflowPermissionException
 
-    def __init__(self, value, title='', description=''):
+    def __init__(self, value=None, title='', description=''):
         """Initialize the WorkflowState."""
         self.value = value
         self.values = [value]
@@ -81,7 +81,7 @@ class WorkflowState(object):
         """Call this state."""
         if self._parent is None or self._parent() is None:
             raise self.exception_state('Unattached state')
-        return self._parent()._getStateValue() == self.value
+        return self._parent()._get_state() == self.value
 
     def __eq__(self, other):
         """Compare this state to other."""
