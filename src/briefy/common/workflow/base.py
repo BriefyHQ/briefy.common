@@ -204,6 +204,30 @@ class BaseWorkflow(type):
         return super(BaseWorkflow, cls).__new__(cls, name, bases, attrs)
 
 
+class WorkflowStates:
+    def __get__(self, instance, owner):
+        self._owner = owner
+        return self
+
+    def __iter__(self):
+        return iter(self._owner._states_sorted)
+
+    def __getattr__(self, state_name):
+        try:
+            return self[state_name]
+        except KeyError as exc:
+            raise AttributeError from exc
+
+    def __getitem__(self, state_name):
+        return self._owner._states[state_name]
+
+    def __len__(self):
+        return len(self._owner._states_sorted)
+
+    def __repr__(self):
+        return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
+
+
 class Workflow(metaclass=BaseWorkflow):
     """Base class for workflows."""
 
@@ -349,10 +373,7 @@ class Workflow(metaclass=BaseWorkflow):
             raise self.exception_state('Unknown state')
         return state
 
-    @classmethod
-    def states(cls):
-        """All states, sorted."""
-        return list(cls._states_sorted)
+    states = WorkflowStates()
 
     def permissions(self):
         """Permission available in the current context.
