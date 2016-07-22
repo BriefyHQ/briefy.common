@@ -4,8 +4,14 @@ from briefy.common.db.mixins.timestamp import Timestamp
 from briefy.common.db.mixins.workflow import Workflow
 
 
+
 class Mixin(GUID, Timestamp, Workflow):
-    """Base mixin to be used for content classes on Briefy."""
+    """Base mixin to be used for content classes on Briefy.
+
+    Important: Always add Mixin as a base class _before_ the
+    SQLalchemy instrumented Base model - to warrant that any cooperative methods
+    in the mixins are actually called.
+    """
 
     def __repr__(self):
         """Representation of this object."""
@@ -17,3 +23,5 @@ class Mixin(GUID, Timestamp, Workflow):
                 self.created_at,
                 self.updated_at
         )
+
+
