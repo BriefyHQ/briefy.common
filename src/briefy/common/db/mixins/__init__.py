@@ -4,7 +4,6 @@ from briefy.common.db.mixins.timestamp import Timestamp
 from briefy.common.db.mixins.workflow import Workflow
 
 
-
 class Mixin(GUID, Timestamp, Workflow):
     """Base mixin to be used for content classes on Briefy.
 
@@ -23,5 +22,3 @@ class Mixin(GUID, Timestamp, Workflow):
                 self.created_at,
                 self.updated_at
         )
-
-
