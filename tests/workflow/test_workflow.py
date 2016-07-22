@@ -68,16 +68,16 @@ class TestWorkflow:
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
-        assert len(wf.transitions()) == 1
-        assert wf.transitions()['submit'].title, 'Submit'
+        assert len(wf.transitions) == 1
+        assert wf.transitions['submit'].title, 'Submit'
         wf.submit()
 
         # Editor will not be able to transition from cre
         editor = User('23456', roles=('editor', ))
         wf.context = editor
-        assert len(wf.transitions()) == 2
-        assert wf.transitions()['approve'].title, 'Approve'
-        assert wf.transitions()['reject'].title, 'Reject'
+        assert len(wf.transitions) == 2
+        assert wf.transitions['approve'].title, 'Approve'
+        assert wf.transitions['reject'].title, 'Reject'
 
     def test_history(self):
         """Test history for an object after some transitions."""

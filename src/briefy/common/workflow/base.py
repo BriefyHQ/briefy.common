@@ -384,6 +384,7 @@ class Workflow(metaclass=BaseWorkflow):
         """
         return []
 
+    @property
     def transitions(self):
         """All transition available in the current state and context."""
         permissions = self.permissions()
