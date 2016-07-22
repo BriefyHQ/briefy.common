@@ -9,7 +9,6 @@ import os
 import pytest
 
 
-
 # Python's unittest.mock assertions requires the exact parameters to the method
 # to match the assertion. That wpud bind the error messages to the test
 class MockLogger:
@@ -36,7 +35,6 @@ class MockLogger:
 
     def __call__(self, *args, **kw):
         pass
-
 
 
 @pytest.fixture

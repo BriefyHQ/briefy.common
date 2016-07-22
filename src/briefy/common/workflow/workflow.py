@@ -29,3 +29,4 @@ class BriefyWorkflow(Workflow):
             ),
             extra={'history_entry': entry}
         )
+        super()._notify(transition)

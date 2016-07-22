@@ -163,11 +163,16 @@ class WorkflowStateGroup(WorkflowState):
         """Return the state value."""
         if self._parent is None or self._parent() is None:
             raise self.exception_state('Unattached state')
-        return self._parent()._getStateValue() in self.value
+        return self._parent()._get_state() in self.values
+
+    def __contains__(self, state):
+        if isinstance(state, WorkflowState):
+            state = state.name
+        return state in self.values
 
     def transition(self, *args, **kwargs):
         """Transition."""
-        raise SyntaxError('WorkflowStateGroups cannot have transitions')
+        raise TypeError('WorkflowStateGroups cannot have transitions')
 
 
 class BaseWorkflow(type):
@@ -296,7 +301,8 @@ class Workflow(metaclass=BaseWorkflow):
             setattr(obj, name, value)
         elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             obj[name] = value
-        elif not swallow:
+        elif not swallow:   # pragma: no cover
+                            # (execution flow will raise in _safe_get before getting here)
             raise cls.exception_state(
                 'Value {value} for {name} on {obj} cannot be set'.format(
                     value=value,
