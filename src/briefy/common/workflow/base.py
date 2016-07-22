@@ -244,15 +244,14 @@ class Workflow(metaclass=BaseWorkflow):
 
     def __repr__(self):
         """Representation of the object."""
-        return '<Workflow %s>'.format(self._name)
+        return '<Workflow {}>'.format(self._name)
 
     @classmethod
     def _safe_get(cls, obj, name, swallow=True):
         """Try to get a value from object, given a name."""
         if obj and hasattr(obj, name):
             value = getattr(obj, name)
-        # FIXME: This will explode for an object without __contains__
-        elif obj and name in obj:
+        elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             value = obj[name]
         elif swallow:
             value = None
@@ -270,7 +269,7 @@ class Workflow(metaclass=BaseWorkflow):
         """Try to set a value on a attribute or key named name on an object."""
         if obj and hasattr(obj, name):
             setattr(obj, name, value)
-        elif obj and name in obj:
+        elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             obj[name] = value
         elif not swallow:
             raise cls.exception_state(
