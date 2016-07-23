@@ -6,6 +6,7 @@ from collections import OrderedDict
 from datetime import datetime
 from functools import wraps
 
+import pytz
 import weakref
 
 
@@ -51,7 +52,7 @@ class WorkflowState(object):
     exception_transition = WorkflowTransitionException
     exception_permission = WorkflowPermissionException
 
-    def __init__(self, value, title='', description=''):
+    def __init__(self, value=None, title='', description=''):
         """Initialize the WorkflowState."""
         self.value = value
         self.values = [value]
@@ -80,7 +81,7 @@ class WorkflowState(object):
         """Call this state."""
         if self._parent is None or self._parent() is None:
             raise self.exception_state('Unattached state')
-        return self._parent()._getStateValue() == self.value
+        return self._parent()._get_state() == self.value
 
     def __eq__(self, other):
         """Compare this state to other."""
@@ -162,11 +163,16 @@ class WorkflowStateGroup(WorkflowState):
         """Return the state value."""
         if self._parent is None or self._parent() is None:
             raise self.exception_state('Unattached state')
-        return self._parent()._getStateValue() in self.value
+        return self._parent()._get_state() in self.values
+
+    def __contains__(self, state):
+        if isinstance(state, WorkflowState):
+            state = state.name
+        return state in self.values
 
     def transition(self, *args, **kwargs):
         """Transition."""
-        raise SyntaxError('WorkflowStateGroups cannot have transitions')
+        raise TypeError('WorkflowStateGroups cannot have transitions')
 
 
 class BaseWorkflow(type):
@@ -201,6 +207,30 @@ class BaseWorkflow(type):
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
         return super(BaseWorkflow, cls).__new__(cls, name, bases, attrs)
+
+
+class WorkflowStates:
+    def __get__(self, instance, owner):
+        self._owner = owner
+        return self
+
+    def __iter__(self):
+        return iter(self._owner._states_sorted)
+
+    def __getattr__(self, state_name):
+        try:
+            return self[state_name]
+        except KeyError as exc:
+            raise AttributeError from exc
+
+    def __getitem__(self, state_name):
+        return self._owner._states[state_name]
+
+    def __len__(self):
+        return len(self._owner._states_sorted)
+
+    def __repr__(self):
+        return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
 
 
 class Workflow(metaclass=BaseWorkflow):
@@ -244,15 +274,14 @@ class Workflow(metaclass=BaseWorkflow):
 
     def __repr__(self):
         """Representation of the object."""
-        return '<Workflow %s>'.format(self._name)
+        return '<Workflow {}>'.format(self._name)
 
     @classmethod
     def _safe_get(cls, obj, name, swallow=True):
         """Try to get a value from object, given a name."""
         if obj and hasattr(obj, name):
             value = getattr(obj, name)
-        # FIXME: This will explode for an object without __contains__
-        elif obj and name in obj:
+        elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             value = obj[name]
         elif swallow:
             value = None
@@ -270,9 +299,10 @@ class Workflow(metaclass=BaseWorkflow):
         """Try to set a value on a attribute or key named name on an object."""
         if obj and hasattr(obj, name):
             setattr(obj, name, value)
-        elif obj and name in obj:
+        elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             obj[name] = value
-        elif not swallow:
+        elif not swallow:   # pragma: no cover
+                            # (execution flow will raise in _safe_get before getting here)
             raise cls.exception_state(
                 'Value {value} for {name} on {obj} cannot be set'.format(
                     value=value,
@@ -318,7 +348,7 @@ class Workflow(metaclass=BaseWorkflow):
         self._safe_set(document, key, value, False)
 
     def _update_history(self, transition, state_from, state_to, actor=None):
-        now = datetime.now()
+        now = datetime.now(tz=pytz.timezone('UTC')).isoformat()
         document = self.document
         context = self.context
         if context and not actor:
@@ -349,10 +379,7 @@ class Workflow(metaclass=BaseWorkflow):
             raise self.exception_state('Unknown state')
         return state
 
-    @classmethod
-    def states(cls):
-        """All states, sorted."""
-        return list(cls._states_sorted)
+    states = WorkflowStates()
 
     def permissions(self):
         """Permission available in the current context.
@@ -363,6 +390,7 @@ class Workflow(metaclass=BaseWorkflow):
         """
         return []
 
+    @property
     def transitions(self):
         """All transition available in the current state and context."""
         permissions = self.permissions()

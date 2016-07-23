@@ -40,7 +40,7 @@ class SimpleWorkflow(BriefyWorkflow):
     created = WorkflowState('created', title='Created', description='Simple model created')
 
 
-class SimpleModel(Base, Mixin):
+class SimpleModel(Mixin, Base):
     """A possible customer or professional that visited briefy.co website."""
 
     __tablename__ = 'simple'
@@ -96,7 +96,7 @@ def test_model_is_created(new_simple, new_db):
     z = SimpleModel.get(x.id)
     assert x.name == y.name == z.name
     assert x.birthday == y.birthday == z.birthday
-    assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))
+    assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))  # noqa
 
 
 class TestSQSMessage(BriefyQueueBaseTest):
