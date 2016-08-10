@@ -41,7 +41,7 @@ class MockLogger:
 def queue_url():
     """Return the url for the SQS server."""
     host = os.environ.get('SQS_IP', '127.0.0.1')
-    port = os.environ.get('SQS_PORT', '8080')
+    port = os.environ.get('SQS_PORT', '5000')
     return 'http://{}:{}'.format(host, port)
 
 

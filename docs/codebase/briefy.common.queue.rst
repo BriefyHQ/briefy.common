@@ -1,6 +1,13 @@
 briefy.common.queue package
 ===========================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    briefy.common.queue.message
+
 Submodules
 ----------
 

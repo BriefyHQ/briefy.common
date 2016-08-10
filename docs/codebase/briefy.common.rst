@@ -6,7 +6,11 @@ Subpackages
 
 .. toctree::
 
+    briefy.common.db
+    briefy.common.event
     briefy.common.queue
+    briefy.common.utils
+    briefy.common.validators
     briefy.common.worker
     briefy.common.workflow
 
