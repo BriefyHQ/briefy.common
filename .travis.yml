@@ -13,7 +13,7 @@ env:
   matrix:
   - TOXENV=py35
 install:
-- docker run -d -p 127.0.0.1:8080:8080 --name sqs ridelink/test-sqs:latest
+- docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
 - pip install -r requirements/dev.txt
 - pip install flake8
 script:
