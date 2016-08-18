@@ -27,6 +27,7 @@ requires = [
 
 requires_db = [
     'alembic',
+    'geoalchemy2',
     'psycopg2',
     'sqlalchemy',
     'sqlalchemy-utils',

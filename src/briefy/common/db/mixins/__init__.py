@@ -1,4 +1,5 @@
 """Database mixins."""
+from briefy.common.db.mixins.address import Address
 from briefy.common.db.mixins.identifiable import GUID
 from briefy.common.db.mixins.timestamp import Timestamp
 from briefy.common.db.mixins.workflow import Workflow
@@ -22,3 +23,7 @@ class Mixin(GUID, Timestamp, Workflow):
                 self.created_at,
                 self.updated_at
         )
+
+
+class AddressMixin(Address, Mixin):
+    """Base Address mixin."""

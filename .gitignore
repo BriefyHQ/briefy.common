@@ -15,9 +15,11 @@ dist/
 downloads/
 eggs/
 .eggs/
+include/
 lib/
 lib64/
 parts/
+share/
 sdist/
 var/
 pyvenv.cfg
@@ -59,6 +61,7 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+docs/codebase/briefy.*
 
 # PyBuilder
 target/
