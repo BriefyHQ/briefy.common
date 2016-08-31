@@ -4,7 +4,8 @@ from functools import wraps
 
 import time
 
-# TODO: Move to 'briefy.commons'?
+logger = logging.getLogger(__name__)
+
 
 TimeStampedResult = namedtuple("TimeStampedResult", 'timestamp result')
 
@@ -53,6 +54,8 @@ def timeout_cache(timeout, renew=False):
                 key = _make_cache_key(*args, **kw)
             except TypeError:
                 # Uncacheable parameters
+                logger.warn('Failed to cache call to '{}': unhashable parameters!'.format(
+                    func.__name__))
                 return func(*args, **kw)
             if key in cache and time.monotonic() - cache[key].timestamp < timeout:
                 result = cache[key].result
