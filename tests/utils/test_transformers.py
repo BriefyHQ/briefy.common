@@ -18,7 +18,7 @@ class TestJsonDumps:
         from datetime import datetime
 
         value = datetime(2012, 3, 29, 12, 31, 22)
-        expected = '"2012-03-29T12:31:22"'
+        expected = '"2012-03-29T12:31:22Z"'
         assert json_dumps(value) == expected
 
     def test_serialize_time(self):
