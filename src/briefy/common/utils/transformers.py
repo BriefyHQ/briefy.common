@@ -31,7 +31,7 @@ def ts_time(val):
 
 
 @to_serializable.register(colander._null)
-def ts_date(val):
+def ts_colander_null(val):
     """Used if *val* is an instance of colander Null."""
     return None
 
