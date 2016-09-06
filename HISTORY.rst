@@ -4,7 +4,8 @@ History
 
 0.1.0 (Unreleased)
 ------------------
-* Implements timeout_cache
+* overhauls workflow (jsbueno)
+* Implements timeout_cache (jsbueno)
 * ...
 * Implements the Base Workflow (ericof)
 * Implements the base class for a queue and the events queue (ericof)

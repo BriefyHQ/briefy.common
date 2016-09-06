@@ -5,7 +5,6 @@ from briefy.common.workflow import WorkflowStateGroup
 from briefy.common.workflow import permission
 
 
-
 class LegacyCustomerWorkflow(BriefyWorkflow):
     """Workflow for Customer."""
 
@@ -36,7 +35,6 @@ class LegacyCustomerWorkflow(BriefyWorkflow):
             if 'editor' in roles:
                 permissions.append('review')
         return permissions
-
 
     @created.transition(pending, 'can_submit', title='Submit')
     def submit(self):

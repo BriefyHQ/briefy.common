@@ -77,7 +77,7 @@ class WorkflowTransition(object):
             raise state_from.exception_transition('Incorrect state for this transition')
 
         if self.permission and (self.permission not in workflow.permissions()):
-             raise state_from.exception_permission('Permission not available')
+            raise state_from.exception_permission('Permission not available')
 
     def _decorate(self, func):
         if isinstance(func, WorkflowTransition):
@@ -107,10 +107,9 @@ class WorkflowTransition(object):
         tied to several states in the same workflow
         """
 
-        state_from = self.state_from()
         correct_transition = workflow.state._transitions.get(self.name, None)
         if (correct_transition and
-                correct_transition.name  == self.name):
+                correct_transition.name == self.name):
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
@@ -184,7 +183,6 @@ class AttachedTransition:
 
     def __repr__(self):
         return '<Attached {}'.format(repr(self.transition).lstrip('<'))
-
 
 
 class WorkflowState(object):

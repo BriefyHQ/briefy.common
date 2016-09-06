@@ -13,6 +13,7 @@ from zope.interface import Interface
 
 
 __all__ = [
+    'permission',
     'BriefyWorkflow',
     'IWorkflow',
     'WorkflowException',
