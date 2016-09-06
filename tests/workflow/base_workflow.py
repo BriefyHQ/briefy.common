@@ -2,9 +2,11 @@
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
+from briefy.common.workflow import permission
 
 
-class CustomerWorkflow(BriefyWorkflow):
+
+class LegacyCustomerWorkflow(BriefyWorkflow):
     """Workflow for Customer."""
 
     # Optional name for this workflow
@@ -30,17 +32,60 @@ class CustomerWorkflow(BriefyWorkflow):
             user_id = context.user_id
             roles = self.context.roles
             if document.creator == user_id:
-                permissions.append('submit')
+                permissions.append('can_submit')
             if 'editor' in roles:
                 permissions.append('review')
         return permissions
 
-    @created.transition(pending, 'submit', title='Submit')
+
+    @created.transition(pending, 'can_submit', title='Submit')
     def submit(self):
         """Customer asks to be part or our marketplace."""
         pass
 
     @pending.transition(approved, 'review', title='Approve')
+    def approve(self):
+        """Editor approve this customer."""
+        pass
+
+    @pending.transition(rejected, 'review', title='Reject')
+    def reject(self):
+        """Editor reject this customer."""
+        pass
+
+
+class CustomerWorkflow(BriefyWorkflow):
+    """Workflow for Customer."""
+
+    # Optional name for this workflow
+    entity = 'customer'
+    initial_state = 'created'
+
+    created = WorkflowState('created', title='Created', description='Customer created')
+    pending = WorkflowState('pending', title='Pending', description='Customer waiting for approval')
+    approved = WorkflowState('approved', title='Approved', description='Customer approved')
+    rejected = WorkflowState('rejected', title='Rejected', description='Customer rejected')
+
+    inactive = WorkflowStateGroup([created, pending, rejected], title='Customer is inactive')
+    active = WorkflowStateGroup([approved, ], title='Customer is approved')
+
+    @permission
+    def can_submit(self):
+        if not self.context or not self.document:
+            return False
+        return self.document.creator == self.context.user_id
+
+    @permission
+    def review(self):
+        return self.context and 'editor' in self.context.roles
+
+
+    @created.transition(pending, 'can_submit', title='Submit')
+    def submit(self):
+        """Customer asks to be part or our marketplace."""
+        pass
+
+    @pending.transition(approved, review, title='Approve')
     def approve(self):
         """Editor approve this customer."""
         pass
@@ -65,6 +110,10 @@ class Customer:
         self.creator = creator
         self.state_history = []
         self.workflow = self._workflow_klass(self)
+
+
+class LegacyCustomer(Customer):
+    _workflow_klass = LegacyCustomerWorkflow
 
 
 class User:

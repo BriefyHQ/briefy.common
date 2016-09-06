@@ -1,4 +1,5 @@
 """Briefy.Workflow."""
+from .base import permission
 from .base import WorkflowState
 from .base import WorkflowStateGroup
 from .base import WorkflowTransition

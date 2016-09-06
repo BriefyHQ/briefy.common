@@ -94,6 +94,8 @@ class WorkflowState(object):
     def transition(self, state_to, permission,
                    name=None, title='', description='', category='', **kw):
         """Decorator for transition functions."""
+        if isinstance(permission, Permission):
+            permission = permission.name
         def inner(f):
             if hasattr(f, '_workflow_transition_inner'):
                 f = f._workflow_transition_inner
@@ -175,6 +177,38 @@ class WorkflowStateGroup(WorkflowState):
         raise TypeError('WorkflowStateGroups cannot have transitions')
 
 
+class Permission:
+    """
+    Class used as a decorator to change a workflow method in a
+    dynamic permission - the method should check
+    whether in the current context (available as self.context),
+    and the current document (self.document)
+    the permission it represents is granted. The method should
+    take no parameters other than 'self' (the Workflow instance)
+
+    A permission with the method name is made available to the current workflow
+    and will exist anytime the decorated method returns a truthy value.
+
+    Permissions are checked by transitions inside workflow.states -
+    any transition requires a permission, which will be checked by its name.
+    """
+
+    _name = None
+    def __init__(self, permission_method):
+        self.method = permission_method
+
+    @property
+    def name(self):
+        return self._name or self.method.__name__
+
+    __name__ = name
+
+    def __call__(self, workflow):
+        return self.method(workflow)
+
+permission = Permission
+
+
 class BaseWorkflow(type):
     """Base Metaclass for Workflow."""
 
@@ -187,15 +221,18 @@ class BaseWorkflow(type):
         attrs['_state_values'] = {}  # Reverse lookup: value to object
         # If any base class contains _states, _state_groups or _state_values,
         # extend them
+        attrs['_existing_permissions'] = {}
         for base in bases:
             if hasattr(base,
                        '_is_document_workflow') and base._is_document_workflow:
                 attrs['_states'].update(base._states)
                 attrs['_state_groups'].update(base._state_groups)
                 attrs['_state_values'].update(base._state_values)
+                attrs['_existing_permissions'].update(base._existing_permissions)
 
-        for statename, stateob in attrs.items():
-            if isinstance(stateob, WorkflowState):
+        for key, value in attrs.items():
+            if isinstance(value, WorkflowState):
+                statename, stateob = key, value
                 stateob.name = statename
                 if isinstance(stateob, WorkflowStateGroup):
                     attrs['_state_groups'][statename] = stateob
@@ -203,6 +240,8 @@ class BaseWorkflow(type):
                     attrs['_states'][statename] = stateob
                     # A group doesn't have a single value, so don't add groups
                     attrs['_state_values'][stateob.value] = stateob
+            elif isinstance(value, Permission):
+                attrs['_existing_permissions'][value.name] = value
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
@@ -231,6 +270,9 @@ class WorkflowStates:
 
     def __repr__(self):
         return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
+
+
+permission = Permission
 
 
 class Workflow(metaclass=BaseWorkflow):
@@ -382,13 +424,25 @@ class Workflow(metaclass=BaseWorkflow):
     states = WorkflowStates()
 
     def permissions(self):
-        """Permission available in the current context.
+        """Permissions available in the current context.
 
-        This method must be overridden by subclasses. Context is available as self.context,
+        This method can be overriden by subclasses.
+        This allows one to return string (or other hashable token)
+        permissions directly, instead of having 'Permission'
+        objects as code in the workflow classes.
+
+        Context is available as self.context,
         set when the workflow was initialized for the document. It is not
         passed as a parameter to this method.
+
+        :rtype: set
         """
-        return []
+
+        return {
+            permission_name
+            for permission_name, permission in self._existing_permissions.items()
+            if permission(self)
+        }
 
     @property
     def transitions(self):

@@ -1,6 +1,7 @@
 """Tests for `briefy.common.workflow` package."""
 from base_workflow import Customer
 from base_workflow import CustomerWorkflow
+from base_workflow import LegacyCustomer
 from base_workflow import User
 from briefy.common import workflow
 from datetime import datetime
@@ -52,7 +53,8 @@ class TestWorkflow:
             CustomerWorkflow(customer)
         assert 'Value for state on' in str(excinfo.value)
 
-    def test_transitions(self):
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions(self, Customer):
         """Test transitions for an object."""
         user = User('12345')
         customer = Customer('12345')
@@ -62,7 +64,8 @@ class TestWorkflow:
         wf.submit()
         assert wf.state == wf.pending
 
-    def test_transition_list(self):
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transition_list(self, Customer):
         """Test list of transitions for an object and an user."""
         user = User('12345')
         customer = Customer('12345')
