@@ -35,7 +35,10 @@ class WorkflowTransition(object):
 
     def __init__(self, state_from, state_to,
                  permission=None,
-                 name=None, title='', description='', category='', **kw):
+                 name=None, title='', description='',
+                 category='',
+                 extra_states=(),
+                 **kw):
         """Initialize a workflow transition."""
 
         if isinstance(permission, Permission):
@@ -54,7 +57,11 @@ class WorkflowTransition(object):
         # states reusing the same transiction function
         # by stacking transitions used as decorators:
         self._previous_transition = None
-
+        if extra_states:
+            self._previous_transition = WorkflowTransition(
+                extra_states[0], state_to, permission, name, title, description, category,
+                extra_states[1:]
+            )
 
     def guard(self, workflow):
         state_from = self.state_from()
@@ -65,18 +72,17 @@ class WorkflowTransition(object):
         if self.permission and (self.permission not in workflow.permissions()):
              raise state_from.exception_permission('Permission not available')
 
-
     def _decorate(self, func):
         if isinstance(func, WorkflowTransition):
-            self._previous_transition = func
+            transition = self
+            while transition._previous_transition:
+                transition = transition._previous_transition
+            transition._previous_transition = func
             func = self._previous_transition.transition_hook
         if not self.name:
             self.name = func.__name__
 
         self.transition_hook = func
-        # An extra reference so that other decorators can be arbitrarily intermixed
-        # with WorkflowTransition used as a decorator
-        self.transition_hook_original = getattr(func, '__wrapped__', func)
         return self
 
     def _perform_transition(self, workflow):
@@ -97,7 +103,7 @@ class WorkflowTransition(object):
         state_from = self.state_from()
         correct_transition = workflow.state._transitions.get(self.name, None)
         if (correct_transition and
-                correct_transition.transition_hook_original is self.transition_hook_original):
+                correct_transition.name  == self.name):
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
@@ -249,6 +255,8 @@ class WorkflowState(object):
         Specifies a transition to this state from one or more source states.
         Does not accept WorkflowStateGroup.
         """
+        # TODO: pending rewrit for the new transition system.
+        # Will work on the decorator form as it is:
         def inner(f):
             states = [state_from] if isinstance(state_from, WorkflowState) else state_from
             for state in states:

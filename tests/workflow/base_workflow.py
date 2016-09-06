@@ -81,7 +81,7 @@ class CustomerWorkflow(BriefyWorkflow):
 
     submit = created.transition(pending, 'can_submit', title='Submit')
     approve = pending.transition(approved, 'review', title='Approve')
-    reject = pending.transition(rejected, 'review', title='Reject')
+    reject = pending.transition(rejected, 'review', title='Reject', extra_states=(approved,))
 
 
 class Customer:

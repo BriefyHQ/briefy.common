@@ -4,6 +4,7 @@ from base_workflow import CustomerWorkflow
 from base_workflow import LegacyCustomer
 from base_workflow import User
 from briefy.common import workflow
+from briefy.common.workflow import WorkflowPermissionException
 from datetime import datetime
 
 import pytest
@@ -63,6 +64,25 @@ class TestWorkflow:
         assert wf.state == wf.created
         wf.submit()
         assert wf.state == wf.pending
+
+    def test_transitions_declared_with_multiple_state(self):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        assert wf.state == wf.pending
+        with pytest.raises(WorkflowPermissionException):
+            wf.approve()
+        user._roles = ('editor',)
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.reject()
+        assert wf.state == wf.rejected
 
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
     def test_transition_list(self, Customer):
