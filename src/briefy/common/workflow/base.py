@@ -49,68 +49,129 @@ class WorkflowTransition(object):
         self.description = description
         self.category = category
         self.__dict__.update(kw)
+        self.transition_hook = None
+        # Attribute to help stacking multiple
+        # states reusing the same transiction function
+        # by stacking transitions used as decorators:
+        self._previous_transition = None
 
-    def guard(self):
+
+    def guard(self, workflow):
         state_from = self.state_from()
-
-        if not state_from:
-            raise RuntimeError('Tried to trigger unnatached transition')
-
-        workflow = state_from._parent()
-
-        if not workflow:
-            raise RuntimeError('Tried to trigger transition in unnatached state')
 
         if self.name not in state_from._transitions:
             raise state_from.exception_transition('Incorrect state for this transition')
 
         if self.permission and (self.permission not in workflow.permissions()):
-            raise state_from.exception_permission('Permission not available')
+             raise state_from.exception_permission('Permission not available')
+
 
     def _decorate(self, func):
         if isinstance(func, WorkflowTransition):
-            # TODO: stacking of Transitions as decorators
-            pass
+            self._previous_transition = func
+            func = self._previous_transition.transition_hook
         if not self.name:
             self.name = func.__name__
 
         self.transition_hook = func
+        # An extra reference so that other decorators can be arbitrarily intermixed
+        # with WorkflowTransition used as a decorator
+        self.transition_hook_original = getattr(func, '__wrapped__', func)
         return self
 
-    def _perform_transition(self):
+    def _perform_transition(self, workflow):
         """ Where all the magic really happens """
-        workflow = self.state_from()._parent()
         workflow._set_state(self.state_to().value)
         workflow._update_history(self.title,
                                  self.state_from().value,
                                  self.state_to().value)
         workflow._notify(self)
 
-    def __call__(self, *args, **kw):
+    def _dispatch(self, *args, workflow=None, **kw):
+        """ Dispatch a call to this transition to a sibling transition
+        bound to the appropriate state.
+        Will happen when a transition name, or hook function is
+        tied to several states in the same workflow
+        """
+
+        state_from = self.state_from()
+        correct_transition = workflow.state._transitions.get(self.name, None)
+        if (correct_transition and
+                correct_transition.transition_hook_original is self.transition_hook_original):
+            return correct_transition(*args, workflow=workflow, **kw)
+        raise workflow.state.exception_transition('Incorrect state for this transition')
+
+    def __call__(self, *args, workflow=None, **kw):
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
                 raise TypeError("Transitions inside Workflow class bodies "
                                 "should only be used as decorators for a transition function")
+
             func = args[0]
 
-            # TODO: take care of multiple transition decorators
-            # for the same transition_function.
-            # (the idea is to anotate in this object any other
-            # WorkflowTransitions already wrapping the same function,
-            # and resolve the stacking on the Workflow metaclass
-            # )
             return self._decorate(func)
 
-        self.guard()
+        state_from = self.state_from()
+        if not state_from or not workflow:
+            raise RuntimeError('Tried to trigger unnatached transition')
 
-        if self.transition_function:
-            result = self.transition_function(*args, **kw)
+        if workflow.state is not state_from:
+            return self._dispatch(*args, workflow=workflow, **kw)
+
+        self.guard(workflow)
+
+        if self.transition_hook:
+            result = self.transition_hook(workflow, *args, **kw)
         else:
             result = None
 
-        self._perform_transition()
+        self._perform_transition(workflow)
 
         return result
+
+    def __get__(self, instance, owner):
+        if not isinstance(instance, Workflow):
+            return self
+        return AttachedTransition(self, instance)
+
+
+class AttachedState:
+    def __init__(self, state, workflow):
+        self._parent = weakref.ref(workflow)
+        self.state = state
+
+    def __getattr__(self, attr):
+        return getattr(self.state, attr)
+
+    def __call__(self):
+        if isinstance(self.state, WorkflowStateGroup):
+            return self._parent()._get_state() in self.state.values
+        return self._parent()._get_state() == self.value
+
+    def __contains__(self, value):
+        return value in self.state
+
+    def __eq__(self, value):
+        return self.state == value
+
+    def __repr__(self):
+        return '<Attached {}'.format(repr(self.state).lstrip('<'))
+
+
+class AttachedTransition:
+    def __init__(self, transition, workflow):
+        self.workflow = workflow
+        self.transition = transition
+
+    def __getattr__(self, attr):
+        return getattr(self.state, attr)
+
+    def __call__(self, *args, **kw):
+        return self.transition(*args, workflow=self.workflow, **kw)
+
+    def __repr__(self):
+        return '<Attached {}'.format(repr(self.transition).lstrip('<'))
+
 
 
 class WorkflowState(object):
@@ -131,28 +192,23 @@ class WorkflowState(object):
         self._transitions = OrderedDict()
         _set_creation_order(self)
 
-    def attach(self, workflow):
-        """Attach this workflow state to a workflow instance."""
-        # Attaching works by creating a new copy of the state with _parent
-        # now referring to the workflow instance.
-        newstate = self.__class__(self.value, self.title, self.description)
-        newstate.name = self.name
-        newstate._parent = weakref.ref(workflow)
-        newstate._transitions = self._transitions
-        return newstate
-
     def __repr__(self):
         """Representation of this state."""
         return '<WorkflowState {}>'.format(self.title)
 
+    def __get__(self, instance, owner):
+        if not instance:
+            return self
+        return AttachedState(self, instance)
+
     def __call__(self):
         """Call this state."""
-        if self._parent is None or self._parent() is None:
-            raise self.exception_state('Unattached state')
-        return self._parent()._get_state() == self.value
+        raise self.exception_state('Unattached state')
 
     def __eq__(self, other):
         """Compare this state to other."""
+        if isinstance(other, AttachedState):
+            other = other.state
         return isinstance(other, WorkflowState) and self.value == other.value
 
     def __ne__(self, other):
@@ -178,11 +234,12 @@ class WorkflowState(object):
         # the transition will be set in self._transitions
         # on the Workflow class creation at it's metaclass.__new__
 
-        transition_obj = WorkflowTransition(
-            self, state_to, permission,
-            name=None, title='', description='',
-            category='', **kw
-        )
+        transition_obj = WorkflowTransition(self, state_to, permission,
+                                            name=name,
+                                            title=title,
+                                            description=description,
+                                            category=category,
+                                            **kw)
 
         return transition_obj
 
@@ -217,14 +274,13 @@ class WorkflowStateGroup(WorkflowState):
         return '<WorkflowStateGroup {}>'.format(self.title)
 
     def __call__(self):
-        """Return the state value."""
-        if self._parent is None or self._parent() is None:
-            raise self.exception_state('Unattached state')
-        return self._parent()._get_state() in self.values
+        raise self.exception_state('Unattached state')
 
     def __contains__(self, state):
+        if isinstance(state, AttachedState):
+            state = state.state
         if isinstance(state, WorkflowState):
-            state = state.name
+            state = state.value
         return state in self.values
 
     def transition(self, *args, **kwargs):
@@ -298,13 +354,15 @@ class BaseWorkflow(type):
                     attrs['_state_values'][stateob.value] = stateob
             elif isinstance(value, WorkflowTransition):
                 name, transition = key, value
-                if not transition.name:
-                    transition.name = name
-                # Bind transition to the states transitions by name,
-                # as only at this point we are sure of its name
-                transition.state_from()._transitions[transition.name] = transition
-                # TODO: introspect transition object for stacked transitions
-                transition._waiting_to_decorate = False
+                while transition:
+                    if not transition.name:
+                        transition.name = name
+                    # Bind transition to the states transitions by name,
+                    # as only at this point we are sure of its name
+                    transition.state_from()._transitions[transition.name] = transition
+                    transition._waiting_to_decorate = False
+                    transition = transition._previous_transition
+
             elif isinstance(value, Permission):
                 attrs['_existing_permissions'][value.name] = value
 
@@ -337,9 +395,6 @@ class WorkflowStates:
         return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
 
 
-permission = Permission
-
-
 class Workflow(metaclass=BaseWorkflow):
     """Base class for workflows."""
 
@@ -364,20 +419,8 @@ class Workflow(metaclass=BaseWorkflow):
             if not actor:
                 actor = self._get_document_creator(document)
             self._update_history('', '', state)
-        if state not in self._state_values:
+        if state not in self.__class__._state_values:
             raise self.exception_state('Unknown state')
-        # Attach states to self. Make copy and iterate:
-        # This code is used just to make it possible to test
-        # if a state is active by calling it: workflow.draft(), etc
-        for statename, stateob in list(self._states.items()):
-            attached = stateob.attach(self)
-            setattr(self, statename, attached)
-            self._states[statename] = attached
-            self._state_values[attached.value] = attached
-        for statename, stateob in list(self._state_groups.items()):
-            attached = stateob.attach(self)
-            setattr(self, statename, attached)
-            self._state_groups[statename] = attached
 
     def __repr__(self):
         """Representation of the object."""

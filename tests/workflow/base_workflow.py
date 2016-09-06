@@ -79,21 +79,9 @@ class CustomerWorkflow(BriefyWorkflow):
     def review(self):
         return self.context and 'editor' in self.context.roles
 
-
-    @created.transition(pending, 'can_submit', title='Submit')
-    def submit(self):
-        """Customer asks to be part or our marketplace."""
-        pass
-
-    @pending.transition(approved, review, title='Approve')
-    def approve(self):
-        """Editor approve this customer."""
-        pass
-
-    @pending.transition(rejected, 'review', title='Reject')
-    def reject(self):
-        """Editor reject this customer."""
-        pass
+    submit = created.transition(pending, 'can_submit', title='Submit')
+    approve = pending.transition(approved, 'review', title='Approve')
+    reject = pending.transition(rejected, 'review', title='Reject')
 
 
 class Customer:
