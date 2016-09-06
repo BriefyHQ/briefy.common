@@ -84,6 +84,21 @@ class TestWorkflow:
         wf.reject()
         assert wf.state == wf.rejected
 
+    def test_transitions_with_permission_in_decorator_form(self):
+        """Test transitions for an object."""
+        user = User('12345', roles=('editor',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.retract()
+        assert wf.state == wf.pending
+
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
     def test_transition_list(self, Customer):
         """Test list of transitions for an object and an user."""

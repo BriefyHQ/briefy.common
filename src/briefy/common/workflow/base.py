@@ -63,6 +63,13 @@ class WorkflowTransition(object):
                 extra_states[1:]
             )
 
+    def set_permission(self, func):
+        if self.permission:
+            raise TypeError('Conflict: trying to set more than one permission for {}'.format(self))
+        permission = Permission(func)
+        self.permission = permission.name
+        return permission
+
     def guard(self, workflow):
         state_from = self.state_from()
 
@@ -221,7 +228,7 @@ class WorkflowState(object):
         """Compare this state to other."""
         return not self.__eq__(other)
 
-    def transition(self, state_to, permission,
+    def transition(self, state_to, permission=None,
                    name=None, title='', description='', category='', **kw):
         """Declaring or decorator for transition functions
 

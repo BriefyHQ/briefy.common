@@ -80,8 +80,15 @@ class CustomerWorkflow(BriefyWorkflow):
         return self.context and 'editor' in self.context.roles
 
     submit = created.transition(pending, 'can_submit', title='Submit')
-    approve = pending.transition(approved, 'review', title='Approve')
+    # Permissions can be given by instance or name:
+    approve = pending.transition(approved, review, title='Approve')
+    # extra_states for a transition can be given:
     reject = pending.transition(rejected, 'review', title='Reject', extra_states=(approved,))
+    retract = approved.transition(pending, title='Retract')
+
+    @retract.set_permission
+    def can_retract(self):
+        return self.context and 'editor' in self.context.roles
 
 
 class Customer:
