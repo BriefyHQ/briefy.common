@@ -4,7 +4,6 @@ from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
 from collections import OrderedDict
 from datetime import datetime
-from functools import wraps
 
 import pytz
 import weakref
@@ -32,17 +31,86 @@ def _set_creation_order(instance):
 class WorkflowTransition(object):
     """Transition between states."""
 
-    def __init__(self, name, title='', description='', category='',
-                 permission='', state_from=None, state_to=None, **kwargs):
+    _waiting_to_decorate = True
+
+    def __init__(self, state_from, state_to,
+                 permission=None,
+                 name=None, title='', description='', category='', **kw):
         """Initialize a workflow transition."""
+
+        if isinstance(permission, Permission):
+            permission = permission.name
+
+        self.state_from = weakref.ref(state_from)
+        self.state_to = weakref.ref(state_to)
+        self.permission = permission
         self.name = name
         self.title = title
         self.description = description
         self.category = category
-        self.permission = permission
-        self.state_from = weakref.ref(state_from)
-        self.state_to = weakref.ref(state_to)
-        self.__dict__.update(kwargs)
+        self.__dict__.update(kw)
+
+    def guard(self):
+        state_from = self.state_from()
+
+        if not state_from:
+            raise RuntimeError('Tried to trigger unnatached transition')
+
+        workflow = state_from._parent()
+
+        if not workflow:
+            raise RuntimeError('Tried to trigger transition in unnatached state')
+
+        if self.name not in state_from._transitions:
+            raise state_from.exception_transition('Incorrect state for this transition')
+
+        if self.permission and (self.permission not in workflow.permissions()):
+            raise state_from.exception_permission('Permission not available')
+
+    def _decorate(self, func):
+        if isinstance(func, WorkflowTransition):
+            # TODO: stacking of Transitions as decorators
+            pass
+        if not self.name:
+            self.name = func.__name__
+
+        self.transition_hook = func
+        return self
+
+    def _perform_transition(self):
+        """ Where all the magic really happens """
+        workflow = self.state_from()._parent()
+        workflow._set_state(self.state_to().value)
+        workflow._update_history(self.title,
+                                 self.state_from().value,
+                                 self.state_to().value)
+        workflow._notify(self)
+
+    def __call__(self, *args, **kw):
+        if self._waiting_to_decorate:
+            if len(args) != 1 or kw:
+                raise TypeError("Transitions inside Workflow class bodies "
+                                "should only be used as decorators for a transition function")
+            func = args[0]
+
+            # TODO: take care of multiple transition decorators
+            # for the same transition_function.
+            # (the idea is to anotate in this object any other
+            # WorkflowTransitions already wrapping the same function,
+            # and resolve the stacking on the Workflow metaclass
+            # )
+            return self._decorate(func)
+
+        self.guard()
+
+        if self.transition_function:
+            result = self.transition_function(*args, **kw)
+        else:
+            result = None
+
+        self._perform_transition()
+
+        return result
 
 
 class WorkflowState(object):
@@ -93,43 +161,30 @@ class WorkflowState(object):
 
     def transition(self, state_to, permission,
                    name=None, title='', description='', category='', **kw):
-        """Decorator for transition functions."""
-        if isinstance(permission, Permission):
-            permission = permission.name
-        def inner(f):
-            if hasattr(f, '_workflow_transition_inner'):
-                f = f._workflow_transition_inner
+        """Declaring or decorator for transition functions
 
-            workflow_name = name or f.__name__
+        Usage- on a WorkflowBody,  use either:
 
-            @wraps(f)
-            def decorated_function(workflow, *args, **kwargs):
-                # Perform tests: is state correct? Is permission available?
-                if workflow_name not in workflow.state._transitions:
-                    raise self.exception_transition('Incorrect state')
-                t = workflow.state._transitions[workflow_name]
-                if t.permission and (t.permission not in workflow.permissions()):
-                    raise self.exception_permission('Permission not available')
-                result = f(workflow, *args, **kwargs)
-                state_from = t.state_from().value
-                state_to = t.state_to().value
-                workflow._set_state(state_to)
-                workflow._update_history(t.title, state_from, state_to)
-                workflow._notify(t)
-                return result
+        submit = workflow_state.transition(state_to, permission, ...)
 
-            t = WorkflowTransition(name=workflow_name,
-                                   title=title,
-                                   description=description,
-                                   category=category,
-                                   permission=permission,
-                                   state_from=self,
-                                   state_to=state_to,
-                                   **kw)
-            self._transitions[workflow_name] = t
-            decorated_function._workflow_transition_inner = f
-            return decorated_function
-        return inner
+        or:
+
+        @workflow_state.transition(state_to, permission, ...):
+        def submit(self):
+            # code to run when transition happens
+
+        """
+
+        # the transition will be set in self._transitions
+        # on the Workflow class creation at it's metaclass.__new__
+
+        transition_obj = WorkflowTransition(
+            self, state_to, permission,
+            name=None, title='', description='',
+            category='', **kw
+        )
+
+        return transition_obj
 
     def transition_from(self, state_from, permission, **kwargs):
         """Reverse of :meth:`WorkflowState.transition`.
@@ -194,6 +249,7 @@ class Permission:
     """
 
     _name = None
+
     def __init__(self, permission_method):
         self.method = permission_method
 
@@ -240,6 +296,15 @@ class BaseWorkflow(type):
                     attrs['_states'][statename] = stateob
                     # A group doesn't have a single value, so don't add groups
                     attrs['_state_values'][stateob.value] = stateob
+            elif isinstance(value, WorkflowTransition):
+                name, transition = key, value
+                if not transition.name:
+                    transition.name = name
+                # Bind transition to the states transitions by name,
+                # as only at this point we are sure of its name
+                transition.state_from()._transitions[transition.name] = transition
+                # TODO: introspect transition object for stacked transitions
+                transition._waiting_to_decorate = False
             elif isinstance(value, Permission):
                 attrs['_existing_permissions'][value.name] = value
 
