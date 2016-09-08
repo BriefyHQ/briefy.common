@@ -99,6 +99,38 @@ class TestWorkflow:
         wf.retract()
         assert wf.state == wf.pending
 
+    def test_declarative_permissions_for_state(self):
+        user = User('12345', roles=('editor',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        wf.submit()
+        assert not wf.view
+        wf.approve()
+        assert wf.state == wf.approved
+        assert wf.view
+
+    def test_declarative_permissions_for_role(self):
+        user = User('12345', roles=('user',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        wf.submit()
+        assert not wf.hot_edit
+        user._roles=('editor',)
+        assert wf.hot_edit
+
+    def test_state_bound_permission_as_decorator(self):
+        user = User('12345', roles=('user',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert not wf.quick_edit
+        wf.submit()
+        assert wf.quick_edit
+        user._roles=('editor',)
+        assert wf.hot_edit
+
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
     def test_transition_list(self, Customer):
         """Test list of transitions for an object and an user."""
