@@ -1,8 +1,10 @@
 """Tests for `briefy.common.workflow` package."""
 from base_workflow import Customer
 from base_workflow import CustomerWorkflow
+from base_workflow import LegacyCustomer
 from base_workflow import User
 from briefy.common import workflow
+from briefy.common.workflow import WorkflowPermissionException
 from datetime import datetime
 
 import pytest
@@ -52,7 +54,8 @@ class TestWorkflow:
             CustomerWorkflow(customer)
         assert 'Value for state on' in str(excinfo.value)
 
-    def test_transitions(self):
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions(self, Customer):
         """Test transitions for an object."""
         user = User('12345')
         customer = Customer('12345')
@@ -62,7 +65,42 @@ class TestWorkflow:
         wf.submit()
         assert wf.state == wf.pending
 
-    def test_transition_list(self):
+    def test_transitions_declared_with_multiple_state(self):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        assert wf.state == wf.pending
+        with pytest.raises(WorkflowPermissionException):
+            wf.approve()
+        user._roles = ('editor',)
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.reject()
+        assert wf.state == wf.rejected
+
+    def test_transitions_with_permission_in_decorator_form(self):
+        """Test transitions for an object."""
+        user = User('12345', roles=('editor',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.retract()
+        assert wf.state == wf.pending
+
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transition_list(self, Customer):
         """Test list of transitions for an object and an user."""
         user = User('12345')
         customer = Customer('12345')

@@ -1,4 +1,5 @@
 """Briefy.Workflow."""
+from .base import permission
 from .base import WorkflowState
 from .base import WorkflowStateGroup
 from .base import WorkflowTransition
@@ -12,6 +13,7 @@ from zope.interface import Interface
 
 
 __all__ = [
+    'permission',
     'BriefyWorkflow',
     'IWorkflow',
     'WorkflowException',

@@ -200,7 +200,7 @@ def test_workflow_transition_from():
     assert obj.state == 's2'
 
 
-def test_workflow_sate_group(medium_workflow):
+def test_workflow_state_group(medium_workflow):
     """
     Several unitary tests for WorkflowStategroup:
 
