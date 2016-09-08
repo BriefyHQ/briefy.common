@@ -2,6 +2,7 @@
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
+from briefy.common.workflow import Permission
 from briefy.common.workflow import permission
 
 
@@ -87,6 +88,18 @@ class CustomerWorkflow(BriefyWorkflow):
     @retract.set_permission
     def can_retract(self):
         return self.context and 'editor' in self.context.roles
+
+    # Way to declare 'static' permissions - that apply for pre-declared states
+    # and roles. (The "Permission" object can be used just as the "permission" decorator,
+    # and will filter out the permission as False even before calling the main method.
+
+    view = Permission().for_states('approved')
+    hot_edit = Permission().for_roles('editor')
+
+    @pending.permission
+    def quick_edit(self):
+        return self.document.creator == self.context.user_id
+
 
 
 class Customer:

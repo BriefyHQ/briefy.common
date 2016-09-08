@@ -28,7 +28,7 @@ def _set_creation_order(instance):
     _creation_order += 1
 
 
-class WorkflowTransition(object):
+class WorkflowTransition:
     """Transition between states."""
 
     _waiting_to_decorate = True
@@ -268,6 +268,14 @@ class WorkflowState(object):
                 return state.transition(self, permission, **kwargs)(f)
         return inner
 
+    def permission(self, func=None, *, roles=None):
+        """Creates a Permission bound for this WorkflowState
+
+           It can be used as a decorator or further filtered down
+           just regular Permission objetcs.
+        """
+        return Permission(func, roles=roles, states=self)
+
 
 class WorkflowStateGroup(WorkflowState):
     """Group of states in a workflow.
@@ -303,24 +311,61 @@ class WorkflowStateGroup(WorkflowState):
 
 class Permission:
     """
-    Class used as a decorator to change a workflow method in a
-    dynamic permission - the method should check
-    whether in the current context (available as self.context),
-    and the current document (self.document)
-    the permission it represents is granted. The method should
-    take no parameters other than 'self' (the Workflow instance)
+        Class used as a decorator to change a workflow method in a
+        dynamic permission - the method should check
+        whether in the current context (available as self.context),
+        and the current document (self.document)
+        the permission it represents is granted. The method should
+        take no parameters other than 'self' (the Workflow instance)
 
-    A permission with the method name is made available to the current workflow
-    and will exist anytime the decorated method returns a truthy value.
+        A permission with the method name is made available to the current workflow
+        and will exist anytime the decorated method returns a truthy value.
 
-    Permissions are checked by transitions inside workflow.states -
-    any transition requires a permission, which will be checked by its name.
+        class MyWorkflow(Workflow):
+            @permission
+            def read(self):
+                return self.context and 'editor' in self.context.roles
+
+
+        A non-decorator declaration can also be made by doing:
+
+        class MyWorkflow(Workflow):
+            read = Permission().for_roles('editor')
+            publish = Permission().for_roles('editor').for_state('pendding')
+
+
+        Permissions are checked by transitions inside workflow.states -
+        any transition requires a permission, which will be checked by its name.
+
+        Moreover - permissions are also used by views when the workflowed method is
+        used by our webservices. In the briefy.ws package there is (TBD) a
+        "with_workflow" class decorator that dynamically attaches these permissions
+        to objects in a way the default authorization policy for Pyramid understands
+        them.
+
     """
 
     _name = None
+    _waiting_to_decorate = True
 
-    def __init__(self, permission_method):
-        self.method = permission_method
+    def __init__(self, permission_method=None, states=None, roles=None):
+        if isinstance(states, (str, WorkflowState)):
+            states = [states]
+        self.states = list(states) if states else list()
+        self.roles = set(roles) if roles else set()
+        self(permission_method)
+
+    def _filtered_method(self, workflow):
+        """
+            This is separetd fom __call__ so
+            that it can be decorated by calls to
+            'for_roles' and 'for_state'
+            The Always True permission is used if no
+            actual method is ever given, allowing
+            for static or filtered only permissions
+        """
+
+        return self.method(workflow) if self.method else True
 
     @property
     def name(self):
@@ -329,18 +374,66 @@ class Permission:
     __name__ = name
 
     def __call__(self, workflow):
-        return self.method(workflow)
+        # _waiting_to_decorate is switched off on Workflow class creation,
+        # at the metaclass
+        if self._waiting_to_decorate:
+            self.method = workflow
+            return self
+
+        if self.roles:
+            if not workflow.context:
+                return False
+            if not self.roles.intersection(workflow.context.roles):
+                return False
+
+        if self.states:
+            # This checking must be done here because WorkflowState's names are
+            # lazily bound at the Workflow metaclass
+            if isinstance(self.states, list):
+                self.states = {state.value if isinstance(state, WorkflowState) else state
+                               for state in self.states}
+            if not workflow.state.value in self.states:
+                return False
+
+        if self.method:
+            return self.method(workflow)
+
+        return True
+
+
+    def for_roles(self, *args):
+        """Chain call that decorates this permission so that
+        it is filtered restricting the permission to the roles passed in"""
+
+        self.roles.update(args)
+        return self
+
+    def for_states(self, *args):
+        """Chain call that decorates this permission so that
+        it is filtered restricing the permission to the states passed in"""
+
+        # self.states can't be a set at this point because
+        # states may be refereced by objects  - with late
+        # name binding) - that are unhashable
+        self.states.extend(args)
+        return self
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return self(instance)
+
 
 permission = Permission
 
 
-class BaseWorkflow(type):
+class WorkflowMeta(type):
     """Base Metaclass for Workflow."""
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls, cls_name, bases, attrs):
         """Constructor."""
         attrs['_is_document_workflow'] = True
-        attrs['_name'] = name
+        attrs['_name'] = cls_name
         attrs['_states'] = {}  # state_name: object
         attrs['_state_groups'] = {}  # state_group: object
         attrs['_state_values'] = {}  # Reverse lookup: value to object
@@ -355,18 +448,20 @@ class BaseWorkflow(type):
                 attrs['_state_values'].update(base._state_values)
                 attrs['_existing_permissions'].update(base._existing_permissions)
 
-        for key, value in attrs.items():
+        for name, value in attrs.items():
+
             if isinstance(value, WorkflowState):
-                statename, stateob = key, value
-                stateob.name = statename
-                if isinstance(stateob, WorkflowStateGroup):
-                    attrs['_state_groups'][statename] = stateob
+                state = value
+                state.name = name
+                if isinstance(state, WorkflowStateGroup):
+                    attrs['_state_groups'][name] = state
                 else:
-                    attrs['_states'][statename] = stateob
+                    attrs['_states'][name] = state
                     # A group doesn't have a single value, so don't add groups
-                    attrs['_state_values'][stateob.value] = stateob
+                    attrs['_state_values'][state.value] = state
+
             elif isinstance(value, WorkflowTransition):
-                name, transition = key, value
+                transition = value
                 while transition:
                     if not transition.name:
                         transition.name = name
@@ -377,11 +472,21 @@ class BaseWorkflow(type):
                     transition = transition._previous_transition
 
             elif isinstance(value, Permission):
-                attrs['_existing_permissions'][value.name] = value
+                permission = value
+                # This mechanism attributes names so that
+                # for permissions that static, or filtered by state or roles
+                # there is no need to set a stub decorated method:
+                if permission.method is None:
+                    permission._name = name
+
+                # Activate the permission callable:
+                permission._waiting_to_decorate = False
+
+                attrs['_existing_permissions'][value.name] = permission
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
-        return super(BaseWorkflow, cls).__new__(cls, name, bases, attrs)
+        return super(WorkflowMeta, cls).__new__(cls, cls_name, bases, attrs)
 
 
 class WorkflowStates:
@@ -408,7 +513,7 @@ class WorkflowStates:
         return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
 
 
-class Workflow(metaclass=BaseWorkflow):
+class Workflow(metaclass=WorkflowMeta):
     """Base class for workflows."""
 
     exception_state = WorkflowStateException
