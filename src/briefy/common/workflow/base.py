@@ -392,14 +392,12 @@ class Permission:
             if isinstance(self.states, list):
                 self.states = {state.value if isinstance(state, WorkflowState) else state
                                for state in self.states}
-            if not workflow.state.value in self.states:
+            if workflow.state.value not in self.states:
                 return False
 
         if self.method:
             return self.method(workflow)
-
         return True
-
 
     def for_roles(self, *args):
         """Chain call that decorates this permission so that
