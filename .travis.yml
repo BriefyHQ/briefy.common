@@ -9,11 +9,12 @@ services:
 - docker
 env:
   global:
-  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
+  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar' DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
   matrix:
   - TOXENV=py35
 install:
 - docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
+- docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common mdillon/postgis:9.5
 - pip install -r requirements/dev.txt
 - pip install flake8
 script:
