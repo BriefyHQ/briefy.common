@@ -1,5 +1,6 @@
 """Declarative base model to be extended by other models."""
 from briefy.common.utils.transformers import json_dumps
+from briefy.common.utils.transformers import to_serializable
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -59,3 +60,9 @@ class Base:
             setattr(self, k, v)
 
 Base = declarative_base(cls=Base)
+
+
+@to_serializable.register(Base)
+def json_base_model(val):
+    """Base model serializer."""
+    return val.to_dict()
