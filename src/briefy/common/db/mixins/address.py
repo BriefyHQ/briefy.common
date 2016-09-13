@@ -1,7 +1,6 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
 from sqlalchemy_utils import CountryType, JSONType
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
 import json
