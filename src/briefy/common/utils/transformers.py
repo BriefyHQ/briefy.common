@@ -1,5 +1,6 @@
 """Helpers to transform data."""
 from functools import singledispatch
+from sqlalchemy_utils import Country
 
 import colander
 import datetime
@@ -34,6 +35,12 @@ def ts_time(val):
 def ts_colander_null(val):
     """Used if *val* is an instance of colander Null."""
     return None
+
+
+@to_serializable.register(Country)
+def ts_sautils_country(val):
+    """Serialize Country instance do country code string."""
+    return val.code
 
 
 def json_dumps(obj):
