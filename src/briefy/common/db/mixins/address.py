@@ -1,8 +1,8 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
-from briefy.common.db.validators import GeoJSONSchema
 from sqlalchemy.orm import object_session
 
+import colander
 import json
 import sqlalchemy as sa
 import sqlalchemy_utils as sautils
@@ -17,8 +17,8 @@ class Address:
     _coordinates = sa.Column('coordinates', POINT,
                              info={'colanderalchemy': {
                                  'title': 'Geo JSON Point coordinates',
-                                 'typ': GeoJSONSchema}}
-                             )
+                                 'typ': colander.Mapping,
+				  }})
 
     @property
     def coordinates(self):
