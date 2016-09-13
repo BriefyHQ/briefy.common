@@ -112,7 +112,6 @@ run_dockers: ## run docker containers
 	export DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
 	sleep 5
 
-
 release: clean ## package and upload a release
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload
