@@ -9,12 +9,11 @@ import sqlalchemy as sa
 class GUID:
     """A Mixin providing a id as primary key."""
 
-    id = sa.Column(UUIDType(binary=False), 
+    id = sa.Column(UUIDType(binary=False),
                    unique=True,
                    primary_key=True,
                    default=generate_uuid,
                    info={'colanderalchemy': {
                          'title': 'ID',
                          'validator': colander.uuid,
-                         'typ': colander.String}
-                   })
+                         'typ': colander.String}})

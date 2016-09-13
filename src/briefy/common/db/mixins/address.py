@@ -18,7 +18,7 @@ class Address:
                              info={'colanderalchemy': {
                                  'title': 'Geo JSON Point coordinates',
                                  'typ': colander.Mapping,
-				  }})
+                             }})
 
     @property
     def coordinates(self):

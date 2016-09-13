@@ -1,4 +1,5 @@
 """Helpers to transform data."""
+from briefy.common.db import Base
 from functools import singledispatch
 
 import colander
@@ -34,6 +35,12 @@ def ts_time(val):
 def ts_colander_null(val):
     """Used if *val* is an instance of colander Null."""
     return None
+
+
+@to_serializable.register(Base)
+def json_base_model(val):
+    """Base model serializer."""
+    return val.to_dict()
 
 
 def json_dumps(obj):
