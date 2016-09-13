@@ -22,7 +22,8 @@ def sql_engine(request):
     :param request: pytest request
     :return: sqlalcheny engine instance.
     """
-    database_url = config('DATABASE_URL', default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
+    database_url = config('DATABASE_URL',
+                          default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
     engine = create_engine(
         database_url, echo=False
     )
@@ -63,6 +64,7 @@ def session():
     :rtype: sqlalchemy.orm.scoped_session
     """
     return DBSession()
+
 
 # Python's unittest.mock assertions requires the exact parameters to the method
 # to match the assertion. That wpud bind the error messages to the test

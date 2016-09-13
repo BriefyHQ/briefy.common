@@ -6,14 +6,13 @@ from conftest import DBSession
 import pytest
 
 
-
 location_data = {
     'updated_at': '2016-09-08T15:36:28.087123Z',
     'locality': 'Berlin',
     'country': 'DE',
     'coordinates': {
         'type': 'Point',
-        'coordinates': [52.4994805,13.4491646]
+        'coordinates': [52.4994805, 13.4491646]
     },
     'info': {
       'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
@@ -28,7 +27,6 @@ location_data = {
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',
     'created_at': '2016-09-08T15:36:28.087112Z'
 }
-
 
 
 class Location(AddressMixin, Base):
