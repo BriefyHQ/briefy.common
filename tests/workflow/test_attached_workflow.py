@@ -16,7 +16,7 @@ import pytest
 @pytest.fixture
 def session():
     Session = sessionmaker()
-    engine = create_engine('sqlite://')
+    engine = create_engine('postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
     session = Session(bind=engine)
     Base.metadata.bind = engine
     return session

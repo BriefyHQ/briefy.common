@@ -1,5 +1,4 @@
 """Tests for `briefy.common.queue.event` module."""
-
 from briefy.common.db import Base
 from briefy.common.db.mixins import Mixin
 from briefy.common.event import BaseEvent
@@ -7,6 +6,7 @@ from briefy.common.queue.message import SQSMessage
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from conftest import BriefyQueueBaseTest
+from conftest import DBSession
 from datetime import date
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -16,17 +16,6 @@ import json
 import pytest
 import re
 import sqlalchemy as sa
-
-
-def _create_testing_db():
-    Session = sessionmaker()
-    engine = create_engine('sqlite://')
-    session = Session(bind=engine)
-    Base.metadata.bind = engine
-    return session
-
-
-session = _create_testing_db()
 
 
 # TODO: refactor workflow, model, etc definitions to other file.
@@ -44,7 +33,7 @@ class SimpleModel(Mixin, Base):
     """A possible customer or professional that visited briefy.co website."""
 
     __tablename__ = 'simple'
-    __session__ = session
+    __session__ = DBSession
 
     _workflow = SimpleWorkflow
 
@@ -68,40 +57,32 @@ class SimpleCreated(BaseEvent):
 
 
 @pytest.fixture
-def new_db():
-    # global session
-    Base.metadata.drop_all()
-    Base.metadata.create_all()
-    return session
-
-
-@pytest.fixture
-def new_simple():
+def new_simple(request, session):
     x = SimpleModel()
     x.name = "foo"
     x.birthday = date.today()
+    session.add(x)
+    session.flush()
     return x
 
 
-def test_model_is_created(new_simple, new_db):
-    """Asserts a model creation, persistance, retrieval and representation
-
-    :param new_simple: A Model object supplied by dependency injection
-    :type new_simple: SimpleModel
-    """
-    x = new_simple
-    new_db.add(x)
-    new_db.commit()
-    y = SimpleModel.query().all()[0]
-    z = SimpleModel.get(x.id)
-    assert x.name == y.name == z.name
-    assert x.birthday == y.birthday == z.birthday
-    assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))  # noqa
-
-
+@pytest.mark.usefixtures("db_transaction")
 class TestSQSMessage(BriefyQueueBaseTest):
 
     schema = SimpleSchema
+
+    def test_model_is_created(self, new_simple, session):
+        """Asserts a model creation, persistance, retrieval and representation
+
+        :param new_simple: A Model object supplied by dependency injection
+        :type new_simple: SimpleModel
+        """
+        x = new_simple
+        y = session.query(SimpleModel).all()[0]
+        z = SimpleModel.get(x.id)
+        assert x.name == y.name == z.name
+        assert x.birthday == y.birthday == z.birthday
+        assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))  # noqa
 
     def test_init_with_valid_body(self):
         """Test message with a valid body."""
@@ -111,11 +92,9 @@ class TestSQSMessage(BriefyQueueBaseTest):
         assert isinstance(message, SQSMessage)
         assert message.body == body
 
-    def test_simple_created_is_put_on_sqs(self, new_db, new_simple):
+    def test_simple_created_is_put_on_sqs(self, new_simple, session):
         x = new_simple
-        new_db.add(x)
-        new_db.commit()
-        y = SimpleModel.query().all()[0]
+        y = session.query(SimpleModel).all()[0]
         self._setup_queue()
         event = SimpleCreated(y)
         event()
