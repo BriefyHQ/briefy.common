@@ -8,8 +8,6 @@ from briefy.common.workflow import WorkflowState
 from conftest import BriefyQueueBaseTest
 from conftest import DBSession
 from datetime import date
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 import colander
 import json

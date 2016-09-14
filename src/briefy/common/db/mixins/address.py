@@ -1,19 +1,24 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
-from sqlalchemy_utils import CountryType, JSONType
 from sqlalchemy.orm import object_session
 
+import colander
 import json
 import sqlalchemy as sa
+import sqlalchemy_utils as sautils
 
 
 class Address:
     """Base address information."""
 
     locality = sa.Column(sa.String(255), nullable=False)
-    info = sa.Column(JSONType)
-    country = sa.Column(CountryType, nullable=False)
-    _coordinates = sa.Column('coordinates', POINT)
+    info = sa.Column(sautils.JSONType)
+    country = sa.Column(sautils.CountryType, nullable=False)
+    _coordinates = sa.Column('coordinates', POINT,
+                             info={'colanderalchemy': {
+                                 'title': 'Geo JSON Point coordinates',
+                                 'typ': colander.Mapping,
+                             }})
 
     @property
     def coordinates(self):

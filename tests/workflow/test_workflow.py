@@ -117,7 +117,7 @@ class TestWorkflow:
         wf.context = user
         wf.submit()
         assert not wf.hot_edit
-        user._roles=('editor',)
+        user._roles = ('editor',)
         assert wf.hot_edit
 
     def test_state_bound_permission_as_decorator(self):
@@ -128,7 +128,7 @@ class TestWorkflow:
         assert not wf.quick_edit
         wf.submit()
         assert wf.quick_edit
-        user._roles=('editor',)
+        user._roles = ('editor',)
         assert wf.hot_edit
 
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])

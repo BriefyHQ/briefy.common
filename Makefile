@@ -97,6 +97,21 @@ docs: ## generate Sphinx HTML documentation, including API docs
 docs_server: docs
 	@cd $(BUILDDIR)/dirhtml; python -m SimpleHTTPServer 8000
 
+stop_dockers: ## stop and remove docker containers
+	# sqs
+	docker stop sqs
+	docker rm sqs
+	# postgres
+	docker stop briefy-common-test
+	docker rm briefy-common-test
+
+run_dockers: ## run docker containers
+	docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
+	export SQS_IP=127.0.0.1 SQS_PORT=5000
+	docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common --name briefy-common-test mdillon/postgis:9.5
+	export DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
+	sleep 5
+
 release: clean ## package and upload a release
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload

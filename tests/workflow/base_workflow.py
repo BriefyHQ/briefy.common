@@ -101,7 +101,6 @@ class CustomerWorkflow(BriefyWorkflow):
         return self.document.creator == self.context.user_id
 
 
-
 class Customer:
     """A Customer for Briefy."""
 
