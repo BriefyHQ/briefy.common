@@ -1,7 +1,7 @@
 """Database mixins."""
 from briefy.common.db.mixins.address import Address
 from briefy.common.db.mixins.identifiable import GUID
-from briefy.common.db.mixins.image import Image
+from briefy.common.db.mixins.image import Image  # noQA
 from briefy.common.db.mixins.timestamp import Timestamp
 from briefy.common.db.mixins.workflow import Workflow
 
