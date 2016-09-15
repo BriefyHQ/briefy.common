@@ -13,10 +13,16 @@ def to_serializable(val):
     return str(val)
 
 
+@singledispatch
+def to_serializable_none(val):
+    """Used by default."""
+    return str(val)
+
+
 @to_serializable.register(datetime.datetime)
 def ts_datetime(val):
     """Used if *val* is an instance of datetime."""
-    return val.isoformat() + 'Z'
+    return val.isoformat()
 
 
 @to_serializable.register(datetime.date)

@@ -5,6 +5,7 @@ History
 1.1.0 (Unreleased)
 ------------------
 
+* Improve datetime utc now format on workflow and on timestamp mixin. (rudaporto)
 * Changed address mixin to use new Point custom type with GeoJSON support. (ericof)
 * Add unit tests to address mixin and improve workflow database unit tests. (ericof)
 * Improve address mixin: metadata for colander alchemy and schema validators. (rudaporto)
