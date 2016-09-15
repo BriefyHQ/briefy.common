@@ -9,6 +9,7 @@ History
 * Add unit tests to address mixin and improve workflow database unit tests. (ericof)
 * Improve address mixin: metadata for colander alchemy and schema validators. (rudaporto)
 * Change travis run flake8 on tests folder. (rudaporto)
+* BODY-8: Add ImageMixin. (ericof)
 
 
 0.1.0
