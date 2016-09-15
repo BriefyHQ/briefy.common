@@ -10,6 +10,8 @@ from zope import component
 
 import boto3
 import botocore.endpoint
+import httmock
+import json
 import os
 import pytest
 
@@ -146,3 +148,14 @@ class BriefyQueueBaseTest(BaseSQSTest):
         from briefy.common.queue.event import EventQueue
         EventQueue._queue = self.queue
         component.provideUtility(EventQueue, IQueue, 'events.queue')
+
+
+@httmock.urlmatch(netloc=r'briefy-thumbor')
+def mock_thumbor(url, request):
+    """Mock request to briefy-thumbor."""
+    status_code = 200
+    headers = {
+        'content-type': 'application/json',
+    }
+    data = open(os.path.join(__file__.rsplit('/', 1)[0], 'utils/thumbor.json')).read()
+    return httmock.response(status_code, data, headers, None, 5, request)
