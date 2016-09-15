@@ -1,11 +1,11 @@
 """Base workflow."""
+from briefy.common.db import datetime_utcnow
+from briefy.common.utils.transformers import to_serializable
 from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
 from collections import OrderedDict
-from datetime import datetime
 
-import pytz
 import weakref
 
 
@@ -614,7 +614,7 @@ class Workflow(metaclass=WorkflowMeta):
         self._safe_set(document, key, value, False)
 
     def _update_history(self, transition, state_from, state_to, actor=None):
-        now = datetime.now(tz=pytz.timezone('UTC')).isoformat()
+        now = datetime_utcnow().isoformat()
         document = self.document
         context = self.context
         if context and not actor:
@@ -624,7 +624,7 @@ class Workflow(metaclass=WorkflowMeta):
         entry = {
             'from': state_from,
             'to': state_to,
-            'date': now,
+            'date': to_serializable(now),
             'actor': actor,
             'transition': transition
         }
