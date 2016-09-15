@@ -16,9 +16,10 @@ class TestJsonDumps:
     def test_serialize_datetime(self):
         """Test serialization of a datetime object."""
         from datetime import datetime
+        import pytz
 
-        value = datetime(2012, 3, 29, 12, 31, 22)
-        expected = '"2012-03-29T12:31:22Z"'
+        value = datetime(2012, 3, 29, 12, 31, 22, tzinfo=pytz.timezone('UTC'))
+        expected = '"2012-03-29T12:31:22+00:00"'
         assert json_dumps(value) == expected
 
     def test_serialize_time(self):
