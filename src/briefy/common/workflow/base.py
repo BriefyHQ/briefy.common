@@ -1,6 +1,5 @@
 """Base workflow."""
 from briefy.common.db import datetime_utcnow
-from briefy.common.utils.transformers import to_serializable
 from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
@@ -624,7 +623,7 @@ class Workflow(metaclass=WorkflowMeta):
         entry = {
             'from': state_from,
             'to': state_to,
-            'date': to_serializable(now),
+            'date': now,
             'actor': actor,
             'transition': transition
         }
