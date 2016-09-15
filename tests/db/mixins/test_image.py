@@ -102,14 +102,17 @@ data = {
             'Xmp.xmp.MetadataDate': '2016-06-13T14:15:15+02:00',
             'Xmp.xmp.ModifyDate': '2016-06-13T14:15:15+02:00',
             'Xmp.xmp.Rating': 1,
-            'Xmp.xmpMM.DerivedFrom/stRef:documentID': 'xmp.did:cac0ab20-7d44-4d98-8bdf-62d899a63b43',
-            'Xmp.xmpMM.DerivedFrom/stRef:instanceID': 'xmp.iid:cac0ab20-7d44-4d98-8bdf-62d899a63b43',
+            'Xmp.xmpMM.DerivedFrom/stRef:documentID':
+            'xmp.did:cac0ab20-7d44-4d98-8bdf-62d899a63b43',
+            'Xmp.xmpMM.DerivedFrom/stRef:instanceID':
+            'xmp.iid:cac0ab20-7d44-4d98-8bdf-62d899a63b43',
             'Xmp.xmpMM.DerivedFrom/stRef:originalDocumentID': 'E52405F8BAB69C2D9E59FF708047A67E',
             'Xmp.xmpMM.DocumentID': 'xmp.did:99ae046a-6721-426e-aa6e-617ed80cdb3b',
             'Xmp.xmpMM.History': [],
             'Xmp.xmpMM.History[1]': '',
             'Xmp.xmpMM.History[1]/stEvt:action': 'derived',
-            'Xmp.xmpMM.History[1]/stEvt:parameters': 'converted from image/x-canon-cr2 to image/jpeg, saved to new location',
+            'Xmp.xmpMM.History[1]/stEvt:parameters':
+            'converted from image/x-canon-cr2 to image/jpeg',
             'Xmp.xmpMM.History[2]': '',
             'Xmp.xmpMM.History[2]/stEvt:action': 'saved',
             'Xmp.xmpMM.History[2]/stEvt:changed': '/',
@@ -121,7 +124,8 @@ data = {
             'Xmp.xmpMM.History[3]/stEvt:parameters': 'from image/jpeg to image/x-canon-cr2',
             'Xmp.xmpMM.History[4]': '',
             'Xmp.xmpMM.History[4]/stEvt:action': 'derived',
-            'Xmp.xmpMM.History[4]/stEvt:parameters': 'converted from image/x-canon-cr2 to image/jpeg, saved to new location',
+            'Xmp.xmpMM.History[4]/stEvt:parameters':
+            'converted from image/x-canon-cr2 to image/jpeg',
             'Xmp.xmpMM.History[5]': '',
             'Xmp.xmpMM.History[5]/stEvt:action': 'saved',
             'Xmp.xmpMM.History[5]/stEvt:changed': '/',

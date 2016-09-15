@@ -11,7 +11,6 @@ from zope import component
 import boto3
 import botocore.endpoint
 import httmock
-import json
 import os
 import pytest
 
