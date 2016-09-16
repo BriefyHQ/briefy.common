@@ -191,14 +191,14 @@ class TestImageMixin:
         assert 'smart/files/jobs/1234.jpg' in scales_data['original']['download']
 
         assert 'thumb' in scales_data
-        assert scales_data['thumb']['width'] == 120
-        assert scales_data['thumb']['height'] == 120
-        assert '120x120/smart/files/jobs/1234.jpg' in scales_data['thumb']['download']
+        assert scales_data['thumb']['width'] == 150
+        assert scales_data['thumb']['height'] == 150
+        assert '150x150/smart/files/jobs/1234.jpg' in scales_data['thumb']['download']
 
         assert 'preview' in scales_data
-        assert scales_data['preview']['width'] == 800
-        assert scales_data['preview']['height'] == 600
-        assert '800x600/smart/files/jobs/1234.jpg' in scales_data['preview']['download']
+        assert scales_data['preview']['width'] == 1200
+        assert scales_data['preview']['height'] == 800
+        assert '1200x800/smart/files/jobs/1234.jpg' in scales_data['preview']['download']
 
     def test_update_metadata(self, session):
         """Test update_metadata method."""
@@ -213,3 +213,12 @@ class TestImageMixin:
         assert asset.width == 5760
         assert asset.height == 3840
         assert asset.raw_metadata['Exif.Image.Make'] == 'Canon'
+
+    def test_metadata(self, session):
+        """Test metadata property."""
+        asset = self._get_or_create_asset(session)
+
+        metadata = asset.metadata_
+        assert metadata['aperture'] == '126797/20000'
+        assert metadata['iso'] == 100
+        assert metadata['shutter'] == '290241/125000'

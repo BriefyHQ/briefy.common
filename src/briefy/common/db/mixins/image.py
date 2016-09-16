@@ -9,8 +9,8 @@ class Image:
     """A mixin providing image information."""
 
     _available_sizes = (
-        ('thumb', 120, 120),
-        ('preview', 800, 600),
+        ('thumb', 150, 150),
+        ('preview', 1200, 800),
         ('original', 0, 0)
     )
 
@@ -36,6 +36,24 @@ class Image:
             self.update(data)
             status = True
         return status
+
+    @property
+    def metadata_(self) -> dict:
+        """Generate a dictionary with processed metadata information
+
+        :returns: A dictionary containing metadata information.
+        """
+        metadata = {
+            'aperture': '',
+            'iso': '',
+            'shutter': ''
+        }
+        raw_metadata = self.raw_metadata
+        if raw_metadata:
+            metadata['aperture'] = raw_metadata.get('Exif.Photo.ApertureValue', '')
+            metadata['iso'] = raw_metadata.get('Exif.Photo.ISOSpeedRatings', '')
+            metadata['shutter'] = raw_metadata.get('Exif.Photo.ShutterSpeedValue', '')
+        return metadata
 
     @property
     def image(self) -> dict:
