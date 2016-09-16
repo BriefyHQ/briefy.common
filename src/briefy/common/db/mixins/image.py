@@ -15,6 +15,7 @@ class Image:
     )
 
     source_path = sa.Column(sa.String(1000), nullable=False)
+    filename = sa.Column(sa.String(1000), nullable=False)
     content_type = sa.Column(sa.String(100), nullable=False, default='image/jpeg')
     size = sa.Column(sa.Integer, default=0)
     width = sa.Column(sa.Integer, default=0)

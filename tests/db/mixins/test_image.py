@@ -16,6 +16,7 @@ data = {
     'width': 5760,
     'size': 4049867,
     'content_type': 'image/jpeg',
+    'filename': '1234.jpg',
     'raw_metadata': {
             'Exif.Image.Copyright': 'Cyril Folliot Photographe',
             'Exif.Image.DateTime': '2016-06-13T14:15:15',
