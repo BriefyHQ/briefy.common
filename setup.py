@@ -17,6 +17,7 @@ requires = [
     'newrelic',
     'prettyconf',
     'pyCrypto',
+    'python-slugify',
     'pytz',
     'requests',
     'setuptools',
