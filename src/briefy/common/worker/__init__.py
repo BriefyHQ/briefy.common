@@ -26,18 +26,16 @@ class Worker(metaclass=ABCMeta):
     run_interval = None
 
     def __init__(self, logger_=None, run_interval=None):
-        """
-        Initialize the worker.
+        """Initialize the worker.
 
         :param logger_: The logger instance to use or None
         :type logger_: A class that respects Python.logger interfaces
         :param run_interval: Minimum time ellapsed between sucessive calls to 'process'.
-            Defautls to value specified on the class body
+            Defaults to value specified on the class body
         :type run_interval: float or None
         :returns: None
         :rtype: NoneType
         """
-
         self.logger = logger_ if logger_ else logger
         if run_interval is not None:
             self.run_interval = run_interval
@@ -51,8 +49,7 @@ class Worker(metaclass=ABCMeta):
         raise NotImplementedError('Method not implemented')
 
     def __call__(self):
-        """
-        Execute the worker.
+        """Execute the worker.
 
         Calls "self.process" method in an infinite loop,
         sparsing the each call by self.run_interval seconds
@@ -76,4 +73,4 @@ class Worker(metaclass=ABCMeta):
 # Make other workers available to common users
 from .queue import QueueWorker  # noqa
 
-__all__ = ['Worker', 'QueueWorker']
+__all__ = ('Worker', 'QueueWorker')

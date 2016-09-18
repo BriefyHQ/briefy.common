@@ -3,7 +3,8 @@ import colander
 
 
 class GeoJSONSchema(colander.MappingSchema):
-    """GeoJSON Point schema validator"""
+    """GeoJSON Point schema validator."""
+
     type = colander.SchemaNode(colander.String())
     coordinates = colander.SchemaNode(colander.List())
 

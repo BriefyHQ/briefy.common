@@ -40,7 +40,7 @@ class Image:
 
     @property
     def metadata_(self) -> dict:
-        """Generate a dictionary with processed metadata information
+        """Generate a dictionary with processed metadata information.
 
         :returns: A dictionary containing metadata information.
         """
@@ -58,7 +58,7 @@ class Image:
 
     @property
     def image(self) -> dict:
-        """Generate a dictionary with image information
+        """Generate a dictionary with image information.
 
         :returns: A dictionary containing image information.
         """

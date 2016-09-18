@@ -13,8 +13,10 @@ class WorkflowBase:
     state_history = None
 
     def __init__(self, *args, **kwargs):
-        # Initializes object workflow.
-        # Otherwise its initial state is not set.
+        """Initialize object workflow.
+
+        Otherwise its initial state is not set.
+        """
         self.workflow  # noqa
         return super().__init__(*args, **kwargs)
 
@@ -27,7 +29,7 @@ class WorkflowBase:
 
 
 class Workflow(WorkflowBase):
-    """A mixin providing workflow information, SQLALChemy aware"""
+    """A mixin providing workflow information, SQLALChemy aware."""
 
     _workflow = None
 

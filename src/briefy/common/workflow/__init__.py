@@ -13,7 +13,7 @@ from zope.interface import Attribute
 from zope.interface import Interface
 
 
-__all__ = [
+__all__ = (
     'permission',
     'Permission',
     'BriefyWorkflow',
@@ -25,7 +25,7 @@ __all__ = [
     'WorkflowStateGroup',
     'WorkflowTransition',
     'WorkflowTransitionException',
-]
+)
 
 
 class IWorkflow(Interface):
