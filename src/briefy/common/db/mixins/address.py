@@ -1,6 +1,8 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
+from sqlalchemy_utils import TimezoneType
 from sqlalchemy.orm import object_session
+
 
 import colander
 import json
@@ -19,6 +21,8 @@ class Address:
                                  'title': 'Geo JSON Point coordinates',
                                  'typ': colander.Mapping,
                              }})
+
+    timezone = sa.Column(TimezoneType(backend='pytz'), default='UTC')
 
     @property
     def coordinates(self):

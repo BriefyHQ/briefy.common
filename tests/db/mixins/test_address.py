@@ -2,6 +2,7 @@
 from briefy.common.db import Base
 from briefy.common.db.mixins import AddressMixin
 from conftest import DBSession
+from pytz import timezone
 
 import pytest
 
@@ -24,6 +25,7 @@ location_data = {
       'country': 'DE',
       'postal_code': '10997'
     },
+    'timezone': 'Europe/Berlin',
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',
     'created_at': '2016-09-08T15:36:28.087112Z'
 }
@@ -53,3 +55,5 @@ class TestAddressMixin:
         assert isinstance(location.coordinates, dict)
 
         assert isinstance(location.latlng, tuple)
+
+        assert location.timezone == timezone('Europe/Berlin')
