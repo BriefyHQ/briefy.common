@@ -12,6 +12,7 @@ History
 * Change travis run flake8 on tests folder. (rudaporto)
 * BODY-8: Add ImageMixin. (ericof)
 * BODY-14: Add BaseMetadata mixin. (ericof)
+* BODY-16: Add Categories enum to this package. (ericof)
 
 
 0.1.0
