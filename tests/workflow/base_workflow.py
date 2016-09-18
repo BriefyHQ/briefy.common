@@ -30,10 +30,10 @@ class LegacyCustomerWorkflow(BriefyWorkflow):
         document = self.document
         if context:
             user_id = context.user_id
-            roles = self.context.roles
+            groups = self.context.groups
             if document.creator == user_id:
                 permissions.append('can_submit')
-            if 'editor' in roles:
+            if 'editor' in groups:
                 permissions.append('review')
         return permissions
 
@@ -76,7 +76,7 @@ class CustomerWorkflow(BriefyWorkflow):
 
     @permission
     def review(self):
-        return self.context and 'editor' in self.context.roles
+        return self.context and 'editor' in self.context.groups
 
     submit = created.transition(pending, 'can_submit', title='Submit')
     # Permissions can be given by instance or name:
@@ -87,14 +87,14 @@ class CustomerWorkflow(BriefyWorkflow):
 
     @retract.set_permission
     def can_retract(self):
-        return self.context and 'editor' in self.context.roles
+        return self.context and 'editor' in self.context.groups
 
     # Way to declare 'static' permissions - that apply for pre-declared states
-    # and roles. (The "Permission" object can be used just as the "permission" decorator,
+    # and groups. (The "Permission" object can be used just as the "permission" decorator,
     # and will filter out the permission as False even before calling the main method.
 
     view = Permission().for_states('approved')
-    hot_edit = Permission().for_roles('editor')
+    hot_edit = Permission().for_groups('editor')
 
     @pending.permission
     def quick_edit(self):
@@ -124,14 +124,14 @@ class LegacyCustomer(Customer):
 class User:
     """A user."""
 
-    _roles = ()
+    _groups = ()
 
-    def __init__(self, user_id, roles=()):
+    def __init__(self, user_id, groups=()):
         """Initialize this class."""
         self.user_id = user_id
-        self._roles = roles
+        self._groups = groups
 
     @property
-    def roles(self):
-        """Return a list of roles for this user."""
-        return self._roles
+    def groups(self):
+        """Return a list of groups for this user."""
+        return self._groups

@@ -65,6 +65,19 @@ class TestWorkflow:
         wf.submit()
         assert wf.state == wf.pending
 
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions_record_message_in_history(self, Customer):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        msg = 'frtmrglpst!'
+        assert wf.state == wf.created
+        wf.submit(message=msg)
+        assert wf.state == wf.pending
+        assert wf.history[-1]['message'] == msg
+
     def test_transitions_declared_with_multiple_state(self):
         """Test transitions for an object."""
         user = User('12345')
@@ -76,7 +89,7 @@ class TestWorkflow:
         assert wf.state == wf.pending
         with pytest.raises(WorkflowPermissionException):
             wf.approve()
-        user._roles = ('editor',)
+        user._groups = ('editor',)
         wf.approve()
         assert wf.state == wf.approved
         # This transition from the aproved state is declared as an
@@ -86,7 +99,7 @@ class TestWorkflow:
 
     def test_transitions_with_permission_in_decorator_form(self):
         """Test transitions for an object."""
-        user = User('12345', roles=('editor',))
+        user = User('12345', groups=('editor',))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
@@ -100,7 +113,7 @@ class TestWorkflow:
         assert wf.state == wf.pending
 
     def test_declarative_permissions_for_state(self):
-        user = User('12345', roles=('editor',))
+        user = User('12345', groups=('editor',))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
@@ -111,24 +124,24 @@ class TestWorkflow:
         assert wf.view
 
     def test_declarative_permissions_for_role(self):
-        user = User('12345', roles=('user',))
+        user = User('12345', groups=('user',))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
         wf.submit()
         assert not wf.hot_edit
-        user._roles = ('editor',)
+        user._groups = ('editor',)
         assert wf.hot_edit
 
     def test_state_bound_permission_as_decorator(self):
-        user = User('12345', roles=('user',))
+        user = User('12345', groups=('user',))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
         assert not wf.quick_edit
         wf.submit()
         assert wf.quick_edit
-        user._roles = ('editor',)
+        user._groups = ('editor',)
         assert wf.hot_edit
 
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
@@ -143,7 +156,7 @@ class TestWorkflow:
         wf.submit()
 
         # Editor will not be able to transition from cre
-        editor = User('23456', roles=('editor', ))
+        editor = User('23456', groups=('editor', ))
         wf.context = editor
         assert len(wf.transitions) == 2
         assert wf.transitions['approve'].title, 'Approve'
@@ -152,7 +165,7 @@ class TestWorkflow:
     def test_history(self):
         """Test history for an object after some transitions."""
         user = User('12345')
-        editor = User('23456', roles=('editor', ))
+        editor = User('23456', groups=('editor', ))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user
