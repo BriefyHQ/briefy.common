@@ -42,8 +42,5 @@ class TestBaseMetadataMixin:
 
         # Set an empty slug should fallback to id
         content.slug = None
-        assert content.slug == content_data['id']
-
-        # Set an empty id should fallback to slugfied title
-        content.id = None
-        assert content.slug == 'berlin'
+        expected = '{0}-{1}'.format(content_data['id'][:8], 'berlin')
+        assert content.slug == expected

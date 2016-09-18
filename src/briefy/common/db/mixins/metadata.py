@@ -15,16 +15,22 @@ class BaseMetadata:
     def slug(self) -> str:
         """Return a slug for an object.
 
-        If slug has not been set on this object, fallback to id field, then to
-        a slug of the title itself.
+        If slug has not been set on this object, fallback to a composition of
+        the first 8 chars of an id field, and a slug of the title itself.
         :return: A slug to be added to an url.
         """
         slug = self._slug
         if not slug:
-            obj_id = getattr(self, 'id')
+            obj_id = getattr(self, 'id', None)
             if obj_id:
-                obj_id = str(obj_id)
-            slug = obj_id if obj_id else generate_slug(self.title)
+                # Return just the first 8 chars of an uuid
+                obj_id = str(obj_id)[:8]
+            else:
+                obj_id = ''
+            slug = '{obj_id}-{title}'.format(
+                obj_id=obj_id,
+                title=generate_slug(self.title)
+            )
         return slug
 
     @slug.setter
