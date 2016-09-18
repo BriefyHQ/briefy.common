@@ -65,6 +65,19 @@ class TestWorkflow:
         wf.submit()
         assert wf.state == wf.pending
 
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions_record_message_in_history(self, Customer):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        msg = 'frtmrglpst!'
+        assert wf.state == wf.created
+        wf.submit(message=msg)
+        assert wf.state == wf.pending
+        assert wf.history[-1]['message'] == msg
+
     def test_transitions_declared_with_multiple_state(self):
         """Test transitions for an object."""
         user = User('12345')

@@ -47,7 +47,7 @@ class WorkflowTransition:
         self.state_to = weakref.ref(state_to)
         self.permission = permission
         self.name = name
-        self.title = title
+        self._title = title
         self.description = description
         self.category = category
         self.__dict__.update(kw)
@@ -61,6 +61,10 @@ class WorkflowTransition:
                 extra_states[0], state_to, permission, name, title, description, category,
                 extra_states[1:]
             )
+
+    @property
+    def title(self):
+        return self._title or self.name.title()
 
     def set_permission(self, func):
         if self.permission:
@@ -91,12 +95,13 @@ class WorkflowTransition:
         self.transition_hook = func
         return self
 
-    def _perform_transition(self, workflow):
+    def _perform_transition(self, workflow, message=None):
         """ Where all the magic really happens """
         workflow._set_state(self.state_to().value)
         workflow._update_history(self.title,
                                  self.state_from().value,
-                                 self.state_to().value)
+                                 self.state_to().value,
+                                 message=message)
         workflow._notify(self)
 
     def _dispatch(self, *args, workflow=None, **kw):
@@ -112,7 +117,7 @@ class WorkflowTransition:
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
-    def __call__(self, *args, workflow=None, **kw):
+    def __call__(self, *args, workflow=None, message=None, **kw):
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
                 raise TypeError("Transitions inside Workflow class bodies "
@@ -127,7 +132,7 @@ class WorkflowTransition:
             raise RuntimeError('Tried to trigger unnatached transition')
 
         if workflow.state is not state_from:
-            return self._dispatch(*args, workflow=workflow, **kw)
+            return self._dispatch(*args, workflow=workflow, message=message, **kw)
 
         self.guard(workflow)
 
@@ -136,7 +141,7 @@ class WorkflowTransition:
         else:
             result = None
 
-        self._perform_transition(workflow)
+        self._perform_transition(workflow, message)
 
         return result
 
@@ -612,7 +617,8 @@ class Workflow(metaclass=WorkflowMeta):
         key = self.state_key
         self._safe_set(document, key, value, False)
 
-    def _update_history(self, transition, state_from, state_to, actor=None):
+    def _update_history(self, transition, state_from, state_to,
+                        actor=None, message=None):
         now = datetime_utcnow().isoformat()
         document = self.document
         context = self.context
@@ -625,7 +631,8 @@ class Workflow(metaclass=WorkflowMeta):
             'to': state_to,
             'date': now,
             'actor': actor,
-            'transition': transition
+            'transition': transition,
+             'message': message
         }
         history.append(entry)
         self._safe_set(document, key, history, False)
