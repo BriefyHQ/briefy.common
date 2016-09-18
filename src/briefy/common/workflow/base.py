@@ -201,11 +201,15 @@ class WorkflowState(object):
         self.value = value
         self.values = [value]
         self.name = None  # Not named yet
-        self.title = title
+        self._title = title
         self.description = description
         self._parent = None
         self._transitions = OrderedDict()
         _set_creation_order(self)
+
+    @property
+    def title(self):
+        return self._title or self.name.title()
 
     def __repr__(self):
         """Representation of this state."""
@@ -272,13 +276,13 @@ class WorkflowState(object):
                 return state.transition(self, permission, **kwargs)(f)
         return inner
 
-    def permission(self, func=None, *, roles=None):
+    def permission(self, func=None, *, groups=None):
         """Creates a Permission bound for this WorkflowState
 
            It can be used as a decorator or further filtered down
            just regular Permission objetcs.
         """
-        return Permission(func, roles=roles, states=self)
+        return Permission(func, groups=groups, states=self)
 
 
 class WorkflowStateGroup(WorkflowState):
@@ -328,14 +332,14 @@ class Permission:
         class MyWorkflow(Workflow):
             @permission
             def read(self):
-                return self.context and 'editor' in self.context.roles
+                return self.context and 'editor' in self.context.groups
 
 
         A non-decorator declaration can also be made by doing:
 
         class MyWorkflow(Workflow):
-            read = Permission().for_roles('editor')
-            publish = Permission().for_roles('editor').for_state('pendding')
+            read = Permission().for_groups('g:editors')
+            publish = Permission().for_groups('g:editors').for_state('pendding')
 
 
         Permissions are checked by transitions inside workflow.states -
@@ -352,18 +356,18 @@ class Permission:
     _name = None
     _waiting_to_decorate = True
 
-    def __init__(self, permission_method=None, states=None, roles=None):
+    def __init__(self, permission_method=None, states=None, groups=None):
         if isinstance(states, (str, WorkflowState)):
             states = [states]
         self.states = list(states) if states else list()
-        self.roles = set(roles) if roles else set()
+        self.groups = set(groups) if groups else set()
         self(permission_method)
 
     def _filtered_method(self, workflow):
         """
             This is separetd fom __call__ so
             that it can be decorated by calls to
-            'for_roles' and 'for_state'
+            'for_groups' and 'for_state'
             The Always True permission is used if no
             actual method is ever given, allowing
             for static or filtered only permissions
@@ -384,10 +388,10 @@ class Permission:
             self.method = workflow
             return self
 
-        if self.roles:
+        if self.groups:
             if not workflow.context:
                 return False
-            if not self.roles.intersection(workflow.context.roles):
+            if not self.groups.intersection(workflow.context.groups):
                 return False
 
         if self.states:
@@ -403,11 +407,11 @@ class Permission:
             return self.method(workflow)
         return True
 
-    def for_roles(self, *args):
+    def for_groups(self, *args):
         """Chain call that decorates this permission so that
-        it is filtered restricting the permission to the roles passed in"""
+        it is filtered restricting the permission to the groups passed in"""
 
-        self.roles.update(args)
+        self.groups.update(args)
         return self
 
     def for_states(self, *args):
@@ -476,7 +480,7 @@ class WorkflowMeta(type):
             elif isinstance(value, Permission):
                 permission = value
                 # This mechanism attributes names so that
-                # for permissions that static, or filtered by state or roles
+                # for permissions that are static, or filtered by state or groups
                 # there is no need to set a stub decorated method:
                 if permission.method is None:
                     permission._name = name
@@ -632,7 +636,7 @@ class Workflow(metaclass=WorkflowMeta):
             'date': now,
             'actor': actor,
             'transition': transition,
-             'message': message
+            'message': message
         }
         history.append(entry)
         self._safe_set(document, key, history, False)
