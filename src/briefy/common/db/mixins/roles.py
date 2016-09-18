@@ -14,6 +14,7 @@ class BriefyRoles:
         info={'colanderalchemy': {
               'title': 'Project Manager',
               'validator': colander.uuid,
+              'missing': colander.drop,
               'typ': colander.String}}
     )
 
@@ -23,6 +24,7 @@ class BriefyRoles:
         info={'colanderalchemy': {
               'title': 'Finance Manager',
               'validator': colander.uuid,
+              'missing': colander.drop,
               'typ': colander.String}}
     )
 
@@ -32,6 +34,7 @@ class BriefyRoles:
         info={'colanderalchemy': {
               'title': 'Scout Manager',
               'validator': colander.uuid,
+              'missing': colander.drop,
               'typ': colander.String}}
     )
 
@@ -41,6 +44,7 @@ class BriefyRoles:
         info={'colanderalchemy': {
               'title': 'QA Manager',
               'validator': colander.uuid,
+              'missing': colander.drop,
               'typ': colander.String}}
     )
 

@@ -1,6 +1,7 @@
 """Base metadata mixin."""
 from briefy.common.utils.data import generate_slug
 
+import colander
 import sqlalchemy as sa
 
 
@@ -8,8 +9,22 @@ class BaseMetadata:
     """A Mixin slug, title and description."""
 
     title = sa.Column('title', sa.String(), nullable=False)
-    description = sa.Column('description', sa.String(), nullable=True)
-    _slug = sa.Column('slug', sa.String(255), nullable=True)
+    description = sa.Column('description',
+                            sa.Text,
+                            nullable=True,
+                            info={'colanderalchemy': {
+                                'title': 'Description',
+                                'missing': colander.drop,
+                                'typ': colander.String}}
+                            )
+    _slug = sa.Column('slug',
+                      sa.String(255),
+                      nullable=True,
+                      info={'colanderalchemy': {
+                          'title': 'Description',
+                          'missing': colander.drop,
+                          'typ': colander.String}}
+                      )
 
     @property
     def slug(self) -> str:
