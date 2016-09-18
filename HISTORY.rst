@@ -11,6 +11,7 @@ History
 * Improve address mixin: metadata for colander alchemy and schema validators. (rudaporto)
 * Change travis run flake8 on tests folder. (rudaporto)
 * BODY-8: Add ImageMixin. (ericof)
+* BODY-14: Add BaseMetadata mixin. (ericof)
 
 
 0.1.0
