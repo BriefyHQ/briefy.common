@@ -11,8 +11,10 @@ with open(os.path.join(here, 'HISTORY.rst')) as f:
     CHANGES = f.read()
 
 requires = [
+    'babel',
     'boto3',
     'colander',
+    'flask_babel',
     'libthumbor',
     'newrelic',
     'prettyconf',
