@@ -3,6 +3,8 @@ from briefy.common.utils.transformers import json_dumps
 from briefy.common.utils.transformers import to_serializable
 from sqlalchemy.ext.declarative import declarative_base
 
+_marker = []
+
 
 class Base:
     """Base Declarative model."""
@@ -30,7 +32,7 @@ class Base:
         """
         return cls.__session__.query(cls).get(key)
 
-    def to_dict(self, excludes=None):
+    def to_dict(self, excludes=_marker):
         """Return a dictionary with fields and values used by this Class.
 
         :param excludes: attributes to exclude from dict representation.
@@ -39,11 +41,10 @@ class Base:
         :rtype: dict
         """
         data = self.__dict__.copy()
-        # Not needed for the transform
-        if isinstance(excludes, list):
-            excludes.extend(self.__exclude_attributes__)
+        if not isinstance(excludes, list):
+            raise ValueError('excludes parameter is not a list type object.')
         else:
-            excludes = self.__exclude_attributes__
+            excludes.extend(self.__exclude_attributes__)
         for attr in excludes:
             if attr in data:
                 del(data[attr])
