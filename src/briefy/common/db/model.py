@@ -34,7 +34,7 @@ class Base:
         """Return a dictionary with fields and values used by this Class.
 
         :param excludes: attributes to exclude from dict representation.
-        :type excludes: list
+        :type excludes: list of attribute names or one attribute name
         :returns: Dictionary with fields and values used by this Class
         :rtype: dict
         """
