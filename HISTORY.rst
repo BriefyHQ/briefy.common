@@ -15,6 +15,7 @@ History
 * BODY-16: Add Categories enum to this package. (ericof)
 * BODY-18: Add timezone to address mixin. (ericof)
 * BODY-18: Add new SQLAlchemy time, AwareDateTime that always uses UTC. (ericof)
+* BODY-20: Fix docstrings. (ericof)
 
 
 0.1.0

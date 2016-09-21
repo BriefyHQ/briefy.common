@@ -5,7 +5,7 @@ from colander import SchemaType
 
 
 def validate_and_serialize(schema, data):
-    """Validates Python data using a colander schema
+    """Validate Python data using a colander schema.
 
     :param schema: Schema
     :type schema: colander.SchemaType

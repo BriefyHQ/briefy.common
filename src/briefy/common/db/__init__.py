@@ -1,5 +1,4 @@
 """Common database classes and helpers for Briefy."""
-
 from datetime import datetime
 from sqlalchemy import create_engine
 from .model import Base  # noqa
@@ -29,6 +28,7 @@ def get_engine(settings):
 
 def datetime_utcnow():
     """Create datetime now with pytx UTC timezone.
+
     :return: datetime with timezone.
     """
     return datetime.now(tz=pytz.timezone('UTC'))

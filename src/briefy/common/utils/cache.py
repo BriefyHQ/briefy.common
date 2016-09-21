@@ -1,4 +1,4 @@
-""" Extra functions and utilities """
+"""Helpers to deal with cache."""
 from collections import namedtuple
 from functools import wraps
 
@@ -12,8 +12,7 @@ TimeStampedResult = namedtuple("TimeStampedResult", 'timestamp result')
 
 
 def _make_cache_key(*args, **kw):
-    """
-    Internal function to make a cache key based on parameters passed to a cache function
+    """Internal function to make a cache key based on parameters passed to a cache function.
 
     Raises TypeError on unhashable parameters
     """
@@ -24,9 +23,7 @@ def _make_cache_key(*args, **kw):
 
 
 def timeout_cache(timeout, renew=False):
-    """
-    Decorates a function so that it is naively cached when called with
-    the same parameters again.
+    """Decorate a function so that it is naively cached when called with the same parameters again.
 
     Similar to functools.lru_cache, but cache contents expire
     after `timeout`seconds (which can be fractional)
