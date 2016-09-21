@@ -9,7 +9,7 @@ class CategoryChoices(Enum):
     three_sixty = '360 Degree'
     accommodation = 'Accommodation'
     aerial = 'Aerial'
-    archutecture = 'Architecture'
+    architecture = 'Architecture'
     nude = 'Boudoir/Nude'
     car = 'Car'
     child = 'Child/Newborn'

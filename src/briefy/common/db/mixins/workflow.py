@@ -9,6 +9,12 @@ class WorkflowBase:
 
     _workflow = None
 
+    # These 3 variables in the model will keep the workflow state
+    # during the model lifecycle.
+    # Attempt that the "_workflow_context" will usually contain
+    # information about the user for the current request, and is
+    # not persisted or serialized
+    _workflow_context = None
     state = ''
     state_history = None
 
