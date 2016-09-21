@@ -34,16 +34,14 @@ class Base:
         """Return a dictionary with fields and values used by this Class.
 
         :param excludes: attributes to exclude from dict representation.
-        :type excludes: list
+        :type excludes: list of attribute names or one attribute name
         :returns: Dictionary with fields and values used by this Class
         :rtype: dict
         """
         data = self.__dict__.copy()
-        # Not needed for the transform
-        if isinstance(excludes, list):
-            excludes.extend(self.__exclude_attributes__)
-        else:
-            excludes = self.__exclude_attributes__
+        excludes = list(excludes or [])
+        default_excludes = getattr(self, '__exclude_attributes__', None)
+        excludes.extend(default_excludes or [])
         for attr in excludes:
             if attr in data:
                 del(data[attr])
