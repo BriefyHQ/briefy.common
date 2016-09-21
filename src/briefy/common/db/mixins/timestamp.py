@@ -1,6 +1,6 @@
 """Timestamp mixin."""
 from briefy.common.db import datetime_utcnow
-from briefy.common.db.types.aware_datatime import AwareDateTime
+from briefy.common.db.types import AwareDateTime
 
 import sqlalchemy as sa
 
