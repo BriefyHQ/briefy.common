@@ -131,7 +131,6 @@ class TestWorkflow:
         user._groups = ('editor',)
         assert customer.workflow.hot_edit
 
-
     def test_workflow_property_persists_context(self):
         user = User('12345', groups=('user',))
         customer = Customer('12345')

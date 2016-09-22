@@ -608,7 +608,6 @@ class Workflow(metaclass=WorkflowMeta):
     def context(self, context):
         return self._safe_set(self.document, self.context_key, context)
 
-
     @classmethod
     def _safe_get(cls, obj, name, swallow=True, default=None):
         """Try to get a value from object, given a name."""

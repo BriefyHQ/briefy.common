@@ -50,7 +50,8 @@ class Base:
         # Not needed for the transform
         if isinstance(excludes, str):
             excludes = [excludes]
-        excludes = list(excludes).extend(self__exclude_attributes__)
+        excludes = list(excludes)
+        excludes.extend(self.__exclude_attributes__)
         for attr in excludes:
             if attr in data:
                 del(data[attr])

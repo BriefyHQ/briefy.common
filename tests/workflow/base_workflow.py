@@ -7,6 +7,7 @@ from briefy.common.workflow import permission
 
 from briefy.common.db.mixins import Workflow as WorkflowMixin
 
+
 class LegacyCustomerWorkflow(BriefyWorkflow):
     """Workflow for Customer."""
 
@@ -115,7 +116,6 @@ class Customer(WorkflowMixin):
         """Initialize a customer."""
         self.creator = creator
         self.state_history = []
-        #self.workflow = self._workflow_klass(self)
 
 
 class LegacyCustomer(Customer):
