@@ -8,6 +8,7 @@ class Base:
     """Base Declarative model."""
 
     __session__ = None
+    __exclude_attributes__ = ['_sa_instance_state', 'request']
 
     @classmethod
     def query(cls):
@@ -29,16 +30,31 @@ class Base:
         """
         return cls.__session__.query(cls).get(key)
 
-    def to_dict(self):
+    def to_dict(self, excludes=None):
         """Return a dictionary with fields and values used by this Class.
 
+        :param excludes: attributes to exclude from dict representation.
+        :type excludes: list
         :returns: Dictionary with fields and values used by this Class
         :rtype: dict
         """
+        if not excludes:
+            excludes = []
         data = self.__dict__.copy()
+
+        # Do not include any private attribute by default:
+        for key in list(data.keys()):
+            if key.startswith('_'):
+                del data[key]
+
         # Not needed for the transform
-        if '_sa_instance_state' in data:
-            del(data['_sa_instance_state'])
+        if isinstance(excludes, str):
+            excludes = [excludes]
+        excludes = list(excludes)
+        excludes.extend(self.__exclude_attributes__)
+        for attr in excludes:
+            if attr in data:
+                del(data[attr])
         return data
 
     def to_JSON(self):

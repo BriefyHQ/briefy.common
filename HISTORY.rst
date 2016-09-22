@@ -16,6 +16,7 @@ History
 * BODY-18: Add timezone to address mixin. (ericof)
 * BODY-18: Add new SQLAlchemy time, AwareDateTime that always uses UTC. (ericof)
 * BODY-20: Fix docstrings. (ericof)
+* BODY-33: Improve Base model to_dict method to exclude default attributes and also receive a list of attributes do exclude.
 
 
 0.1.0
