@@ -24,4 +24,5 @@ class AwareDateTime(types.TypeDecorator):
     def process_result_value(self, value, dialect) -> datetime:
         """Return datetime value as UTC."""
         utc = pytz.utc
-        return utc.localize(value)
+        if value:
+            return utc.localize(value)
