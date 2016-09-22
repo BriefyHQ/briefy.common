@@ -38,12 +38,20 @@ class Base:
         :returns: Dictionary with fields and values used by this Class
         :rtype: dict
         """
+        if not excludes:
+            excludes = []
         data = self.__dict__.copy()
+
+        # Do not include any private attribute by default:
+        for key in list(data.keys()):
+            if key.startswith('_'):
+                del data[key]
+
         # Not needed for the transform
-        if isinstance(excludes, list):
-            excludes.extend(self.__exclude_attributes__)
-        else:
-            excludes = self.__exclude_attributes__
+        if isinstance(excludes, str):
+            excludes = [excludes]
+        excludes = list(excludes)
+        excludes.extend(self.__exclude_attributes__)
         for attr in excludes:
             if attr in data:
                 del(data[attr])

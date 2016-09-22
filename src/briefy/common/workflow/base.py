@@ -565,6 +565,7 @@ class Workflow(metaclass=WorkflowMeta):
     name = None
     state_key = None
     history_key = None
+    context_key = None
     initial_state = None
     _document_creator_key = 'creator'
     _context_actor_key = 'user_id'
@@ -572,7 +573,8 @@ class Workflow(metaclass=WorkflowMeta):
     def __init__(self, document, context=None):
         """Initialize the Workflow."""
         self.document = document
-        self.context = context
+        if context:
+            self.context = context
         self._state = None
         state = self._get_state()
         if not state:
@@ -589,15 +591,32 @@ class Workflow(metaclass=WorkflowMeta):
         """Representation of the object."""
         return '<Workflow {}>'.format(self._name)
 
+    @property
+    def user(self):
+        """Just an alias for context"""
+        return self.context
+
+    @user.setter
+    def user(self, value):
+        self.context = value
+
+    @property
+    def context(self):
+        return self._safe_get(self.document, self.context_key, default=None)
+
+    @context.setter
+    def context(self, context):
+        return self._safe_set(self.document, self.context_key, context)
+
     @classmethod
-    def _safe_get(cls, obj, name, swallow=True):
+    def _safe_get(cls, obj, name, swallow=True, default=None):
         """Try to get a value from object, given a name."""
         if obj and hasattr(obj, name):
             value = getattr(obj, name)
         elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             value = obj[name]
         elif swallow:
-            value = None
+            value = default
         else:
             raise cls.exception_state(
                 'Value for {name} on {obj} cannot be read'.format(
