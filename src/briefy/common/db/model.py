@@ -8,7 +8,7 @@ class Base:
     """Base Declarative model."""
 
     __session__ = None
-    __exclude_attributes__ = ['_sa_instance_state', '_request']
+    __exclude_attributes__ = ['_sa_instance_state', 'request']
 
     @classmethod
     def query(cls):
