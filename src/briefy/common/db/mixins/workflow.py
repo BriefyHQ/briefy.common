@@ -1,6 +1,8 @@
 """Workflow mixin."""
 from sqlalchemy_utils import JSONType
 
+import colander
+import copy
 import sqlalchemy as sa
 
 
@@ -40,4 +42,21 @@ class Workflow(WorkflowBase):
     _workflow = None
 
     state = sa.Column(sa.String(100))
-    state_history = sa.Column(JSONType)
+    _state_history = sa.Column('state_history',
+                               JSONType,
+                               info={'colanderalchemy': {
+                                   'title': 'State history',
+                                   'missing': colander.drop,
+                                   'typ': colander.String}}
+                               )
+
+    @property
+    def state_history(self):
+        """State history property getter."""
+        return self._state_history
+
+    @state_history.setter
+    def state_history(self, value):
+        """State history property setter."""
+        # TODO: discover a better way to tell sqlalchemy the field change
+        self._state_history = copy.copy(value)
