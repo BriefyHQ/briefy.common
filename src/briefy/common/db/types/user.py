@@ -2,8 +2,8 @@
 
 
 class BaseUser:
-    """Class to represent the user interface.
-    """
+    """User object with basic fields."""
+
     _fields = ('locale', 'fullname', 'first_name', 'last_name', 'email', 'groups')
 
     def __init__(self, user_id, data):
