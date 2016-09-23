@@ -1,8 +1,8 @@
 """Workflow mixin."""
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy_utils import JSONType
 
 import colander
-import copy
 import sqlalchemy as sa
 
 
@@ -58,5 +58,11 @@ class Workflow(WorkflowBase):
     @state_history.setter
     def state_history(self, value):
         """State history property setter."""
-        # TODO: discover a better way to tell sqlalchemy the field change
-        self._state_history = copy.copy(value)
+        self._state_history = value
+        flag_modified(self, '_state_history')
+
+    def to_dict(self, *args, **kwargs):
+        """Return a dictionary with fields and values used by this Class."""
+        data = super().to_dict(*args, **kwargs)
+        data['state_history'] = self.state_history
+        return data
