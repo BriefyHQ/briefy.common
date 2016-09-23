@@ -20,11 +20,12 @@ class WorkflowBase:
     state = ''
     state_history = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, workflow_context=None, **kwargs):
         """Initialize object workflow.
 
         Otherwise its initial state is not set.
         """
+        self.workflow_context = workflow_context
         self.workflow  # noqa
         return super().__init__(*args, **kwargs)
 
@@ -34,6 +35,16 @@ class WorkflowBase:
         workflow = self._workflow
         if workflow:
             return workflow(self)
+
+    @property
+    def workflow_context(self):
+        """Return the workflow context (user) applied to this document."""
+        return self._workflow_context
+
+    @workflow_context.setter
+    def workflow_context(self, value):
+        """Set the workflow context (user) to this document."""
+        self._workflow_context = value
 
 
 class Workflow(WorkflowBase):
