@@ -16,20 +16,24 @@ def _generate_thumbor_url(
         width: int,
         height: int,
         smart: bool,
+        filters: tuple,
         signed: bool,
-        meta: bool = False) -> str:
+        meta: bool = False,
+        internal: bool = False) -> str:
     """Generate url to an image.
 
     :param source_path: Relative path to the source image on S3.
     :param width: Image width, in pixels.
     :param height: Image height, in pixels.
     :param smart: Smart resizing.
+    :param filters: Filters to be applied to the image.
     :param signed: Boolean indicating if we will sign this url.
     :param meta: Url should be metadata endpoint.
+    :param internal: Generate an internal url.
     :return: URL
     """
     prefix = THUMBOR_BASE_URL
-    if meta:
+    if meta or internal:
         prefix = THUMBOR_INTERNAL_URL
     # Remove source prefix from source_path
     image_url = source_path.replace(THUMBOR_PREFIX_SOURCE, '')
@@ -39,6 +43,7 @@ def _generate_thumbor_url(
         height=height,
         smart=smart,
         image_url=image_url,
+        filters=filters,
         meta=meta,
         unsafe=unsafe
     )
@@ -60,7 +65,7 @@ def generate_metadata_url(
     :param signed: Boolean indicating if we will sign this url.
     :return: URL
     """
-    return _generate_thumbor_url(source_path, width, height, smart, signed, meta=True)
+    return _generate_thumbor_url(source_path, width, height, smart, tuple(), signed, meta=True)
 
 
 def generate_image_url(
@@ -68,17 +73,23 @@ def generate_image_url(
         width: int=0,
         height: int=0,
         smart: bool = True,
-        signed: bool=True) -> str:
+        filters: tuple = None,
+        signed: bool=True,
+        internal: bool=False) -> str:
     """Generate a public url to an image.
 
     :param source_path: Relative path to the source image on S3.
     :param width: Image width, in pixels.
     :param height: Image height, in pixels.
     :param smart: Smart resizing.
+    :param filters: Filters to be applied to this image.
     :param signed: Boolean indicating if we will sign this url.
+    :param internal: Generate an internal url (to be used inside our cluster).
     :return: URL
     """
-    return _generate_thumbor_url(source_path, width, height, smart, signed)
+    if filters is None:
+        filters = tuple()
+    return _generate_thumbor_url(source_path, width, height, smart, filters, signed, internal)
 
 
 def get_metadata_from_thumbor(source_path: str) -> dict:
