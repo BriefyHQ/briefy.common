@@ -593,7 +593,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     @property
     def user(self):
-        """Just an alias for context"""
+        """Just an alias for context."""
         return self.context
 
     @user.setter
@@ -602,6 +602,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     @property
     def context(self):
+        """Return context."""
         return self._safe_get(self.document, self.context_key, default=None)
 
     @context.setter
