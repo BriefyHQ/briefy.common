@@ -19,6 +19,7 @@ History
 * BODY-33: Improve Base model to_dict method to exclude default attributes and also receive a list of attributes do exclude.
 * BODY-42: Add scale_with_filters method to Image mixin to generate scales using filters (ericof).
 * BODY-42: Allow generation of internal urls available inside our cluster (ericof).
+* BODY-40: Workflow history is not being persisted on database for models using worflow mixin. (rudaporto)
 
 0.1.0
 -----
