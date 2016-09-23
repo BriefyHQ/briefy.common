@@ -18,5 +18,6 @@ class BaseUser:
         :return: dict serializable user data
         """
         fields = self._fields
-        fields.append('id')
-        return {field: getattr(self, field, None) for field in self._fields}
+        data = {field: getattr(self, field, None) for field in fields}
+        data['id'] = self.id
+        return data
