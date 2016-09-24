@@ -12,7 +12,7 @@ class BriefyWorkflow(Workflow):
     entity = ''
     state_key = 'state'
     history_key = 'state_history'
-    context_key = '_workflow_context'
+    context_key = 'workflow_context'
 
     @property
     def name(self):

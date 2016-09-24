@@ -568,7 +568,7 @@ class Workflow(metaclass=WorkflowMeta):
     context_key = None
     initial_state = None
     _document_creator_key = 'creator'
-    _context_actor_key = 'user_id'
+    _context_actor_key = 'id'
 
     def __init__(self, document, context=None):
         """Initialize the Workflow."""
