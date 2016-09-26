@@ -8,6 +8,8 @@ class BaseUser:
 
     def __init__(self, user_id, data):
         """Initialize object from JWT token using pyramid jwt claims."""
+        if not user_id:
+            raise ValueError('User ID not informed.')
         self.id = user_id
         for field in self._fields:
             setattr(self, field, data.get(field))
