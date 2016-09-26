@@ -12,8 +12,9 @@ def test_generate_image_url():
     func = imaging.generate_image_url
     source_path = 'source/files/jobs/1234.jpg'
 
-    # URL should start with path to thumbor
+    # URL should start with path to thumbor unless we set it as internal
     assert func(source_path, 30, 30).startswith(THUMBOR_BASE_URL)
+    assert func(source_path, 30, 30, internal=True).startswith(THUMBOR_INTERNAL_URL)
 
     # Generate url for image of 30x30
     assert '30x30/smart/files/jobs/1234.jpg' in func(source_path, 30, 30)
@@ -26,6 +27,28 @@ def test_generate_image_url():
 
     # Generate unsafe url
     assert 'unsafe/30x30/smart/files/jobs/1234.jpg' in func(source_path, 30, 30, signed=False)
+
+    # Adding filters to the image
+    filters = (
+        'maxbytes(4000000)',
+        'brightness(40)',
+    )
+    url = func(source_path, 30, 30, filters=filters)
+    assert 'filters' in url
+    assert 'maxbytes(4000000)' in url
+    assert 'brightness(40)' in url
+
+    # Passing no filters
+    filters = tuple()
+    url = func(source_path, 30, 30, filters=filters)
+    assert 'filters' not in url
+
+    filters = None
+    url = func(source_path, 30, 30, filters=filters)
+    assert 'filters' not in url
+
+    url = func(source_path, 30, 30)
+    assert 'filters' not in url
 
 
 def test_generate_metadata_url():

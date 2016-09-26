@@ -16,14 +16,14 @@ location_data = {
         'coordinates': [52.4994805, 13.4491646]
     },
     'info': {
-      'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
-      'province': 'Berlin',
-      'locality': 'Berlin',
-      'sublocality': 'Kreuzberg',
-      'route': 'Schlesische Straße',
-      'street_number': '27',
-      'country': 'DE',
-      'postal_code': '10997'
+        'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
+        'province': 'Berlin',
+        'locality': 'Berlin',
+        'sublocality': 'Kreuzberg',
+        'route': 'Schlesische Straße',
+        'street_number': '27',
+        'country': 'DE',
+        'postal_code': '10997'
     },
     'timezone': 'Europe/Berlin',
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',

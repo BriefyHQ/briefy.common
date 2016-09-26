@@ -59,24 +59,22 @@ class TestWorkflow:
         """Test transitions for an object."""
         user = User('12345')
         customer = Customer('12345')
-        wf = customer.workflow
-        wf.context = user
-        assert wf.state == wf.created
-        wf.submit()
-        assert wf.state == wf.pending
+        customer.workflow.context = user
+        assert customer.workflow.state == customer.workflow.created
+        customer.workflow.submit()
+        assert customer.workflow.state == customer.workflow.pending
 
     @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
     def test_transitions_record_message_in_history(self, Customer):
         """Test transitions for an object."""
         user = User('12345')
         customer = Customer('12345')
-        wf = customer.workflow
-        wf.context = user
+        customer.workflow.context = user
         msg = 'frtmrglpst!'
-        assert wf.state == wf.created
-        wf.submit(message=msg)
-        assert wf.state == wf.pending
-        assert wf.history[-1]['message'] == msg
+        assert customer.workflow.state == customer.workflow.created
+        customer.workflow.submit(message=msg)
+        assert customer.workflow.state == customer.workflow.pending
+        assert customer.workflow.history[-1]['message'] == msg
 
     def test_transitions_declared_with_multiple_state(self):
         """Test transitions for an object."""
@@ -126,12 +124,18 @@ class TestWorkflow:
     def test_declarative_permissions_for_role(self):
         user = User('12345', groups=('user',))
         customer = Customer('12345')
-        wf = customer.workflow
-        wf.context = user
-        wf.submit()
-        assert not wf.hot_edit
+
+        customer.workflow.context = user
+        customer.workflow.submit()
+        assert not customer.workflow.hot_edit
         user._groups = ('editor',)
-        assert wf.hot_edit
+        assert customer.workflow.hot_edit
+
+    def test_workflow_property_persists_context(self):
+        user = User('12345', groups=('user',))
+        customer = Customer('12345')
+        customer.workflow.context = user
+        assert customer.workflow.context is user
 
     def test_state_bound_permission_as_decorator(self):
         user = User('12345', groups=('user',))
