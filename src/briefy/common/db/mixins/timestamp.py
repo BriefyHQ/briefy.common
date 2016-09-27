@@ -1,5 +1,6 @@
 """Timestamp mixin."""
-from datetime import datetime
+from briefy.common.db import datetime_utcnow
+from briefy.common.db.types import AwareDateTime
 
 import sqlalchemy as sa
 
@@ -7,5 +8,5 @@ import sqlalchemy as sa
 class Timestamp:
     """A mixin providing timestamp information."""
 
-    created_at = sa.Column(sa.DateTime(), default=datetime.utcnow)
-    updated_at = sa.Column(sa.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = sa.Column(AwareDateTime(), default=datetime_utcnow)
+    updated_at = sa.Column(AwareDateTime(), default=datetime_utcnow, onupdate=datetime_utcnow)

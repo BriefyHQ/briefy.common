@@ -1,12 +1,70 @@
 """Rests for briefy.common.queue.message."""
 from briefy.common.config import SQS_REGION
+from briefy.common.db import Base
 from briefy.common.queue import IQueue
+from prettyconf import config
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from zope import component
 
 import boto3
 import botocore.endpoint
+import httmock
 import os
 import pytest
+
+DBSession = scoped_session(sessionmaker())
+
+
+@pytest.fixture(scope='class')
+def sql_engine(request):
+    """Create new engine based on db_settings fixture.
+    :param request: pytest request
+    :return: sqlalcheny engine instance.
+    """
+    database_url = config('DATABASE_URL',
+                          default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
+    engine = create_engine(
+        database_url, echo=False
+    )
+    DBSession.configure(bind=engine)
+    Base.metadata.create_all(engine)
+
+    def teardown():
+        Base.metadata.drop_all(engine)
+
+    request.addfinalizer(teardown)
+    return engine
+
+
+@pytest.fixture(scope='class')
+def db_transaction(request, sql_engine):
+    """Create a transaction for each test class.
+    :param request: pytest request
+    :param sql_engine: sqlalchemy engine (fixture)
+    :return: sqlalchemy connection
+    """
+    connection = sql_engine.connect()
+    transaction = connection.begin()
+    DBSession.configure(bind=connection)
+
+    def teardown():
+        transaction.rollback()
+        connection.close()
+        DBSession.remove()
+
+    request.addfinalizer(teardown)
+    return connection
+
+
+@pytest.fixture(scope='module')
+def session():
+    """Return session from database.
+    :returns: A SQLAlchemy scoped session
+    :rtype: sqlalchemy.orm.scoped_session
+    """
+    return DBSession()
 
 
 # Python's unittest.mock assertions requires the exact parameters to the method
@@ -89,3 +147,14 @@ class BriefyQueueBaseTest(BaseSQSTest):
         from briefy.common.queue.event import EventQueue
         EventQueue._queue = self.queue
         component.provideUtility(EventQueue, IQueue, 'events.queue')
+
+
+@httmock.urlmatch(netloc=r'briefy-thumbor')
+def mock_thumbor(url, request):
+    """Mock request to briefy-thumbor."""
+    status_code = 200
+    headers = {
+        'content-type': 'application/json',
+    }
+    data = open(os.path.join(__file__.rsplit('/', 1)[0], 'utils/thumbor.json')).read()
+    return httmock.response(status_code, data, headers, None, 5, request)

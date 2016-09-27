@@ -19,3 +19,19 @@ SQS_REGION = config('SQS_REGION', default=_region)
 
 # Queues
 EVENT_QUEUE = config('EVENT_QUEUE', default='event-{}'.format(_queue_suffix))
+
+# Thumbor
+THUMBOR_PREFIX_SOURCE = config('THUMBOR_PREFIX_SOURCE', default='source/')
+THUMBOR_PREFIX_RESULT = config('THUMBOR_PREFIX_SOURCE', default='result/')
+THUMBOR_KEY = config(
+    'THUMBOR_KEY',
+    default='dMXlEkjuSz3VoIn9THJOROfMPZa4FqSvDl3jXwN9'
+)
+THUMBOR_BASE_URL = config(
+    'THUMBOR_BASE_URL',
+    default='https://images.stg.briefy.co'
+)
+THUMBOR_INTERNAL_URL = config(
+    'THUMBOR_INTERNAL_URL',
+    default='http://briefy-thumbor.briefy-thumbor.svc.cluster.local'
+)

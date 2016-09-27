@@ -11,10 +11,15 @@ with open(os.path.join(here, 'HISTORY.rst')) as f:
     CHANGES = f.read()
 
 requires = [
+    'babel',
     'boto3',
     'colander',
+    'flask_babel',
+    'libthumbor',
     'newrelic',
     'prettyconf',
+    'pyCrypto',
+    'python-slugify',
     'pytz',
     'requests',
     'setuptools',
@@ -41,7 +46,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='0.1.0',
+    version='1.1.0',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

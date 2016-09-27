@@ -1,8 +1,10 @@
 """Tests for `briefy.common.workflow` package."""
 from base_workflow import Customer
 from base_workflow import CustomerWorkflow
+from base_workflow import LegacyCustomer
 from base_workflow import User
 from briefy.common import workflow
+from briefy.common.workflow import WorkflowPermissionException
 from datetime import datetime
 
 import pytest
@@ -52,7 +54,29 @@ class TestWorkflow:
             CustomerWorkflow(customer)
         assert 'Value for state on' in str(excinfo.value)
 
-    def test_transitions(self):
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions(self, Customer):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        customer.workflow.context = user
+        assert customer.workflow.state == customer.workflow.created
+        customer.workflow.submit()
+        assert customer.workflow.state == customer.workflow.pending
+
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transitions_record_message_in_history(self, Customer):
+        """Test transitions for an object."""
+        user = User('12345')
+        customer = Customer('12345')
+        customer.workflow.context = user
+        msg = 'frtmrglpst!'
+        assert customer.workflow.state == customer.workflow.created
+        customer.workflow.submit(message=msg)
+        assert customer.workflow.state == customer.workflow.pending
+        assert customer.workflow.history[-1]['message'] == msg
+
+    def test_transitions_declared_with_multiple_state(self):
         """Test transitions for an object."""
         user = User('12345')
         customer = Customer('12345')
@@ -61,8 +85,71 @@ class TestWorkflow:
         assert wf.state == wf.created
         wf.submit()
         assert wf.state == wf.pending
+        with pytest.raises(WorkflowPermissionException):
+            wf.approve()
+        user._groups = ('editor',)
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.reject()
+        assert wf.state == wf.rejected
 
-    def test_transition_list(self):
+    def test_transitions_with_permission_in_decorator_form(self):
+        """Test transitions for an object."""
+        user = User('12345', groups=('editor',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert wf.state == wf.created
+        wf.submit()
+        wf.approve()
+        assert wf.state == wf.approved
+        # This transition from the aproved state is declared as an
+        # 'extra_state' in the fixtures:
+        wf.retract()
+        assert wf.state == wf.pending
+
+    def test_declarative_permissions_for_state(self):
+        user = User('12345', groups=('editor',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        wf.submit()
+        assert not wf.view
+        wf.approve()
+        assert wf.state == wf.approved
+        assert wf.view
+
+    def test_declarative_permissions_for_role(self):
+        user = User('12345', groups=('user',))
+        customer = Customer('12345')
+
+        customer.workflow.context = user
+        customer.workflow.submit()
+        assert not customer.workflow.hot_edit
+        user._groups = ('editor',)
+        assert customer.workflow.hot_edit
+
+    def test_workflow_property_persists_context(self):
+        user = User('12345', groups=('user',))
+        customer = Customer('12345')
+        customer.workflow.context = user
+        assert customer.workflow.context is user
+
+    def test_state_bound_permission_as_decorator(self):
+        user = User('12345', groups=('user',))
+        customer = Customer('12345')
+        wf = customer.workflow
+        wf.context = user
+        assert not wf.quick_edit
+        wf.submit()
+        assert wf.quick_edit
+        user._groups = ('editor',)
+        assert wf.hot_edit
+
+    @pytest.mark.parametrize('Customer', [Customer, LegacyCustomer])
+    def test_transition_list(self, Customer):
         """Test list of transitions for an object and an user."""
         user = User('12345')
         customer = Customer('12345')
@@ -73,7 +160,7 @@ class TestWorkflow:
         wf.submit()
 
         # Editor will not be able to transition from cre
-        editor = User('23456', roles=('editor', ))
+        editor = User('23456', groups=('editor', ))
         wf.context = editor
         assert len(wf.transitions) == 2
         assert wf.transitions['approve'].title, 'Approve'
@@ -82,7 +169,7 @@ class TestWorkflow:
     def test_history(self):
         """Test history for an object after some transitions."""
         user = User('12345')
-        editor = User('23456', roles=('editor', ))
+        editor = User('23456', groups=('editor', ))
         customer = Customer('12345')
         wf = customer.workflow
         wf.context = user

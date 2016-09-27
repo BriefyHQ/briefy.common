@@ -2,11 +2,9 @@
 from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
+from briefy.common.db import datetime_utcnow
 from collections import OrderedDict
-from datetime import datetime
-from functools import wraps
 
-import pytz
 import weakref
 
 
@@ -29,20 +27,189 @@ def _set_creation_order(instance):
     _creation_order += 1
 
 
-class WorkflowTransition(object):
+class WorkflowTransition:
     """Transition between states."""
 
-    def __init__(self, name, title='', description='', category='',
-                 permission='', state_from=None, state_to=None, **kwargs):
+    _waiting_to_decorate = True
+
+    def __init__(self, state_from, state_to,
+                 permission=None,
+                 name=None, title='', description='',
+                 category='',
+                 extra_states=(),
+                 **kw):
         """Initialize a workflow transition."""
-        self.name = name
-        self.title = title
-        self.description = description
-        self.category = category
-        self.permission = permission
+        if isinstance(permission, Permission):
+            permission = permission.name
+
         self.state_from = weakref.ref(state_from)
         self.state_to = weakref.ref(state_to)
-        self.__dict__.update(kwargs)
+        self.permission = permission
+        self.name = name
+        self._title = title
+        self.description = description
+        self.category = category
+        self.__dict__.update(kw)
+        self.transition_hook = None
+        # Attribute to help stacking multiple
+        # states reusing the same transiction function
+        # by stacking transitions used as decorators:
+        self._previous_transition = None
+        if extra_states:
+            self._previous_transition = WorkflowTransition(
+                extra_states[0], state_to, permission, name, title, description, category,
+                extra_states[1:]
+            )
+
+    @property
+    def title(self) -> str:
+        """Transition title.
+
+        :return: Title of this transition.
+        """
+        return self._title or self.name.title()
+
+    def set_permission(self, func):
+        """Set a permission."""
+        if self.permission:
+            raise TypeError('Conflict: trying to set more than one permission for {}'.format(self))
+        permission = Permission(func)
+        self.permission = permission.name
+        return permission
+
+    def guard(self, workflow):
+        """Guard for this Transition."""
+        state_from = self.state_from()
+
+        if self.name not in state_from._transitions:
+            raise state_from.exception_transition('Incorrect state for this transition')
+
+        if self.permission and (self.permission not in workflow.permissions()):
+            raise state_from.exception_permission('Permission not available')
+
+    def _decorate(self, func):
+        if isinstance(func, WorkflowTransition):
+            transition = self
+            while transition._previous_transition:
+                transition = transition._previous_transition
+            transition._previous_transition = func
+            func = self._previous_transition.transition_hook
+        if not self.name:
+            self.name = func.__name__
+
+        self.transition_hook = func
+        return self
+
+    def _perform_transition(self, workflow, message=None):
+        """Perform the transition.
+
+        Where all the magic really happens.
+        """
+        workflow._set_state(self.state_to().value)
+        workflow._update_history(self.title,
+                                 self.state_from().value,
+                                 self.state_to().value,
+                                 message=message)
+        workflow._notify(self)
+
+    def _dispatch(self, *args, workflow=None, **kw):
+        """Dispatch call to this transition to a sibling transition bound to the appropriate state.
+
+        Will happen when a transition name, or hook function is
+        tied to several states in the same workflow
+        """
+        correct_transition = workflow.state._transitions.get(self.name, None)
+        if (correct_transition and
+                correct_transition.name == self.name):
+            return correct_transition(*args, workflow=workflow, **kw)
+        raise workflow.state.exception_transition('Incorrect state for this transition')
+
+    def __call__(self, *args, workflow=None, message=None, **kw):
+        """Trigger the transition."""
+        if self._waiting_to_decorate:
+            if len(args) != 1 or kw:
+                raise TypeError("Transitions inside Workflow class bodies "
+                                "should only be used as decorators for a transition function")
+
+            func = args[0]
+
+            return self._decorate(func)
+
+        state_from = self.state_from()
+        if not state_from or not workflow:
+            raise RuntimeError('Tried to trigger unnatached transition')
+
+        if workflow.state is not state_from:
+            return self._dispatch(*args, workflow=workflow, message=message, **kw)
+
+        self.guard(workflow)
+
+        if self.transition_hook:
+            result = self.transition_hook(workflow, *args, **kw)
+        else:
+            result = None
+
+        self._perform_transition(workflow, message)
+
+        return result
+
+    def __get__(self, instance, owner):
+        """Return a transition."""
+        if not isinstance(instance, Workflow):
+            return self
+        return AttachedTransition(self, instance)
+
+
+class AttachedState:
+    """A state attached to a workflow."""
+
+    def __init__(self, state, workflow):
+        """Initialize the state on a warkflow."""
+        self._parent = weakref.ref(workflow)
+        self.state = state
+
+    def __getattr__(self, attr):
+        """Return an attribute on the state."""
+        return getattr(self.state, attr)
+
+    def __call__(self):
+        """Check if value exists in self.state."""
+        if isinstance(self.state, WorkflowStateGroup):
+            return self._parent()._get_state() in self.state.values
+        return self._parent()._get_state() == self.value
+
+    def __contains__(self, value):
+        """Check if value exists in self.state."""
+        return value in self.state
+
+    def __eq__(self, value):
+        """Compare attached state to a given value."""
+        return self.state == value
+
+    def __repr__(self):
+        """Repr of AttachedState."""
+        return '<Attached {}'.format(repr(self.state).lstrip('<'))
+
+
+class AttachedTransition:
+    """A transition attached to a workflow."""
+
+    def __init__(self, transition, workflow):
+        """Initialize the transition on a warkflow."""
+        self.workflow = workflow
+        self.transition = transition
+
+    def __getattr__(self, attr):
+        """Return an attribute on the transition."""
+        return getattr(self.transition, attr)
+
+    def __call__(self, *args, **kw):
+        """Execute the transition."""
+        return self.transition(*args, workflow=self.workflow, **kw)
+
+    def __repr__(self):
+        """Repr of AttachedTransition."""
+        return '<Attached {}'.format(repr(self.transition).lstrip('<'))
 
 
 class WorkflowState(object):
@@ -57,77 +224,67 @@ class WorkflowState(object):
         self.value = value
         self.values = [value]
         self.name = None  # Not named yet
-        self.title = title
+        self._title = title
         self.description = description
         self._parent = None
         self._transitions = OrderedDict()
         _set_creation_order(self)
 
-    def attach(self, workflow):
-        """Attach this workflow state to a workflow instance."""
-        # Attaching works by creating a new copy of the state with _parent
-        # now referring to the workflow instance.
-        newstate = self.__class__(self.value, self.title, self.description)
-        newstate.name = self.name
-        newstate._parent = weakref.ref(workflow)
-        newstate._transitions = self._transitions
-        return newstate
+    @property
+    def title(self):
+        """Title of the state."""
+        return self._title or self.name.title()
 
     def __repr__(self):
         """Representation of this state."""
         return '<WorkflowState {}>'.format(self.title)
 
+    def __get__(self, instance, owner):
+        """Return am instance of a AttachedState."""
+        if not instance:
+            return self
+        return AttachedState(self, instance)
+
     def __call__(self):
         """Call this state."""
-        if self._parent is None or self._parent() is None:
-            raise self.exception_state('Unattached state')
-        return self._parent()._get_state() == self.value
+        raise self.exception_state('Unattached state')
 
     def __eq__(self, other):
         """Compare this state to other."""
+        if isinstance(other, AttachedState):
+            other = other.state
         return isinstance(other, WorkflowState) and self.value == other.value
 
     def __ne__(self, other):
         """Compare this state to other."""
         return not self.__eq__(other)
 
-    def transition(self, state_to, permission,
+    def transition(self, state_to, permission=None,
                    name=None, title='', description='', category='', **kw):
-        """Decorator for transition functions."""
-        def inner(f):
-            if hasattr(f, '_workflow_transition_inner'):
-                f = f._workflow_transition_inner
+        """Declare a decorator for transition functions.
 
-            workflow_name = name or f.__name__
+        Usage- on a WorkflowBody,  use either:
 
-            @wraps(f)
-            def decorated_function(workflow, *args, **kwargs):
-                # Perform tests: is state correct? Is permission available?
-                if workflow_name not in workflow.state._transitions:
-                    raise self.exception_transition('Incorrect state')
-                t = workflow.state._transitions[workflow_name]
-                if t.permission and (t.permission not in workflow.permissions()):
-                    raise self.exception_permission('Permission not available')
-                result = f(workflow, *args, **kwargs)
-                state_from = t.state_from().value
-                state_to = t.state_to().value
-                workflow._set_state(state_to)
-                workflow._update_history(t.title, state_from, state_to)
-                workflow._notify(t)
-                return result
+        submit = workflow_state.transition(state_to, permission, ...)
 
-            t = WorkflowTransition(name=workflow_name,
-                                   title=title,
-                                   description=description,
-                                   category=category,
-                                   permission=permission,
-                                   state_from=self,
-                                   state_to=state_to,
-                                   **kw)
-            self._transitions[workflow_name] = t
-            decorated_function._workflow_transition_inner = f
-            return decorated_function
-        return inner
+        or:
+
+        @workflow_state.transition(state_to, permission, ...):
+        def submit(self):
+            # code to run when transition happens
+
+        """
+        # the transition will be set in self._transitions
+        # on the Workflow class creation at it's metaclass.__new__
+
+        transition_obj = WorkflowTransition(self, state_to, permission,
+                                            name=name,
+                                            title=title,
+                                            description=description,
+                                            category=category,
+                                            **kw)
+
+        return transition_obj
 
     def transition_from(self, state_from, permission, **kwargs):
         """Reverse of :meth:`WorkflowState.transition`.
@@ -135,11 +292,21 @@ class WorkflowState(object):
         Specifies a transition to this state from one or more source states.
         Does not accept WorkflowStateGroup.
         """
+        # TODO: pending rewrite for the new transition system.
+        # Will work on the decorator form as it is:
         def inner(f):
             states = [state_from] if isinstance(state_from, WorkflowState) else state_from
             for state in states:
                 return state.transition(self, permission, **kwargs)(f)
         return inner
+
+    def permission(self, func=None, *, groups=None):
+        """Create a Permission bound for this WorkflowState.
+
+        It can be used as a decorator or further filtered down
+        just regular Permission objetcs.
+        """
+        return Permission(func, groups=groups, states=self)
 
 
 class WorkflowStateGroup(WorkflowState):
@@ -160,14 +327,15 @@ class WorkflowStateGroup(WorkflowState):
         return '<WorkflowStateGroup {}>'.format(self.title)
 
     def __call__(self):
-        """Return the state value."""
-        if self._parent is None or self._parent() is None:
-            raise self.exception_state('Unattached state')
-        return self._parent()._get_state() in self.values
+        """Execute."""
+        raise self.exception_state('Unattached state')
 
     def __contains__(self, state):
+        """Check if state is contained in this WorkflowStateGroup."""
+        if isinstance(state, AttachedState):
+            state = state.state
         if isinstance(state, WorkflowState):
-            state = state.name
+            state = state.value
         return state in self.values
 
     def transition(self, *args, **kwargs):
@@ -175,79 +343,238 @@ class WorkflowStateGroup(WorkflowState):
         raise TypeError('WorkflowStateGroups cannot have transitions')
 
 
-class BaseWorkflow(type):
+class Permission:
+    """Class used as a decorator to change a workflow method in a dynamic permission.
+
+    The method should check whether in the current context (available as self.context),
+    and the current document (self.document)
+    the permission it represents is granted. The method should
+    take no parameters other than 'self' (the Workflow instance)
+
+    A permission with the method name is made available to the current workflow
+    and will exist anytime the decorated method returns a truthy value.
+
+    class MyWorkflow(Workflow):
+        @permission
+        def read(self):
+            return self.context and 'editor' in self.context.groups
+
+
+    A non-decorator declaration can also be made by doing:
+
+    class MyWorkflow(Workflow):
+        read = Permission().for_groups('g:editors')
+        publish = Permission().for_groups('g:editors').for_state('pendding')
+
+
+    Permissions are checked by transitions inside workflow.states -
+    any transition requires a permission, which will be checked by its name.
+
+    Moreover - permissions are also used by views when the workflowed method is
+    used by our webservices. In the briefy.ws package there is (TBD) a
+    "with_workflow" class decorator that dynamically attaches these permissions
+    to objects in a way the default authorization policy for Pyramid understands
+    them.
+    """
+
+    _name = None
+    _waiting_to_decorate = True
+
+    def __init__(self, permission_method=None, states=None, groups=None):
+        """Initialize the permission."""
+        if isinstance(states, (str, WorkflowState)):
+            states = [states]
+        self.states = list(states) if states else list()
+        self.groups = set(groups) if groups else set()
+        self(permission_method)
+
+    def _filtered_method(self, workflow):
+        """Filtered methods.
+
+        This is separated fom __call__ so that it can be decorated by calls to
+        'for_groups' and 'for_state'.
+
+        The Always True permission is used if no actual method is ever given, allowing
+        for static or filtered only permissions.
+        """
+        return self.method(workflow) if self.method else True
+
+    @property
+    def name(self):
+        """Name of the permission."""
+        return self._name or self.method.__name__
+
+    __name__ = name
+
+    def __call__(self, workflow):
+        """Decorate the workflow."""
+        # _waiting_to_decorate is switched off on Workflow class creation,
+        # at the metaclass
+        if self._waiting_to_decorate:
+            self.method = workflow
+            return self
+
+        if self.groups:
+            if not workflow.context:
+                return False
+            if not self.groups.intersection(workflow.context.groups):
+                return False
+
+        if self.states:
+            # This checking must be done here because WorkflowState's names are
+            # lazily bound at the Workflow metaclass
+            if isinstance(self.states, list):
+                self.states = {state.value if isinstance(state, WorkflowState) else state
+                               for state in self.states}
+            if workflow.state.value not in self.states:
+                return False
+
+        if self.method:
+            return self.method(workflow)
+        return True
+
+    def for_groups(self, *args):
+        """Apply permission just to some groups.
+
+        Chain call that decorates this permission so that it is filtered restricting the
+        permission to the groups passed in.
+        """
+        self.groups.update(args)
+        return self
+
+    def for_states(self, *args):
+        """Apply permission just for some states.
+
+        Chain call that decorates this permission so that
+        it is filtered restricing the permission to the states passed in.
+        """
+        # self.states can't be a set at this point because
+        # states may be refereced by objects  - with late
+        # name binding) - that are unhashable
+        self.states.extend(args)
+        return self
+
+    def __get__(self, instance, owner):
+        """Get the permission."""
+        if instance is None:
+            return self
+        return self(instance)
+
+
+permission = Permission
+
+
+class WorkflowMeta(type):
     """Base Metaclass for Workflow."""
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls, cls_name, bases, attrs):
         """Constructor."""
         attrs['_is_document_workflow'] = True
-        attrs['_name'] = name
+        attrs['_name'] = cls_name
         attrs['_states'] = {}  # state_name: object
         attrs['_state_groups'] = {}  # state_group: object
         attrs['_state_values'] = {}  # Reverse lookup: value to object
         # If any base class contains _states, _state_groups or _state_values,
         # extend them
+        attrs['_existing_permissions'] = {}
         for base in bases:
             if hasattr(base,
                        '_is_document_workflow') and base._is_document_workflow:
                 attrs['_states'].update(base._states)
                 attrs['_state_groups'].update(base._state_groups)
                 attrs['_state_values'].update(base._state_values)
+                attrs['_existing_permissions'].update(base._existing_permissions)
 
-        for statename, stateob in attrs.items():
-            if isinstance(stateob, WorkflowState):
-                stateob.name = statename
-                if isinstance(stateob, WorkflowStateGroup):
-                    attrs['_state_groups'][statename] = stateob
+        for name, value in attrs.items():
+
+            if isinstance(value, WorkflowState):
+                state = value
+                state.name = name
+                if isinstance(state, WorkflowStateGroup):
+                    attrs['_state_groups'][name] = state
                 else:
-                    attrs['_states'][statename] = stateob
+                    attrs['_states'][name] = state
                     # A group doesn't have a single value, so don't add groups
-                    attrs['_state_values'][stateob.value] = stateob
+                    attrs['_state_values'][state.value] = state
+
+            elif isinstance(value, WorkflowTransition):
+                transition = value
+                while transition:
+                    if not transition.name:
+                        transition.name = name
+                    # Bind transition to the states transitions by name,
+                    # as only at this point we are sure of its name
+                    transition.state_from()._transitions[transition.name] = transition
+                    transition._waiting_to_decorate = False
+                    transition = transition._previous_transition
+
+            elif isinstance(value, Permission):
+                permission = value
+                # This mechanism attributes names so that
+                # for permissions that are static, or filtered by state or groups
+                # there is no need to set a stub decorated method:
+                if permission.method is None:
+                    permission._name = name
+
+                # Activate the permission callable:
+                permission._waiting_to_decorate = False
+
+                attrs['_existing_permissions'][value.name] = permission
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
-        return super(BaseWorkflow, cls).__new__(cls, name, bases, attrs)
+        return super(WorkflowMeta, cls).__new__(cls, cls_name, bases, attrs)
 
 
 class WorkflowStates:
+    """Workflow states."""
+
     def __get__(self, instance, owner):
+        """Return WorkflowStates."""
         self._owner = owner
         return self
 
     def __iter__(self):
+        """Iterate on the states."""
         return iter(self._owner._states_sorted)
 
     def __getattr__(self, state_name):
+        """Return a state."""
         try:
             return self[state_name]
         except KeyError as exc:
             raise AttributeError from exc
 
     def __getitem__(self, state_name):
+        """Return a state."""
         return self._owner._states[state_name]
 
     def __len__(self):
+        """Count number of states."""
         return len(self._owner._states_sorted)
 
     def __repr__(self):
+        """Repr for WorkflowStates."""
         return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
 
 
-class Workflow(metaclass=BaseWorkflow):
+class Workflow(metaclass=WorkflowMeta):
     """Base class for workflows."""
 
     exception_state = WorkflowStateException
     name = None
     state_key = None
     history_key = None
+    context_key = None
     initial_state = None
     _document_creator_key = 'creator'
-    _context_actor_key = 'user_id'
+    _context_actor_key = 'id'
 
     def __init__(self, document, context=None):
         """Initialize the Workflow."""
         self.document = document
-        self.context = context
+        if context:
+            self.context = context
         self._state = None
         state = self._get_state()
         if not state:
@@ -257,34 +584,40 @@ class Workflow(metaclass=BaseWorkflow):
             if not actor:
                 actor = self._get_document_creator(document)
             self._update_history('', '', state)
-        if state not in self._state_values:
+        if state not in self.__class__._state_values:
             raise self.exception_state('Unknown state')
-        # Attach states to self. Make copy and iterate:
-        # This code is used just to make it possible to test
-        # if a state is active by calling it: workflow.draft(), etc
-        for statename, stateob in list(self._states.items()):
-            attached = stateob.attach(self)
-            setattr(self, statename, attached)
-            self._states[statename] = attached
-            self._state_values[attached.value] = attached
-        for statename, stateob in list(self._state_groups.items()):
-            attached = stateob.attach(self)
-            setattr(self, statename, attached)
-            self._state_groups[statename] = attached
 
     def __repr__(self):
         """Representation of the object."""
         return '<Workflow {}>'.format(self._name)
 
+    @property
+    def user(self):
+        """Just an alias for context."""
+        return self.context
+
+    @user.setter
+    def user(self, value):
+        self.context = value
+
+    @property
+    def context(self):
+        """Return context."""
+        return self._safe_get(self.document, self.context_key, default=None)
+
+    @context.setter
+    def context(self, context):
+        return self._safe_set(self.document, self.context_key, context)
+
     @classmethod
-    def _safe_get(cls, obj, name, swallow=True):
+    def _safe_get(cls, obj, name, swallow=True, default=None):
         """Try to get a value from object, given a name."""
         if obj and hasattr(obj, name):
             value = getattr(obj, name)
         elif obj and hasattr(obj.__class__, '__contains__') and name in obj:
             value = obj[name]
         elif swallow:
-            value = None
+            value = default
         else:
             raise cls.exception_state(
                 'Value for {name} on {obj} cannot be read'.format(
@@ -347,8 +680,9 @@ class Workflow(metaclass=BaseWorkflow):
         key = self.state_key
         self._safe_set(document, key, value, False)
 
-    def _update_history(self, transition, state_from, state_to, actor=None):
-        now = datetime.now(tz=pytz.timezone('UTC')).isoformat()
+    def _update_history(self, transition, state_from, state_to,
+                        actor=None, message=None):
+        now = datetime_utcnow().isoformat()
         document = self.document
         context = self.context
         if context and not actor:
@@ -360,7 +694,8 @@ class Workflow(metaclass=BaseWorkflow):
             'to': state_to,
             'date': now,
             'actor': actor,
-            'transition': transition
+            'transition': transition,
+            'message': message
         }
         history.append(entry)
         self._safe_set(document, key, history, False)
@@ -382,13 +717,24 @@ class Workflow(metaclass=BaseWorkflow):
     states = WorkflowStates()
 
     def permissions(self):
-        """Permission available in the current context.
+        """Return permissions available in the current context.
 
-        This method must be overridden by subclasses. Context is available as self.context,
+        This method can be overriden by subclasses.
+        This allows one to return string (or other hashable token)
+        permissions directly, instead of having 'Permission'
+        objects as code in the workflow classes.
+
+        Context is available as self.context,
         set when the workflow was initialized for the document. It is not
         passed as a parameter to this method.
+
+        :rtype: set
         """
-        return []
+        return {
+            permission_name
+            for permission_name, permission in self._existing_permissions.items()
+            if permission(self)
+        }
 
     @property
     def transitions(self):
