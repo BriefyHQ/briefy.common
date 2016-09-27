@@ -2,8 +2,12 @@
 History
 =======
 
-1.1.0 (Unreleased)
+1.2.0 (Unreleased)
 ------------------
+
+
+1.1.0
+-----
 
 * Improve datetime utc now format on workflow and on timestamp mixin. (rudaporto)
 * Changed address mixin to use new Point custom type with GeoJSON support. (ericof)
