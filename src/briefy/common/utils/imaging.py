@@ -4,6 +4,7 @@ from briefy.common.config import THUMBOR_INTERNAL_URL
 from briefy.common.config import THUMBOR_KEY
 from briefy.common.config import THUMBOR_PREFIX_SOURCE
 from libthumbor import CryptoURL
+from urllib.parse import quote
 
 import requests
 
@@ -37,6 +38,8 @@ def _generate_thumbor_url(
         prefix = THUMBOR_INTERNAL_URL
     # Remove source prefix from source_path
     image_url = source_path.replace(THUMBOR_PREFIX_SOURCE, '')
+    # Sanitize image url
+    image_url = quote(image_url)
     unsafe = False if signed else True
     url = _crypto.generate(
         width=width,

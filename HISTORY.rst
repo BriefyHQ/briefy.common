@@ -5,9 +5,12 @@ History
 1.2.0 (Unreleased)
 ------------------
 
+1.1.1 (2016-09-28)
+------------------
+* BODY-52: Quote filename for image signature (ericof).
 
-1.1.0
------
+1.1.0 (2016-09-27)
+------------------
 
 * Improve datetime utc now format on workflow and on timestamp mixin. (rudaporto)
 * Changed address mixin to use new Point custom type with GeoJSON support. (ericof)
@@ -34,3 +37,4 @@ History
 * Implements the Base Workflow (ericof)
 * Implements the base class for a queue and the events queue (ericof)
 * Implements the base class for a worker (ericof)
+
