@@ -50,6 +50,10 @@ def test_generate_image_url():
     url = func(source_path, 30, 30)
     assert 'filters' not in url
 
+    # Generate url with spaces
+    source_path = 'source/files/jobs/ _ 1234.jpg'
+    assert '30x30/files/jobs/%20_%201234.jpg' in func(source_path, 30, 30, smart=False)
+
 
 def test_generate_metadata_url():
     """Test generate_metadata_url."""
