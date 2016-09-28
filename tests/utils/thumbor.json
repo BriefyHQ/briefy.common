@@ -39,6 +39,7 @@
             ],
             "Exif.Photo.MaxApertureValue": "3",
             "Exif.Photo.MeteringMode": 5,
+            "Exif.Image.Orientation": 1,
             "Exif.Photo.RecommendedExposureIndex": "100",
             "Exif.Photo.SceneCaptureType": 0,
             "Exif.Photo.SensitivityType": 2,

@@ -2,11 +2,15 @@
 History
 =======
 
-1.2.0 (Unreleased)
+1.1.2 (Unreleased)
 ------------------
+
+* BODY-53: Return additional metadata from Image (ericof).
+
 
 1.1.1 (2016-09-28)
 ------------------
+
 * BODY-52: Quote filename for image signature (ericof).
 
 1.1.0 (2016-09-27)
