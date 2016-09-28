@@ -114,13 +114,17 @@ def get_metadata_from_thumbor(source_path: str) -> dict:
     :param source_path: Relative path to the source image on S3.
     :return: Dictionary containing metadata information
     """
+    timeout = 20  # will timeout after 20 seconds
     metadata = {
         'width': 0,
         'height': 0,
         'raw_metadata': {}
     }
     url = generate_metadata_url(source_path)
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=timeout)
+    except requests.exceptions.Timeout:
+        return metadata
     if response.status_code == 200:
         data = response.json()
         original = data.get('original', {})

@@ -6,6 +6,7 @@ History
 ------------------
 
 * BODY-53: Return additional metadata from Image (ericof).
+* Add timeout to thumbor connection (ericof).
 
 
 1.1.1 (2016-09-28)
