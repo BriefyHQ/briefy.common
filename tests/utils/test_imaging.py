@@ -5,6 +5,8 @@ from briefy.common.utils import imaging
 from conftest import mock_thumbor
 
 import httmock
+import json
+import os
 
 
 def test_generate_image_url():
@@ -81,3 +83,32 @@ def test_get_metadata_from_thumbor():
     assert resp['width'] == 5760
     assert resp['height'] == 3840
     assert isinstance(resp['raw_metadata'], dict)
+
+
+def test_process_metadata():
+    """Test process_metadata."""
+    func = imaging.process_metadata
+
+    data = json.load(
+        open(os.path.join(__file__.rsplit('/', 1)[0], 'thumbor.json'))
+    )
+    raw_metadata = data['original']['metadata']
+    width = data['original']['width']
+    height = data['original']['height']
+    size = 4059093
+
+    metadata = func(raw_metadata, width, height, size)
+
+    assert isinstance(metadata, dict)
+    assert metadata['dimensions'] == '5760 x 3840'
+    assert metadata['ratio'] == '3/2'
+    assert metadata['date_time'] == '2016-06-08T16:05:33'
+    assert metadata['camera_maker'] == 'Canon'
+    assert metadata['camera_model'] == 'Canon EOS 5D Mark III'
+    assert metadata['dpi'] == '300'
+    assert metadata['shutter'] == '290241/125000'
+    assert metadata['iso'] == 100
+    assert metadata['exposure_time'] == '1/5'
+    assert metadata['aperture'] == '126797/20000'
+    assert metadata['lens_model'] == 'EF16-35mm f/2.8L II USM'
+    assert metadata['orientation'] == 'Top Left'
