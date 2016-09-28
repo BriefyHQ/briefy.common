@@ -8,6 +8,7 @@ History
 1.1.1 (2016-09-28)
 ------------------
 * BODY-52: Quote filename for image signature (ericof).
+* BODY-55: Improve briefy.common BaseEvent (sqs event dispatcher). (rudaporto)
 
 1.1.0 (2016-09-27)
 ------------------
