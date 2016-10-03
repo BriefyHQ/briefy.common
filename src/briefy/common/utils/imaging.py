@@ -70,7 +70,7 @@ def generate_metadata_url(
         source_path: str,
         width: int=0,
         height: int=0,
-        smart: bool = True,
+        smart: bool=False,
         signed: bool=True) -> str:
     """Generate a public url to an image.
 
@@ -81,6 +81,8 @@ def generate_metadata_url(
     :param signed: Boolean indicating if we will sign this url.
     :return: URL
     """
+    # Using smart resize and metadata raises an error on Thumbor
+    smart = False if smart else smart
     return _generate_thumbor_url(source_path, width, height, smart, tuple(), signed, meta=True)
 
 
