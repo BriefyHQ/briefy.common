@@ -66,10 +66,10 @@ def test_generate_metadata_url():
     assert func(source_path, 30, 30).startswith(THUMBOR_INTERNAL_URL)
 
     # Generate url for image of 30x30
-    assert '/meta/30x30/smart/files/jobs/1234.jpg' in func(source_path, 30, 30)
+    assert '/meta/30x30/files/jobs/1234.jpg' in func(source_path, 30, 30)
 
     # Generate unsafe url
-    assert 'unsafe/meta/30x30/smart/files/jobs/1234.jpg' in func(source_path, 30, 30, signed=False)
+    assert 'unsafe/meta/30x30/files/jobs/1234.jpg' in func(source_path, 30, 30, signed=False)
 
 
 def test_get_metadata_from_thumbor():
