@@ -2,7 +2,11 @@
 History
 =======
 
-1.1.2 (Unreleased)
+1.1.3 (Unreleased)
+------------------
+
+
+1.1.2 (2016-10-04)
 ------------------
 
 * BODY-53: Return additional metadata from Image (ericof).
