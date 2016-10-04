@@ -1,6 +1,10 @@
 Briefy Common
 =============
 
+TODO
+----
+ * make briefy.common.queue.BaseQueue use environment variables to connect to local sqs
+
 Code Health
 ============
 Broker Service codebase is tested using Travis CI
