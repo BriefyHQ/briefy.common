@@ -62,16 +62,11 @@ class Image:
 
         :returns: A dictionary containing metadata information.
         """
-        metadata = {
-            'aperture': '',
-            'iso': '',
-            'shutter': ''
-        }
         raw_metadata = self.raw_metadata
-        if raw_metadata:
-            metadata['aperture'] = raw_metadata.get('Exif.Photo.ApertureValue', '')
-            metadata['iso'] = raw_metadata.get('Exif.Photo.ISOSpeedRatings', '')
-            metadata['shutter'] = raw_metadata.get('Exif.Photo.ShutterSpeedValue', '')
+        raw_metadata = raw_metadata if raw_metadata else {}
+        metadata = imaging.process_metadata(
+            raw_metadata, self.width, self.height, self.size
+        )
         return metadata
 
     @property

@@ -2,7 +2,25 @@
 History
 =======
 
-1.1.0 (Unreleased)
+1.1.3 (Unreleased)
+------------------
+
+* Add python-logstash as requirement (ericof).
+
+1.1.2 (2016-10-04)
+------------------
+
+* BODY-53: Return additional metadata from Image (ericof).
+* Add timeout to thumbor connection (ericof).
+
+
+1.1.1 (2016-09-28)
+------------------
+
+* BODY-52: Quote filename for image signature (ericof).
+* BODY-55: Improve briefy.common BaseEvent (sqs event dispatcher). (rudaporto)
+
+1.1.0 (2016-09-27)
 ------------------
 
 * Improve datetime utc now format on workflow and on timestamp mixin. (rudaporto)
@@ -30,3 +48,4 @@ History
 * Implements the Base Workflow (ericof)
 * Implements the base class for a queue and the events queue (ericof)
 * Implements the base class for a worker (ericof)
+

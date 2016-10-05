@@ -3,7 +3,6 @@ from briefy.common.queue import IQueue
 from zope.component import getUtility
 from zope.interface import Interface
 
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,17 +26,18 @@ class BaseEvent:
     request_id = ''
     logger = logger
     data = None
+    obj = None
 
     def __init__(self, obj, actor=None, request_id=None):
         """Initialize the event."""
         if not obj.created_at:
             raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
         guid = obj.id
+        self.obj = obj
         self.actor = actor
         self.guid = guid
         self.request_id = request_id
         self.created_at = obj.created_at
-        self.data = obj.to_JSON()
 
     @property
     def queue(self):
@@ -58,7 +58,7 @@ class BaseEvent:
             'guid': self.guid,
             'created_at': self.created_at,
             'request_id': self.request_id,
-            'data': json.loads(self.data),
+            'data': self.obj.to_dict(),
         }
         message_id = ''
         try:
