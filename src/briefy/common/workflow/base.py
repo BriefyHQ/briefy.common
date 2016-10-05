@@ -541,7 +541,12 @@ class WorkflowMeta(type):
                     transition_names_to_erase[name] = transition
         for name, transition in transition_names_to_erase.items():
             state = transition.state_from()
-            del state._transitions[name]
+            try:
+                del state._transitions[name]
+            except KeyError:
+                # Due to out of order processing of attrs,
+                # the second name may never have been added to the transition
+                pass
             del attrs[name]
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
