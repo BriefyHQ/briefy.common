@@ -35,3 +35,6 @@ THUMBOR_INTERNAL_URL = config(
     'THUMBOR_INTERNAL_URL',
     default='http://briefy-thumbor.briefy-thumbor.svc.cluster.local'
 )
+
+# Log Server
+LOG_SERVER = config('LOG_SERVER', default='')
