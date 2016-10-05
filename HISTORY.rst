@@ -5,6 +5,7 @@ History
 1.1.3 (Unreleased)
 ------------------
 
+* Add python-logstash as requirement (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
