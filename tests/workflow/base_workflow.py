@@ -102,6 +102,11 @@ class CustomerWorkflow(BriefyWorkflow):
     def quick_edit(self):
         return self.document.creator == self.context.user_id
 
+    @submit
+    def submit_hook(self):
+        """Body of retract transition"""
+        self._retracted_ok = True
+
 
 class Customer(WorkflowMixin):
     """A Customer for Briefy."""

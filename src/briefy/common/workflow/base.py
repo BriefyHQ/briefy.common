@@ -55,6 +55,7 @@ class WorkflowTransition:
         # states reusing the same transiction function
         # by stacking transitions used as decorators:
         self._previous_transition = None
+        self._name_inherited_from_hook_method = None
         if extra_states:
             self._previous_transition = WorkflowTransition(
                 extra_states[0], state_to, permission, name, title, description, category,
@@ -96,6 +97,7 @@ class WorkflowTransition:
             func = self._previous_transition.transition_hook
         if not self.name:
             self.name = func.__name__
+            self._name_inherited_from_hook_method = func.__name__
 
         self.transition_hook = func
         return self
@@ -485,6 +487,8 @@ class WorkflowMeta(type):
                 attrs['_state_values'].update(base._state_values)
                 attrs['_existing_permissions'].update(base._existing_permissions)
 
+        transition_disambiguation = {}
+
         for name, value in attrs.items():
 
             if isinstance(value, WorkflowState):
@@ -500,12 +504,17 @@ class WorkflowMeta(type):
             elif isinstance(value, WorkflowTransition):
                 transition = value
                 while transition:
-                    if not transition.name:
-                        transition.name = name
+                    if not transition.name or transition._name_inherited_from_hook_method:
+                        if name != transition._name_inherited_from_hook_method:
+                            transition.name = name
                     # Bind transition to the states transitions by name,
                     # as only at this point we are sure of its name
                     transition.state_from()._transitions[transition.name] = transition
                     transition._waiting_to_decorate = False
+
+                    transition_disambiguation.setdefault(id(transition), (transition, {name}))
+                    transition_disambiguation[id(transition)][1].add(name)
+
                     transition = transition._previous_transition
 
             elif isinstance(value, Permission):
@@ -520,6 +529,20 @@ class WorkflowMeta(type):
                 permission._waiting_to_decorate = False
 
                 attrs['_existing_permissions'][value.name] = permission
+
+        # normalize transitions:
+        transition_names_to_erase = {}
+        for transition_id, data in transition_disambiguation.items():
+            transition, names = data
+            if len(names) == 1:
+                continue
+            for name in names:
+                if name == transition.transition_hook.__name__:
+                    transition_names_to_erase[name] = transition
+        for name, transition in transition_names_to_erase.items():
+            state = transition.state_from()
+            del state._transitions[name]
+            del attrs[name]
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
