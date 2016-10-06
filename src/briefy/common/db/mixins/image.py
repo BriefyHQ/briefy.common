@@ -4,7 +4,10 @@ from collections.abc import Sequence
 from decimal import Decimal
 from sqlalchemy_utils import JSONType
 
+import logging
 import sqlalchemy as sa
+
+logger = logging.getLogger(__name__)
 
 
 class Image:
@@ -13,15 +16,18 @@ class Image:
     _image_filters = (
         ('maxbytes', (int,)),
         ('quality', (int,)),
+        ('fill', (str,)),
         ('format', (str,)),
         ('saturation', (Decimal,)),
         ('no_upscale', tuple()),
     )
 
     _available_sizes = (
-        ('thumb', 150, 150),
-        ('preview', 1200, 800),
-        ('original', 0, 0)
+        # ('name'. (w, h), keep_ratio, smart, fit-in),
+        ('thumb', (150, 150), False, True, False),
+        ('thumb_nocrop', (150, 150), False, False, True),
+        ('preview', (1200, 800), False, False, False),
+        ('original', (0, 0), False, False, False)  # As there is no resize, no need to keep ratio
     )
 
     source_path = sa.Column(sa.String(1000), nullable=False)
@@ -95,12 +101,31 @@ class Image:
         :return: A dictionary containing image scales.
         """
         scales = {}
-        for name, width, height in self._available_sizes:
+        for name, dimensions, ratio, smart, fit_in in self._available_sizes:
+            filters = []
+            width, height = dimensions
+            if fit_in:
+                filters.append('fill(white)')
+            if ratio:
+                try:
+                    original = (self.width, self.height)
+                    width, height = imaging.calc_scale_keep_ratio(original, dimensions)
+                except ValueError:
+                    logger.exception(
+                        '{repr}: {original} could not be resized to {dimensions}'.format(
+                            repr=self,
+                            original=original,
+                            dimensions=dimensions
+                        )
+                    )
+
             download_url = imaging.generate_image_url(
                 self.source_path,
                 width=width,
                 height=height,
-                smart=True
+                filters=tuple(filters),
+                smart=smart,
+                fit_in=fit_in
             )
             scales[name] = {
                 'width': width if width else self.width,

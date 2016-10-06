@@ -227,24 +227,29 @@ class TestImageMixin:
     def test_scales(self, session):
         """Test scales property."""
         asset = self._get_or_create_asset(session)
-
         scales_data = asset.scales
         assert isinstance(scales_data, dict)
 
         assert 'original' in scales_data
         assert scales_data['original']['width'] == 5760
         assert scales_data['original']['height'] == 3840
-        assert 'smart/files/jobs/1234.jpg' in scales_data['original']['download']
+        assert 'files/jobs/1234.jpg' in scales_data['original']['download']
 
         assert 'thumb' in scales_data
         assert scales_data['thumb']['width'] == 150
         assert scales_data['thumb']['height'] == 150
         assert '150x150/smart/files/jobs/1234.jpg' in scales_data['thumb']['download']
 
+        assert 'thumb_nocrop' in scales_data
+        assert scales_data['thumb_nocrop']['width'] == 150
+        assert scales_data['thumb_nocrop']['height'] == 150
+        url = scales_data['thumb_nocrop']['download']
+        assert 'fit-in/150x150/filters:fill(white)/files/jobs/1234.jpg' in url
+
         assert 'preview' in scales_data
         assert scales_data['preview']['width'] == 1200
         assert scales_data['preview']['height'] == 800
-        assert '1200x800/smart/files/jobs/1234.jpg' in scales_data['preview']['download']
+        assert '1200x800/files/jobs/1234.jpg' in scales_data['preview']['download']
 
     def test_update_metadata(self, session):
         """Test update_metadata method."""
