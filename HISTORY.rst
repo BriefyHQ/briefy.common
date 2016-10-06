@@ -6,6 +6,7 @@ History
 ------------------
 
 * Add python-logstash as requirement (ericof).
+* BODY-60: Fix scale url generation (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
