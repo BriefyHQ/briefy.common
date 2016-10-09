@@ -12,7 +12,7 @@ class Security:
     """Security mixin to be applied to all SQLAlchemy classes."""
 
     __actors__ = ()
-    __acl__ = (
+    __raw_acl__ = (
         ('list', ()),
         ('view', ()),
         ('edit', ()),
@@ -43,7 +43,7 @@ class Security:
         """
         user_id = getattr(user, 'id')
         user_groups = set(getattr(user, 'groups'))
-        acl = dict(self.__acl__)
+        acl = dict(self.__raw_acl__)
         allowed = set(acl.get('list', []))
         if user_groups.intersection(allowed):
             return True
@@ -59,7 +59,7 @@ class Security:
         """
         user_id = getattr(user, 'id')
         user_groups = set(getattr(user, 'groups'))
-        acl = dict(cls.__acl__)
+        acl = dict(cls.__raw_acl__)
         allowed = set(acl.get('list', []))
         if user_groups.intersection(allowed):
             return True
