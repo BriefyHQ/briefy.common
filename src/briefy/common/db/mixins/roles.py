@@ -8,6 +8,13 @@ import sqlalchemy as sa
 class BriefyRoles:
     """A Mixin providing internal Briefy roles for an object."""
 
+    __actors__ = (
+        'project_manager',
+        'finance_manager',
+        'scout_manager',
+        'qa_manager',
+    )
+
     _project_manager = sa.Column(
         'project_manager',
         UUIDType(binary=False),

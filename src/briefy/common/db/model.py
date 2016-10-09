@@ -2,9 +2,101 @@
 from briefy.common.utils.transformers import json_dumps
 from briefy.common.utils.transformers import to_serializable
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.query import Query
+from sqlalchemy.sql import or_
+from sqlalchemy.sql import text
 
-class Base:
+
+class Security:
+    """Security mixin to be applied to all SQLAlchemy classes."""
+
+    __actors__ = ()
+    __acl__ = (
+        ('list', ()),
+        ('view', ()),
+        ('edit', ()),
+        ('delete', ()),
+    )
+
+    def _actors_ids(self) -> list:
+        """List of actors ids for this object.
+
+        :return: List of actor ids.
+        """
+        actors = {getattr(self, attr, None) for attr in self.__actors__}
+        return list([a for a in actors if a])
+
+    def _actors_info(self) -> list:
+        """Return actor information for this object.
+
+        :return: Dictionary with attr name and user id.
+        """
+        return {attr: getattr(self, attr, None) for attr in self.__actors__}
+
+    @hybrid_method
+    def _can_list(self, user: 'briefy.ws.auth.AuthenticatedUser') -> bool:
+        """Check if the user can list this object.
+
+        :param id: User object..
+        :return: Boolean indicating if user is allowed to list this object.
+        """
+        user_id = getattr(user, 'id')
+        user_groups = set(getattr(user, 'groups'))
+        acl = dict(self.__acl__)
+        allowed = set(acl.get('list', []))
+        if user_groups.intersection(allowed):
+            return True
+        else:
+            return self.is_actor(user_id)
+
+    @_can_list.expression
+    def _can_list_expression(cls, user: 'briefy.ws.auth.AuthenticatedUser') -> bool:
+        """Check if the user can list this object.
+
+        :param id: User object..
+        :return: Boolean indicating if user is allowed to list this object.
+        """
+        user_id = getattr(user, 'id')
+        user_groups = set(getattr(user, 'groups'))
+        acl = dict(cls.__acl__)
+        allowed = set(acl.get('list', []))
+        if user_groups.intersection(allowed):
+            return True
+        else:
+            return cls.is_actor_expression(user_id)
+
+    @hybrid_method
+    def is_actor(self, user_id: str) -> bool:
+        """Check if the user_id is an actor in this object.
+
+        :param id: UUID of an user.
+        :return: Check if this id is for a user in here.
+        """
+        return user_id in [str(u) for u in self._actors_ids()]
+
+    @is_actor.expression
+    def is_actor_expression(cls, user_id: str) -> bool:
+        """Check if the user_id is an actor in this object.
+
+        :param id: UUID of an user.
+        :return: Check if this id is for a user in here.
+        """
+        actors = cls.__actors__
+        tablename = getattr(cls, '__tablename__')
+        expression = [
+            text("{tablename}.{column} = '{id}'".format(
+                id=user_id,
+                tablename=tablename,
+                column=column,
+            ))
+            for column in actors
+        ]
+
+        return or_(*expression)
+
+
+class Base(Security):
     """Base Declarative model."""
 
     __session__ = None
@@ -38,7 +130,7 @@ class Base:
         attrs = [key for key in data.keys()]
         return (data, attrs)
 
-    def _excluded_attr_from_serialization(self,  attrs: list, excludes: list) -> list:
+    def _excluded_attr_from_serialization(self, attrs: list, excludes: list) -> list:
         """Compute a list of attributes to be excluded from serialization.
 
         :return: List of attributes that should not be serialized.
@@ -68,7 +160,7 @@ class Base:
                 del(data[attr])
 
         for attr in required:
-            if not attr in data:
+            if attr not in data:
                 data[attr] = getattr(self, attr)
         return data
 
