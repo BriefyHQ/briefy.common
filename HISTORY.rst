@@ -7,6 +7,8 @@ History
 
 * Add python-logstash as requirement (ericof).
 * BODY-60: Fix scale url generation (ericof).
+* BODY-62: Add listing and summary serialization to objects (ericof).
+* BODY-62: Implement permission checking on object listing (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
