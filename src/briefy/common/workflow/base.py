@@ -89,7 +89,8 @@ class WorkflowTransition:
         if self.name not in state_from._transitions:
             raise state_from.exception_transition('Incorrect state for this transition')
 
-        if self.permission and (self.permission not in workflow.permissions()):
+        permission = workflow._existing_permissions.get(self.permission, None)
+        if permission and not permission(workflow):
             raise state_from.exception_permission('Permission not available')
 
     def _decorate(self, func):
