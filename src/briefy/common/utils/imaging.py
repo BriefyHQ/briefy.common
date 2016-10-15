@@ -3,6 +3,7 @@ from briefy.common.config import THUMBOR_BASE_URL
 from briefy.common.config import THUMBOR_INTERNAL_URL
 from briefy.common.config import THUMBOR_KEY
 from briefy.common.config import THUMBOR_PREFIX_SOURCE
+from briefy.common.log import logger
 from dateutil.parser import parse
 from fractions import Fraction
 from libthumbor import CryptoURL
@@ -140,8 +141,10 @@ def get_metadata_from_thumbor(source_path: str) -> dict:
     url = generate_metadata_url(source_path)
     try:
         response = requests.get(url, timeout=timeout)
-    except requests.exceptions.Timeout:
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+        logger.info('Connection issues updating metadata from {url}'.format(url=url))
         return metadata
+
     if response.status_code == 200:
         data = response.json()
         original = data.get('original', {})
