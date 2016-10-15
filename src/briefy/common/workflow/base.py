@@ -268,19 +268,20 @@ class WorkflowState(object):
         """Compare this state to other."""
         return not self.__eq__(other)
 
-    def transition(self, state_to, permission=None,
-                   name=None, title='', description='', category='', **kw):
+    def transition(
+            self, state_to, permission=None, name=None, title='', description='', category='', **kw
+    ):
         """Declare a decorator for transition functions.
 
-         Usage- on a WorkflowBody,  use either:
+        Usage- on a WorkflowBody,  use either::
 
-         submit = workflow_state.transition(state_to, permission, ...)
+        submit = workflow_state.transition(state_to, permission, ...)
 
-         or:
+        or::
 
-         @workflow_state.transition(state_to, permission, ...):
-         def submit(self):
-             # code to run when transition happens
+        @workflow_state.transition(state_to, permission, ...):
+        def submit(self):
+            # code to run when transition happens
 
         """
         # the transition will be set in self._transitions
@@ -298,8 +299,8 @@ class WorkflowState(object):
     def transition_from(self, state_from, permission, **kwargs):
         """Reverse of :meth:`WorkflowState.transition`.
 
-         Specifies a transition to this state from one or more source states.
-          Does not accept WorkflowStateGroup.
+        Specifies a transition to this state from one or more source states.
+        Does not accept WorkflowStateGroup.
         """
         # TODO: pending rewrite for the new transition system.
         # Will work on the decorator form as it is:
@@ -312,8 +313,8 @@ class WorkflowState(object):
     def permission(self, func=None, *, groups=None):
         """Create a Permission bound for this WorkflowState.
 
-         It can be used as a decorator or further filtered down
-         just regular Permission objetcs.
+        It can be used as a decorator or further filtered down
+        just regular Permission objetcs.
         """
         return Permission(func, groups=groups, states=self)
 
@@ -321,7 +322,7 @@ class WorkflowState(object):
 class WorkflowStateGroup(WorkflowState):
     """Group of states in a workflow.
 
-     The value parameter is a list of values or WorklowState instances.
+    The value parameter is a list of values or WorklowState instances.
     """
 
     def __init__(self, value, title='', description=''):
@@ -355,33 +356,33 @@ class WorkflowStateGroup(WorkflowState):
 class Permission:
     """Class used as a decorator to change a workflow method in a dynamic permission.
 
-     The method should check whether in the current context (available as self.context),
-     and the current document (self.document)
-     the permission it represents is granted. The method should
-     take no parameters other than 'self' (the Workflow instance)
+    The method should check whether in the current context (available as self.context),
+    and the current document (self.document)
+    the permission it represents is granted. The method should
+    take no parameters other than 'self' (the Workflow instance)
 
-     A permission with the method name is made available to the current workflow
-     and will exist anytime the decorated method returns a truthy value::
+    A permission with the method name is made available to the current workflow
+    and will exist anytime the decorated method returns a truthy value::
 
-     class MyWorkflow(Workflow):
-         @permission
-         def read(self):
-             return self.context and 'editor' in self.context.groups
+    class MyWorkflow(Workflow):
+        @permission
+        def read(self):
+            return self.context and 'editor' in self.context.groups
 
-     A non-decorator declaration can also be made by doing::
+    A non-decorator declaration can also be made by doing::
 
-     class MyWorkflow(Workflow):
-         read = Permission().for_groups('g:editors')
-         publish = Permission().for_groups('g:editors').for_state('pendding')
+    class MyWorkflow(Workflow):
+        read = Permission().for_groups('g:editors')
+        publish = Permission().for_groups('g:editors').for_state('pendding')
 
-     Permissions are checked by transitions inside workflow.states -
-     any transition requires a permission, which will be checked by its name.
+    Permissions are checked by transitions inside workflow.states -
+    any transition requires a permission, which will be checked by its name.
 
-     Moreover - permissions are also used by views when the workflowed method is
-     used by our webservices. In the briefy.ws package there is (TBD) a
-     "with_workflow" class decorator that dynamically attaches these permissions
-     to objects in a way the default authorization policy for Pyramid understands
-     them.
+    Moreover - permissions are also used by views when the workflowed method is
+    used by our webservices. In the briefy.ws package there is (TBD) a
+    "with_workflow" class decorator that dynamically attaches these permissions
+    to objects in a way the default authorization policy for Pyramid understands
+    them.
     """
 
     _name = None
@@ -398,11 +399,11 @@ class Permission:
     def _filtered_method(self, workflow):
         """Filtered methods.
 
-         This is separated fom __call__ so that it can be decorated by calls to
-         'for_groups' and 'for_state'.
+        This is separated fom __call__ so that it can be decorated by calls to
+        'for_groups' and 'for_state'.
 
-         The Always True permission is used if no actual method is ever given, allowing
-         for static or filtered only permissions.
+        The Always True permission is used if no actual method is ever given, allowing
+        for static or filtered only permissions.
         """
         return self.method(workflow) if self.method else True
 
@@ -443,8 +444,8 @@ class Permission:
     def for_groups(self, *args):
         """Apply permission just to some groups.
 
-         Chain call that decorates this permission so that it is filtered restricting the
-         permission to the groups passed in.
+        Chain call that decorates this permission so that it is filtered restricting the
+        permission to the groups passed in.
         """
         self.groups.update(args)
         return self
@@ -452,8 +453,8 @@ class Permission:
     def for_states(self, *args):
         """Apply permission just for some states.
 
-         Chain call that decorates this permission so that
-         it is filtered restricing the permission to the states passed in.
+        Chain call that decorates this permission so that
+        it is filtered restricing the permission to the states passed in.
         """
         # self.states can't be a set at this point because
         # states may be refereced by objects  - with late
