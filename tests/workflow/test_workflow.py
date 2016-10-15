@@ -3,15 +3,29 @@ from base_workflow import Customer
 from base_workflow import CustomerWorkflow
 from base_workflow import LegacyCustomer
 from base_workflow import User
+from briefy import common
+from conftest import queue_url
 from briefy.common import workflow
 from briefy.common.workflow import WorkflowPermissionException
 from datetime import datetime
+from zope.configuration.xmlconfig import XMLConfig
 
+import botocore
 import pytest
 
 
 class TestWorkflow:
     """Tests for Workflow."""
+
+    def setup_class(cls):
+        """Setup test class."""
+        class MockEndpoint(botocore.endpoint.Endpoint):
+            def __init__(self, host, *args, **kwargs):
+                super().__init__(queue_url(), *args, **kwargs)
+
+        botocore.endpoint.Endpoint = MockEndpoint
+
+        XMLConfig('configure.zcml', common)()
 
     def test_workflow_inherits_from_base_workflow(self):
         """Test if a new workflow inherits from base workflow."""

@@ -1,3 +1,4 @@
+from briefy import common
 from briefy.common.db import Base
 from briefy.common.db.mixins import Mixin
 from briefy.common.db.mixins.workflow import WorkflowBase
@@ -6,11 +7,42 @@ from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
 from briefy.common.workflow.exceptions import WorkflowStateException
 from briefy.common.workflow.exceptions import WorkflowTransitionException
-from briefy.common.workflow.exceptions import WorkflowPermissionException
+from conftest import queue_url
+from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from zope.configuration.xmlconfig import XMLConfig
 
+import botocore
 import pytest
+
+
+class Content(WorkflowBase):
+    """A base content."""
+
+    id = '123'
+    created_at = datetime.now()
+    updated_at = datetime.now()
+
+    def to_dict(self) -> dict:
+        """Return a dictionary with fields and values used by this Class.
+
+        :returns: Dictionary with fields and values used by this Class
+        """
+        data = self.__dict__.copy()
+        data['state_history'] = self.state_history
+        return data
+
+
+@pytest.fixture
+def mock_sqs():
+    class MockEndpoint(botocore.endpoint.Endpoint):
+        def __init__(self, host, *args, **kwargs):
+            super().__init__(queue_url(), *args, **kwargs)
+
+    botocore.endpoint.Endpoint = MockEndpoint
+
+    XMLConfig('configure.zcml', common)()
 
 
 @pytest.fixture
@@ -89,12 +121,12 @@ def persisted_object(simple_model, medium_model):
     return a
 
 
-def test_workflow_exists_in_model(persisted_object):
+def test_workflow_exists_in_model(persisted_object, mock_sqs):
     assert persisted_object.workflow
     assert persisted_object.workflow.name == 'test.workflow'
 
 
-def test_workflow_initial_state_works(persisted_object):
+def test_workflow_initial_state_works(persisted_object, mock_sqs):
     # Previous behavior had a 'created' default value hardcoded
     # in the sqlalchemy declaration of the 'state' field.
     # No other initial state would work
@@ -106,17 +138,17 @@ def test_workflow_initial_state_works(persisted_object):
     assert persisted_object.workflow.state.name == 's1'
 
 
-def test_workflow_state_can_be_called(persisted_object):
+def test_workflow_state_can_be_called(persisted_object, mock_sqs):
     assert persisted_object.workflow.s1()
     assert not persisted_object.workflow.s2()
 
 
-def test_workflow_unattached_state_cant_be_checked(simple_workflow):
+def test_workflow_unattached_state_cant_be_checked(simple_workflow, mock_sqs):
     with pytest.raises(WorkflowStateException):
         simple_workflow.s1()
 
 
-def test_workflow_states_property(persisted_object):
+def test_workflow_states_property(persisted_object, mock_sqs):
     wf = persisted_object.workflow
     assert wf.states
     assert len(wf.states) == 2
@@ -129,8 +161,8 @@ def test_workflow_states_property(persisted_object):
         wf.states.s3
 
 
-def test_workflow_states_can_flip(medium_workflow):
-    class M(WorkflowBase):
+def test_workflow_states_can_flip(medium_workflow, mock_sqs):
+    class M(Content):
         _workflow = medium_workflow
 
     obj = M()
@@ -141,7 +173,7 @@ def test_workflow_states_can_flip(medium_workflow):
     assert obj.state == 's1'
 
 
-def test_workflow_transition_with_incorrect_name_fails():
+def test_workflow_transition_with_incorrect_name_fails(mock_sqs):
     class MediumWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
@@ -156,7 +188,7 @@ def test_workflow_transition_with_incorrect_name_fails():
             """ Simply flips state """
             pass
 
-    class M(WorkflowBase):
+    class M(Content):
         _workflow = MediumWorkflow
 
     obj = M()
@@ -165,18 +197,17 @@ def test_workflow_transition_with_incorrect_name_fails():
         obj.workflow.flip()
 
 
-def test_workflow_transition_failes_without_permission(medium_workflow):
-    medium_workflow.permissions = lambda self: ['another_permission']
+def test_workflow_transition_passes_without_permission(medium_workflow, mock_sqs):
+    medium_workflow.permissions = lambda self: ['another_fake_permission']
 
-    class M(WorkflowBase):
+    class M(Content):
         _workflow = medium_workflow
 
     obj = M()
-    with pytest.raises(WorkflowPermissionException):
-        obj.workflow.flip()
+    obj.workflow.flip()
 
 
-def test_workflow_transition_from():
+def test_workflow_transition_from(mock_sqs):
     class MediumWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
@@ -191,7 +222,7 @@ def test_workflow_transition_from():
             """ Simply flips state """
             pass
 
-    class M(WorkflowBase):
+    class M(Content):
         _workflow = MediumWorkflow
 
     obj = M()
@@ -200,7 +231,7 @@ def test_workflow_transition_from():
     assert obj.state == 's2'
 
 
-def test_workflow_state_group(medium_workflow):
+def test_workflow_state_group(medium_workflow, mock_sqs):
     """
     Several unitary tests for WorkflowStategroup:
 
@@ -223,7 +254,7 @@ def test_workflow_state_group(medium_workflow):
     class DerivedWorkflow(medium_workflow):
         group_s = WorkflowStateGroup([medium_workflow.s1])
 
-    class M(WorkflowBase):
+    class M(Content):
         _workflow = DerivedWorkflow
 
     obj = M()
@@ -245,8 +276,8 @@ def test_workflow_state_group(medium_workflow):
                 pass
 
 
-def test_workflow_raises_on_unknown_state(simple_workflow):
-    class M(WorkflowBase):
+def test_workflow_raises_on_unknown_state(simple_workflow, mock_sqs):
+    class M(Content):
         _workflow = simple_workflow
         state = 'unknown'
 
@@ -254,25 +285,25 @@ def test_workflow_raises_on_unknown_state(simple_workflow):
         M()
 
 
-def test_workflow_representation(simple_workflow):
-    class M(WorkflowBase):
+def test_workflow_representation(simple_workflow, mock_sqs):
+    class M(Content):
         _workflow = simple_workflow
     assert 'Workflow' in repr(M().workflow)
 
 
-def test_workflow_works_for_a_dictionary(simple_workflow):
+def test_workflow_works_for_a_dictionary(simple_workflow, mock_sqs):
     obj = {'state': None, 'state_history': None}
     simple_workflow(obj)
     assert obj['state'] == 's1'
 
 
-def test_workflow_notifications(medium_workflow):
+def test_workflow_notifications(medium_workflow, mock_sqs):
     class OtherWorkflow(medium_workflow):
         def _notify(self, transition):
             self.document.test_transitioned = True
             super()._notify(transition)
 
-    class M(WorkflowBase):
+    class M(Content):
         _workflow = OtherWorkflow
 
     obj = M()
