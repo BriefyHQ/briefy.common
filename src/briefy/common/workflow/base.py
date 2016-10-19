@@ -397,7 +397,7 @@ class Permission:
         self.groups = self._process_groups(groups)
         self(permission_method)
 
-    def _process_groups(self, groups=None) -> set:
+    def _process_groups(self, groups=()) -> set:
         """Process a list of groups and return a set with strings."""
         processed = set()
         for group in groups:

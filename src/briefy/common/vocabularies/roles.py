@@ -25,6 +25,7 @@ class Groups(Enum):
     product = 'g:briefy_product'
     qa = 'g:briefy_qa'
     scout = 'g:briefy_scout'
+    system = 'g:system'
     support = 'g:briefy_support'
     tech = 'g:briefy_tech'
     customers = 'g:customers'
