@@ -403,7 +403,7 @@ class Permission:
         groups = groups if groups else ()
         for group in groups:
             processed.add(
-                group.value if getattr(group, 'value') else group
+                group.value if hasattr(group, 'value') else group
             )
         return processed
 
