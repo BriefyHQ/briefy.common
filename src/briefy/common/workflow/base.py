@@ -400,6 +400,7 @@ class Permission:
     def _process_groups(self, groups=()) -> set:
         """Process a list of groups and return a set with strings."""
         processed = set()
+        groups = groups if groups else ()
         for group in groups:
             processed.add(
                 group.value if getattr(group, 'value') else group
