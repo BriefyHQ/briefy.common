@@ -15,6 +15,6 @@ def test_groups():
     """Test local roles vocabulary."""
     vocab = roles.Groups
 
-    assert len(vocab) == 12
+    assert len(vocab) == 13
     assert vocab['professionals'].value == 'g:professionals'
     assert vocab['professionals'].name == 'professionals'
