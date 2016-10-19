@@ -1,6 +1,8 @@
 """Briefy base workflow."""
 from .base import Workflow
 from briefy.common.event.workflow import WorkflowTranstionEvent
+from zope.event import notify
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -37,5 +39,8 @@ class BriefyWorkflow(Workflow):
         wf_transition_event = WorkflowTranstionEvent(
             self.document, request, transition, user
         )
+        # Notify using zope.event
+        notify(wf_transition_event)
+
         wf_transition_event()
         super()._notify(transition)
