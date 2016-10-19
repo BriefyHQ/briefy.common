@@ -394,8 +394,17 @@ class Permission:
         if isinstance(states, (str, WorkflowState)):
             states = [states]
         self.states = list(states) if states else list()
-        self.groups = set(groups) if groups else set()
+        self.groups = self._process_groups(groups)
         self(permission_method)
+
+    def _process_groups(self, groups=None) -> set:
+        """Process a list of groups and return a set with strings."""
+        processed = set()
+        for group in groups:
+            processed.add(
+                group.value if getattr(group, 'value') else group
+            )
+        return processed
 
     def _filtered_method(self, workflow):
         """Filtered methods.
@@ -448,6 +457,7 @@ class Permission:
         Chain call that decorates this permission so that it is filtered restricting the
         permission to the groups passed in.
         """
+        args = self._process_groups(args)
         self.groups.update(args)
         return self
 

@@ -9,6 +9,8 @@ History
 * BODY-60: Fix scale url generation (ericof).
 * BODY-62: Add listing and summary serialization to objects (ericof).
 * BODY-62: Implement permission checking on object listing (ericof).
+* Add briefy.common.users.SystemUser (ericof).
+* Add vocabulary with default groups (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
