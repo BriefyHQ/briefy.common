@@ -13,4 +13,3 @@ SystemUser = BaseUser(
         'groups': ['g:system', ],
     }
 )
-
