@@ -15,7 +15,7 @@ def _set_creation_order(instance):
     """Assign a '_creation_order' sequence to the given instance.
 
     This allows multiple instances to be sorted in order of creation
-    (typically within a single thread; the counter is not threadsafe).
+    (typically within a single thread; the counter is not thread safe).
 
     This code is from SQLAlchemy, available here:
     http://www.sqlalchemy.org/trac/browser/lib/sqlalchemy/util/langhelpers.py#L836
@@ -365,16 +365,16 @@ class Permission:
     A permission with the method name is made available to the current workflow
     and will exist anytime the decorated method returns a truthy value::
 
-    class MyWorkflow(Workflow):
-        @permission
-        def read(self):
-            return self.context and 'editor' in self.context.groups
+        class MyWorkflow(Workflow):
+            @permission
+            def read(self):
+                return self.context and 'editor' in self.context.groups
 
     A non-decorator declaration can also be made by doing::
 
-    class MyWorkflow(Workflow):
-        read = Permission().for_groups('g:editors')
-        publish = Permission().for_groups('g:editors').for_state('pendding')
+        class MyWorkflow(Workflow):
+            read = Permission().for_groups('g:editors')
+            publish = Permission().for_groups('g:editors').for_state('pendding')
 
     Permissions are checked by transitions inside workflow.states -
     any transition requires a permission, which will be checked by its name.

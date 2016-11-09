@@ -11,6 +11,7 @@ History
 * BODY-62: Implement permission checking on object listing (ericof).
 * Add briefy.common.users.SystemUser (ericof).
 * Add vocabulary with default groups (ericof).
+* Fix identation of code examples in the Permission docstring (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
