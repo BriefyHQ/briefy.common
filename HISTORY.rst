@@ -12,6 +12,7 @@ History
 * Add briefy.common.users.SystemUser (ericof).
 * Add vocabulary with default groups (ericof).
 * Fix identation of code examples in the Permission docstring (ericof).
+* Add PhotoCategoryChoices and VideoCategoryChoices vocabularies (ericof).
 
 1.1.2 (2016-10-04)
 ------------------
