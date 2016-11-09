@@ -12,6 +12,7 @@ class LocalRoles(Enum):
     scout_manager = 'r:scout_manager'
     qa_manager = 'r:qa_manager'
     finance_manager = 'r:finance_manager'
+    owner = 'r:owner'
 
 
 class Groups(Enum):
