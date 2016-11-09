@@ -18,7 +18,6 @@ requires = [
     'libthumbor',
     'newrelic',
     'prettyconf',
-    'pkg_resources',
     'pyCrypto',
     'python-logstash',
     'python-slugify',
