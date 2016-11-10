@@ -6,7 +6,7 @@ def test_local_roles():
     """Test local roles vocabulary."""
     vocab = roles.LocalRoles
 
-    assert len(vocab) == 7
+    assert len(vocab) == 8
     assert vocab['system'].value == 'r:system'
     assert vocab['system'].name == 'system'
 
