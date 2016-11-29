@@ -13,6 +13,8 @@ History
 * Add vocabulary with default groups (ericof).
 * Fix identation of code examples in the Permission docstring (ericof).
 * Add PhotoCategoryChoices and VideoCategoryChoices vocabularies (ericof).
+* Add ThreeSixtyImage and Video mixins. Move Image mixin to assets module. (ericof).
+
 
 1.1.2 (2016-10-04)
 ------------------
