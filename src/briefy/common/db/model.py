@@ -231,6 +231,7 @@ class Base(Security):
         for k, v in values.items():
             setattr(self, k, v)
 
+
 Base = declarative_base(cls=Base)
 
 

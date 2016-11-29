@@ -44,4 +44,5 @@ class Queue(BaseQueue):
             'data': {}
         }
 
+
 EventQueue = Queue()
