@@ -63,6 +63,7 @@ def simple_workflow():
         s2 = WorkflowState("s2", title="2", description="second")
     return SimpleWorkflow
 
+
 # Used as guard to ensure the model is created just once in a test session
 SimpleModel = None
 MediumModel = None
