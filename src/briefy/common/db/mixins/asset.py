@@ -22,7 +22,7 @@ class Asset:
     raw_metadata = sa.Column(JSONType)
 
 
-class Image(Asset):
+class ImageMixin:
     """A mixin providing image information."""
 
     _image_filters = (
@@ -41,8 +41,6 @@ class Image(Asset):
         ('preview', (1200, 800), False, False, False),
         ('original', (0, 0), False, False, False)  # As there is no resize, no need to keep ratio
     )
-
-    content_type = sa.Column(sa.String(100), nullable=False, default='image/jpeg')
 
     @property
     def image_filters(self) -> dict:
@@ -189,15 +187,33 @@ class Image(Asset):
         return image
 
 
-class ThreeSixtyImage(Image):
+class Image(ImageMixin, Asset):
+    """An image object."""
+
+    pass
+
+
+class ThreeSixtyImageMixin:
     """A mixin providing 360 Image information."""
 
     pass
 
 
-class Video(Asset):
-    """A mixin providing video information."""
+class ThreeSixtyImage(ThreeSixtyImageMixin, Image):
+    """A ThreeSixtyImage object."""
+
+    pass
+
+
+class VideoMixin:
+    """A mixin providing video specific-information."""
 
     duration = sa.Column(sa.Integer, default=0)
     codecs = sa.Column(sa.Text, default='')
     audio_channels = sa.Column(sa.Integer, default=0)
+
+
+class Video(VideoMixin, Asset):
+    """A Video object."""
+
+    pass

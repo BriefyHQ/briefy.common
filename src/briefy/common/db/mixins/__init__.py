@@ -1,8 +1,11 @@
 """Database mixins."""
 from briefy.common.db.mixins.address import Address
 from briefy.common.db.mixins.asset import Image  # noQA
+from briefy.common.db.mixins.asset import ImageMixin  # noQA
 from briefy.common.db.mixins.asset import ThreeSixtyImage  # noQA
+from briefy.common.db.mixins.asset import ThreeSixtyImageMixin  # noQA
 from briefy.common.db.mixins.asset import Video  # noQA
+from briefy.common.db.mixins.asset import VideoMixin  # noQA
 from briefy.common.db.mixins.external import KnackMixin  # noQA
 from briefy.common.db.mixins.identifiable import GUID
 from briefy.common.db.mixins.metadata import BaseMetadata  # noQA
