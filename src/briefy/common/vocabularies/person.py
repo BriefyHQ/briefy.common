@@ -5,5 +5,5 @@ from enum import Enum
 class GenderCategories(Enum):
     """Possible gender options."""
 
-    f = 'Female'
-    m = 'Male'
+    f = 'f'
+    m = 'm'
