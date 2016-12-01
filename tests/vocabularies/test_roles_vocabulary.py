@@ -1,6 +1,7 @@
 """Tests for `briefy.common.vocabularies.roles` module."""
 from briefy.common.vocabularies import roles
 
+
 def test_local_roles():
     """Test local roles vocabulary."""
     vocab = roles.LocalRoles
