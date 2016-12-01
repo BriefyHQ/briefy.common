@@ -1,4 +1,5 @@
 """Helpers to transform data."""
+from enum import Enum
 from functools import singledispatch
 from sqlalchemy_utils import Country
 
@@ -13,12 +14,6 @@ def to_serializable(val):
     return str(val)
 
 
-@singledispatch
-def to_serializable_none(val):
-    """Used by default."""
-    return str(val)
-
-
 @to_serializable.register(datetime.datetime)
 def ts_datetime(val):
     """Used if *val* is an instance of datetime."""
@@ -28,7 +23,7 @@ def ts_datetime(val):
 @to_serializable.register(datetime.date)
 def ts_date(val):
     """Used if *val* is an instance of date."""
-    return '{}T00:00:00'.format(val.isoformat())
+    return '{value}T00:00:00'.format(value=val.isoformat())
 
 
 @to_serializable.register(datetime.time)
@@ -47,6 +42,12 @@ def ts_colander_null(val):
 def ts_sautils_country(val):
     """Serialize Country instance do country code string."""
     return val.code
+
+
+@to_serializable.register(Enum)
+def ts_labeled_enum(val):
+    """Serialize LabeledEnum instance to string."""
+    return str(val.value)
 
 
 def json_dumps(obj):

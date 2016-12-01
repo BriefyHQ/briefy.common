@@ -1,61 +1,32 @@
 """Tests for `briefy.common.utils.transformers` module."""
 from briefy.common.utils.transformers import json_dumps
+from briefy.common.vocabularies.person import GenderCategories
+from datetime import date
+from datetime import datetime
+from datetime import time
+from decimal import Decimal
+
+import colander
+import pytest
+import pytz
 
 
-class TestJsonDumps:
-    """Tests for json_dumps."""
+testdata = [
+    (date(2012, 3, 29), '"2012-03-29T00:00:00"'),
+    (datetime(2012, 3, 29, 12, 31, 22, tzinfo=pytz.timezone('UTC')), '"2012-03-29T12:31:22+00:00"'),
+    (time(12, 31, 22), '"12:31:22"'),
+    (Decimal('2.35'), '"2.35"'),
+    (colander.null, 'null'),
+    (2.2, '2.2'),
+    (2, '2'),
+    ('Foo', '"Foo"'),
+    (['Foo', ], '["Foo"]'),
+    (GenderCategories.m, '"m"'),
+    (GenderCategories.f, '"f"'),
+]
 
-    def test_serialize_date(self):
-        """Test serialization of a date object."""
-        from datetime import date
 
-        value = date(2012, 3, 29)
-        expected = '"2012-03-29T00:00:00"'
-        assert json_dumps(value) == expected
-
-    def test_serialize_datetime(self):
-        """Test serialization of a datetime object."""
-        from datetime import datetime
-        import pytz
-
-        value = datetime(2012, 3, 29, 12, 31, 22, tzinfo=pytz.timezone('UTC'))
-        expected = '"2012-03-29T12:31:22+00:00"'
-        assert json_dumps(value) == expected
-
-    def test_serialize_time(self):
-        """Test serialization of a time object."""
-        from datetime import time
-
-        value = time(12, 31, 22)
-        expected = '"12:31:22"'
-        assert json_dumps(value) == expected
-
-    def test_serialize_decimal(self):
-        """Test serialization of a decimal object."""
-        from decimal import Decimal
-
-        value = Decimal('2.35')
-        expected = '"2.35"'
-        assert json_dumps(value) == expected
-
-    def test_serialize_colander_null(self):
-        """Test serialization of a colander.null."""
-        import colander
-
-        value = colander.null
-        expected = 'null'
-        assert json_dumps(value) == expected
-
-    def test_serialize_default(self):
-        """Test serialization of default object."""
-        value = 2
-        expected = '2'
-        assert json_dumps(value) == expected
-
-        value = 'Foo'
-        expected = '"Foo"'
-        assert json_dumps(value) == expected
-
-        value = ['Foo', ]
-        expected = '["Foo"]'
-        assert json_dumps(value) == expected
+@pytest.mark.parametrize("value,expected", testdata)
+def test_serialize(value, expected):
+    """Test serialization of am object."""
+    assert json_dumps(value) == expected
