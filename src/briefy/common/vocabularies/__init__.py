@@ -5,11 +5,12 @@ import sys
 
 def LabeledEnum(class_name: str, names: list) -> Enum:
     """
-    Utility to build Enum's where all items have a non-optional 'label' attribute
+    Utility to build Enum's where all items have a non-optional 'label' attribute.
 
     :param class_name: The name of the enum
     :param names: A sequence where each item is a 3-item sequence with ('name', 'value', 'label')
-                  or a two-item seq. where each item is ('name', 'label') and name is doubled as value.
+                  or a two-item seq. where each item is ('name', 'label')
+                  and name is doubled as value.
 
     """
     original_frame = sys._getframe().f_back
