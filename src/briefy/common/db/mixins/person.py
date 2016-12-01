@@ -12,7 +12,15 @@ class NameMixin:
 
     first_name = sa.Column(sa.String(255), nullable=False, unique=False)
     last_name = sa.Column(sa.String(255), nullable=False, unique=False)
-    display_name = sa.Column(sa.String(255), nullable=True, unique=False)
+
+    @hybrid_property
+    def display_name(self):
+        """Display name of this person.
+
+        First try to return the content of title, otherwise, fullname.
+        """
+        title = getattr(self, 'title', getattr(self, 'fullname', ''))
+        return title
 
     @hybrid_property
     def fullname(self):
