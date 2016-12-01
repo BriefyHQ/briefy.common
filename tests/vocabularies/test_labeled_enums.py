@@ -16,6 +16,7 @@ def test_labeled_enums():
     assert Categories.interior.value == 'interior'
     assert Categories.interior.label == 'Interior'
 
+
 def test_labeled_enums_with_2_items():
     options = (
         ('food', 'Food'),
