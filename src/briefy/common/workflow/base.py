@@ -506,7 +506,6 @@ class WorkflowMeta(type):
                 attrs['_existing_permissions'].update(base._existing_permissions)
 
         transition_disambiguation = {}
-
         for name, value in attrs.items():
 
             if isinstance(value, WorkflowState):
@@ -522,6 +521,9 @@ class WorkflowMeta(type):
             elif isinstance(value, WorkflowTransition):
                 transition = value
                 while transition:
+                    hook = transition.transition_hook
+                    doc = hook.__doc__ if hook else transition.__doc__
+                    transition.__doc__ = doc
                     if not transition.name or transition._name_inherited_from_hook_method:
                         if name != transition._name_inherited_from_hook_method:
                             transition.name = name
@@ -542,6 +544,8 @@ class WorkflowMeta(type):
                 # there is no need to set a stub decorated method:
                 if permission.method is None:
                     permission._name = name
+                else:
+                    permission.__doc__ = permission.method.__doc__
 
                 # Activate the permission callable:
                 permission._waiting_to_decorate = False
