@@ -2,7 +2,7 @@
 History
 =======
 
-1.1.3 (Unreleased)
+1.1.3 (2016-12-05)
 ------------------
 
 * Add python-logstash as requirement (ericof).
