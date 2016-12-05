@@ -11,19 +11,56 @@ logger = logging.getLogger(__name__)
 
 
 class Asset:
-    """A mixin providing base asset information."""
+    """Mixin for an Asset.
+
+    An Asset is a deliverable content of a Job.
+    It is subclassed to specific types like Image and Video.
+    """
 
     source_path = sa.Column(sa.String(1000), nullable=False)
+    """Path to the source file.
+
+    i.e.: files/foo/bar/image.jpg
+    """
+
     filename = sa.Column(sa.String(1000), nullable=False)
+    """Original filename of the source file.
+
+    i.e.: image.jpg
+    """
+
     content_type = sa.Column(sa.String(100), nullable=False)
+    """Mimetype of the file.
+
+    i.e.: image/jpeg
+    """
+
     size = sa.Column(sa.Integer, default=0)
+    """Filesize, in bytes.
+
+    i.e.: 4000000
+    """
     width = sa.Column(sa.Integer, default=0)
+    """File width, in pixels.
+
+    i.e.: 4096
+    """
+
     height = sa.Column(sa.Integer, default=0)
+    """File height, in pixels.
+
+    i.e.: 2048
+    """
+
     raw_metadata = sa.Column(JSONType)
+    """Raw metadata from the source file.
+
+    Dictionary containing information extracted from file's metadata.
+    """
 
 
 class ImageMixin:
-    """A mixin providing image information."""
+    """A mixin providing base image methods."""
 
     _image_filters = (
         ('maxbytes', (int,)),
@@ -33,6 +70,7 @@ class ImageMixin:
         ('saturation', (Decimal,)),
         ('no_upscale', tuple()),
     )
+    """Available filters to be applied to the source image."""
 
     _available_sizes = (
         # ('name'. (w, h), keep_ratio, smart, fit-in),
@@ -41,6 +79,13 @@ class ImageMixin:
         ('preview', (1200, 800), False, False, False),
         ('original', (0, 0), False, False, False)  # As there is no resize, no need to keep ratio
     )
+    """Available sizes to image crop and resizing.
+
+    Format is:
+
+        * ('size name'. (width, height), keep_ratio, smart, fit-in)
+
+    """
 
     @property
     def image_filters(self) -> dict:
@@ -188,19 +233,28 @@ class ImageMixin:
 
 
 class Image(ImageMixin, Asset):
-    """An image object."""
+    """An Image object.
+
+    It subclasses :class:`Asset` and :class:`ImageMixin`.
+    """
 
     pass
 
 
 class ThreeSixtyImageMixin:
-    """A mixin providing 360 Image information."""
+    """A 360 Image object.
+
+    It will provide specific actions to deal with this type of assets.
+    """
 
     pass
 
 
 class ThreeSixtyImage(ThreeSixtyImageMixin, Image):
-    """A ThreeSixtyImage object."""
+    """A 360 Image object.
+
+    It subclasses :class:`Image` and :class:`ThreeSixtyImageMixin`.
+    """
 
     pass
 
@@ -209,11 +263,22 @@ class VideoMixin:
     """A mixin providing video specific-information."""
 
     duration = sa.Column(sa.Integer, default=0)
+    """Duration of this video, in seconds.
+
+    i.e.: 60
+    """
+
     codecs = sa.Column(sa.Text, default='')
+    """Codecs used in this video."""
+
     audio_channels = sa.Column(sa.Integer, default=0)
+    """Number of audio channels."""
 
 
 class Video(VideoMixin, Asset):
-    """A Video object."""
+    """A Video object.
+
+    It subclasses :class:`Asset` and :class:`VideoMixin`.
+    """
 
     pass

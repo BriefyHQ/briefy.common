@@ -4,15 +4,12 @@ from colander import null
 from colander import SchemaType
 
 
-def validate_and_serialize(schema, data):
+def validate_and_serialize(schema: colander.SchemaType, data: dict) -> dict:
     """Validate Python data using a colander schema.
 
     :param schema: Schema
-    :type schema: colander.SchemaType
     :param data: entity data
-    :type data: dict
     :returns: Colaner serialized data
-    :rtype: dict
     :raises: `colander.Invalid`
     """
     # Colander only runs its validation on de-serialize
@@ -29,7 +26,7 @@ class Dictionary(SchemaType):
         if appstruct is null or appstruct is None:
             return None
         elif not (isinstance(appstruct, dict)):
-            raise Invalid(node, '{} is not a dict'.format(appstruct))
+            raise Invalid(node, '{struct} is not a dict'.format(struct=appstruct))
         return appstruct
 
     def deserialize(self, node, cstruct):
@@ -45,7 +42,7 @@ class List(SchemaType):
         if appstruct is null or appstruct is None:
             return None
         elif not (isinstance(appstruct, list)):
-            raise Invalid(node, '{} is not a list'.format(appstruct))
+            raise Invalid(node, '{struct} is not a dict'.format(struct=appstruct))
         return appstruct
 
     def deserialize(self, node, cstruct):

@@ -20,11 +20,11 @@ class Mixin(GUID, Timestamp, Workflow):
     """Base mixin to be used for content classes on Briefy.
 
     Important: Always add Mixin as a base class _before_ the
-    SQLalchemy instrumented Base model - to warrant that any cooperative methods
+    SQLAlchemy instrumented Base model - to warrant that any cooperative methods
     in the mixins are actually called.
     """
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of this object."""
         return (
             """<{0}(id='{1}' state='{2}' created='{3}' updated='{4}')>""").format(
@@ -37,4 +37,11 @@ class Mixin(GUID, Timestamp, Workflow):
 
 
 class AddressMixin(Address, Mixin):
-    """Base Address mixin."""
+    """Base Address mixin.
+
+    Aggregates the following mixins:
+
+        * :class:`briefy.common.db.mixins.Mixin` and
+        * :class:`briefy.common.db.mixins.address.Address`
+
+    """

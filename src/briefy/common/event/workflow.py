@@ -11,13 +11,19 @@ class IWorkflowTransitionEvent(IDataEvent):
 
 @implementer(IWorkflowTransitionEvent)
 class WorkflowTranstionEvent(BaseEvent):
-    """Base class for workflow transition events that will be queued on sqs."""
+    """Base class for workflow transition events.
+
+    This event will write to the events queue on AWS SQS.
+    """
 
     logger = logger
 
     @property
-    def event_name(self):
-        """Automatic generate event name from model class name and transation name."""
+    def event_name(self) -> str:
+        """Automatic generate event name from model class name and transaction name.
+
+        :returns: Event name.
+        """
         model_name = self.obj.__class__.__name__.lower()
         transition_name = self.transition.name
         name = '{model_name}.workflow.{transition_name}'
@@ -37,11 +43,10 @@ class WorkflowTranstionEvent(BaseEvent):
         kwargs = dict(actor=user_id, request_id=None)
         super().__init__(obj, **kwargs)
 
-    def __call__(self):
+    def __call__(self) -> str:
         """Notify about the event.
 
         :returns: Id from message in the queue
-        :rtype: str
         """
         logger = self.logger
         queue = self.queue
@@ -58,9 +63,18 @@ class WorkflowTranstionEvent(BaseEvent):
         try:
             message_id = queue.write_message(payload)
         except Exception as e:
-            logger.error('Event {} not fired. Exception: {}'.format(self.event_name, e),
-                         extra={'payload': payload})
+            logger.error(
+                'Event {name} not fired. Exception: {exc}'.format(
+                    name=self.event_name,
+                    exc=e
+                ),
+                extra={'payload': payload})
         else:
-            logger.debug('Event {} fired with message {}'.format(self.event_name, message_id))
+            logger.debug(
+                'Event {name} fired with message {id_}'.format(
+                    name=self.event_name,
+                    id_=message_id
+                )
+            )
 
         return message_id

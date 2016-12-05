@@ -13,3 +13,4 @@ SystemUser = BaseUser(
         'groups': ['g:system', ],
     }
 )
+"""A Hard-coded System User to be used by other Briefy systems."""

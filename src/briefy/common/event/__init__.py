@@ -1,5 +1,6 @@
 """Briefy base events."""
 from briefy.common.queue import IQueue
+from briefy.common.queue.event import Queue
 from zope.component import getUtility
 from zope.interface import Interface
 
@@ -17,13 +18,29 @@ class IDataEvent(IEvent):
 
 
 class BaseEvent:
-    """A base event class for briefy."""
+    """A base event class used by all Briefy related events.
+
+    Any event subclassing this one will write to an AWS SQS queue.
+    """
 
     event_name = ''
+    """Name of the event."""
+
     actor = ''
+    """ID of the actor triggering this event."""
+
     guid = ''
+    """ID of this event."""
+
     created_at = ''
+    """Datetime of the event."""
+
     request_id = ''
+    """ID of the request.
+
+    This is useful for web transactions.
+    """
+
     logger = logger
     data = None
     obj = None
@@ -40,15 +57,14 @@ class BaseEvent:
         self.created_at = obj.created_at
 
     @property
-    def queue(self):
+    def queue(self) -> Queue:
         """Return the events queue."""
         return getUtility(IQueue, 'events.queue')
 
-    def __call__(self):
+    def __call__(self) -> str:
         """Notify about the event.
 
         :returns: Id from message in the queue
-        :rtype: str
         """
         logger = self.logger
         queue = self.queue
@@ -64,9 +80,18 @@ class BaseEvent:
         try:
             message_id = queue.write_message(payload)
         except Exception as e:
-            logger.error('Event {} not fired. Exception: {}'.format(self.event_name, e),
-                         extra={'payload': payload})
+            logger.error(
+                'Event {name} not fired. Exception: {exc}'.format(
+                    name=self.event_name,
+                    exc=e
+                ),
+                extra={'payload': payload})
         else:
-            logger.debug('Event {} fired with message {}'.format(self.event_name, message_id))
+            logger.debug(
+                'Event {name} fired with message {id_}'.format(
+                    name=self.event_name,
+                    id_=message_id
+                )
+            )
 
         return message_id

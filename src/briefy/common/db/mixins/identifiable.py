@@ -7,13 +7,25 @@ import sqlalchemy as sa
 
 
 class GUID:
-    """A Mixin providing a id as primary key."""
+    """A Mixin providing a id as primary key.
 
-    id = sa.Column(UUIDType(binary=False),
-                   unique=True,
-                   primary_key=True,
-                   default=generate_uuid,
-                   info={'colanderalchemy': {
-                         'title': 'ID',
-                         'validator': colander.uuid,
-                         'typ': colander.String}})
+    The id field is an UUID-4 object.
+    """
+
+    id = sa.Column(
+        UUIDType(binary=False),
+        unique=True,
+        primary_key=True,
+        default=generate_uuid,
+        info={
+            'colanderalchemy': {
+                'title': 'ID',
+                'validator': colander.uuid,
+                'typ': colander.String
+            }
+        }
+    )
+    """ID of the object.
+
+    Primary key using a UUID-4 info.
+    """

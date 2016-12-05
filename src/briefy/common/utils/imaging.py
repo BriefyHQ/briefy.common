@@ -24,6 +24,7 @@ ORIENTATION = {
     7: 'Right Bottom (flipped)',
     8: 'Left Bottom'
 }
+"""Dictionary with orientation ids and human readable representations."""
 
 
 def _generate_thumbor_url(

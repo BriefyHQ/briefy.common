@@ -8,7 +8,7 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
+   :numbered: 2
    :titlesonly:
 
    intro

@@ -11,10 +11,13 @@ minor_version = version[1]
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx_autodoc_typehints',
     'sphinx.ext.coverage',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.sadisp',
+    'sphinx.ext.inheritance_diagram',
 ]
 
 templates_path = ['_templates']
@@ -36,6 +39,8 @@ exclude_patterns = ['_build']
 # show_authors = False
 pygments_style = 'sphinx'
 todo_include_todos = True
+graphviz = 'dot -Tpng'.split()
+
 
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
@@ -54,3 +59,5 @@ html_theme_options = {
     'bootswatch_theme': "cosmo",
     'bootstrap_version': "3",
 }
+
+autodoc_member_order = 'bysource'

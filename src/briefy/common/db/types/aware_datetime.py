@@ -13,7 +13,7 @@ class AwareDateTime(types.TypeDecorator):
 
     impl = types.DateTime
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(self, value, dialect) -> datetime:
         """Save datetime value as UTC."""
         data = value
         if isinstance(data, datetime) and data.tzinfo:

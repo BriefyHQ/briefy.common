@@ -24,6 +24,10 @@ class BriefyRoles:
               'missing': colander.drop,
               'typ': colander.String}}
     )
+    """Project manager id.
+
+    Should be accessed using :func:`BriefyRoles.project_manager`.
+    """
 
     _finance_manager = sa.Column(
         'finance_manager',
@@ -34,6 +38,10 @@ class BriefyRoles:
               'missing': colander.drop,
               'typ': colander.String}}
     )
+    """Finance manager id.
+
+    Should be accessed using :func:`BriefyRoles.finance_manager`.
+    """
 
     _scout_manager = sa.Column(
         'scout_manager',
@@ -44,6 +52,10 @@ class BriefyRoles:
               'missing': colander.drop,
               'typ': colander.String}}
     )
+    """Scouting manager id.
+
+    Should be accessed using :func:`BriefyRoles.scout_manager`.
+    """
 
     _qa_manager = sa.Column(
         'qa_manager',
@@ -54,6 +66,10 @@ class BriefyRoles:
               'missing': colander.drop,
               'typ': colander.String}}
     )
+    """Quality Assurance manager id.
+
+    Should be accessed using :func:`BriefyRoles.qa_manager`.
+    """
 
     @property
     def project_manager(self) -> str:

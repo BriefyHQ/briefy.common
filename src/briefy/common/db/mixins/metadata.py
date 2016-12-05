@@ -6,17 +6,37 @@ import sqlalchemy as sa
 
 
 class BaseMetadata:
-    """A Mixin slug, title and description."""
+    """A Mixin providing slug, title and description.
+
+    These fields are used by most, if not all, content objects.
+    """
 
     title = sa.Column('title', sa.String(), nullable=False)
-    description = sa.Column('description',
+    """Title for the object.
+
+    This is the main display information for the object and it can have UI aliases for each usage
+
+    i.e.: Job Name, Display Name
+    """
+
+    description = sa.Column(
+        'description',
                             sa.Text,
                             nullable=True,
-                            info={'colanderalchemy': {
-                                'title': 'Description',
-                                'missing': colander.drop,
-                                'typ': colander.String}}
-                            )
+                            info={
+                                'colanderalchemy': {
+                                    'title': 'Description',
+                                    'missing': colander.drop,
+                                    'typ': colander.String
+                                }
+                            }
+    )
+    """Description for the object.
+
+    Text field allowing a small, but meaninful description for an object.
+    """
+
+
     _slug = sa.Column('slug',
                       sa.String(255),
                       nullable=True,
@@ -25,6 +45,10 @@ class BaseMetadata:
                           'missing': colander.drop,
                           'typ': colander.String}}
                       )
+    """Slug -- friendly id -- for the object.
+
+    To be used in url.
+    """
 
     @property
     def slug(self) -> str:
@@ -32,6 +56,7 @@ class BaseMetadata:
 
         If slug has not been set on this object, fallback to a composition of
         the first 8 chars of an id field, and a slug of the title itself.
+
         :return: A slug to be added to an url.
         """
         slug = self._slug
@@ -42,9 +67,10 @@ class BaseMetadata:
                 obj_id = str(obj_id)[:8]
             else:
                 obj_id = ''
+            title = str(self.title)
             slug = '{obj_id}-{title}'.format(
                 obj_id=obj_id,
-                title=generate_slug(self.title)
+                title=generate_slug(title)
             )
         return slug
 

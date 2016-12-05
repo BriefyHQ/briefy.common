@@ -1,4 +1,4 @@
-"""Workflow mixin."""
+"""Workflow support for Briefy objects."""
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy_utils import JSONType
 
@@ -7,18 +7,28 @@ import sqlalchemy as sa
 
 
 class WorkflowBase:
-    """A mixin providing workflow information."""
+    """A mixin providing workflow support."""
 
     _workflow = None
+    """Workflow to be used.
 
-    # These 3 variables in the model will keep the workflow state
-    # during the model lifecycle.
-    # Attempt that the "_workflow_context" will usually contain
-    # information about the user for the current request, and is
-    # not persisted or serialized
+    This will be overwritten in subclasses.
+    """
+
     _workflow_context = None
+    """Context will usually contain information about the user for the current request.
+
+    This info is not persisted.
+    """
+
     state = ''
+    """Workflow state id."""
+
     state_history = None
+    """Workflow history.
+
+    List with all transitions for this object.
+    """
 
     def __init__(self, *args, workflow_context=None, **kwargs):
         """Initialize object workflow.
@@ -26,8 +36,8 @@ class WorkflowBase:
         Otherwise its initial state is not set.
         """
         self.workflow_context = workflow_context
-        self.workflow  # noqa
-        return super().__init__(*args, **kwargs)
+        _ = self.workflow  # noqa
+        super().__init__(*args, **kwargs)
 
     @property
     def workflow(self):
@@ -48,18 +58,26 @@ class WorkflowBase:
 
 
 class Workflow(WorkflowBase):
-    """A mixin providing workflow information, SQLALChemy aware."""
-
-    _workflow = None
+    """A mixin providing workflow information, SQLAlchemy aware."""
 
     state = sa.Column(sa.String(100))
-    _state_history = sa.Column('state_history',
-                               JSONType,
-                               info={'colanderalchemy': {
-                                   'title': 'State history',
-                                   'missing': colander.drop,
-                                   'typ': colander.String}}
-                               )
+    """Workflow state id."""
+
+    _state_history = sa.Column(
+        'state_history',
+        JSONType,
+        info={
+            'colanderalchemy': {
+                'title': 'State history',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
+    """Workflow history.
+
+    List with all transitions for this object.
+    """
 
     @property
     def state_history(self):
@@ -72,7 +90,7 @@ class Workflow(WorkflowBase):
         self._state_history = value
         flag_modified(self, '_state_history')
 
-    def to_dict(self, *args, **kwargs):
+    def to_dict(self, *args, **kwargs) -> dict:
         """Return a dictionary with fields and values used by this Class."""
         data = super().to_dict(*args, **kwargs)
         data['state_history'] = self.state_history

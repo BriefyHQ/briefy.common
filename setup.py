@@ -14,6 +14,7 @@ requires = [
     'babel',
     'boto3',
     'colander',
+    'colanderalchemy',
     'flask_babel',
     'libthumbor',
     'newrelic',
