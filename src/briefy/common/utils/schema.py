@@ -4,7 +4,7 @@ from colander import null
 from colander import SchemaType
 
 
-def validate_and_serialize(schema: colander.SchemaType, data: dict) -> dict:
+def validate_and_serialize(schema: SchemaType, data: dict) -> dict:
     """Validate Python data using a colander schema.
 
     :param schema: Schema

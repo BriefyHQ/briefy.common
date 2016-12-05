@@ -65,9 +65,9 @@ class Address:
         POINT,
         info={
             'colanderalchemy': {
-               'title': 'Geo JSON Point coordinates',
-               'typ': colander.Mapping,
-           }
+                'title': 'Geo JSON Point coordinates',
+                'typ': colander.Mapping
+            }
         }
     )
     """Attribute to store the coordinates (lat, lng) for this object.

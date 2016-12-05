@@ -21,21 +21,20 @@ class BaseMetadata:
 
     description = sa.Column(
         'description',
-                            sa.Text,
-                            nullable=True,
-                            info={
-                                'colanderalchemy': {
-                                    'title': 'Description',
-                                    'missing': colander.drop,
-                                    'typ': colander.String
-                                }
-                            }
+        sa.Text,
+        nullable=True,
+        info={
+            'colanderalchemy': {
+                'title': 'Description',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
     )
     """Description for the object.
 
     Text field allowing a small, but meaninful description for an object.
     """
-
 
     _slug = sa.Column('slug',
                       sa.String(255),
