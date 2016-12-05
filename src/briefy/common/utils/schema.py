@@ -42,7 +42,7 @@ class List(SchemaType):
         if appstruct is null or appstruct is None:
             return None
         elif not (isinstance(appstruct, list)):
-            raise Invalid(node, '{struct} is not a dict'.format(struct=appstruct))
+            raise Invalid(node, '{struct} is not a list'.format(struct=appstruct))
         return appstruct
 
     def deserialize(self, node, cstruct):
