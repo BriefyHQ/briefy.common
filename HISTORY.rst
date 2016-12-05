@@ -2,9 +2,17 @@
 History
 =======
 
-1.1.3 (Unreleased)
+1.1.3 (2016-12-05)
 ------------------
 
+* Add python-logstash as requirement (ericof).
+* BODY-60: Fix scale url generation (ericof).
+* BODY-62: Add listing and summary serialization to objects (ericof).
+* BODY-62: Implement permission checking on object listing (ericof).
+* Add briefy.common.users.SystemUser (ericof).
+* Add vocabulary with default groups (ericof).
+* Fix identation of code examples in the Permission docstring (ericof).
+* Add PhotoCategoryChoices and VideoCategoryChoices vocabularies (ericof).
 
 1.1.2 (2016-10-04)
 ------------------

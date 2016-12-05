@@ -3,6 +3,7 @@ from briefy.common.config import THUMBOR_BASE_URL
 from briefy.common.config import THUMBOR_INTERNAL_URL
 from briefy.common.config import THUMBOR_KEY
 from briefy.common.config import THUMBOR_PREFIX_SOURCE
+from briefy.common.log import logger
 from dateutil.parser import parse
 from fractions import Fraction
 from libthumbor import CryptoURL
@@ -33,7 +34,8 @@ def _generate_thumbor_url(
         filters: tuple,
         signed: bool,
         meta: bool = False,
-        internal: bool = False) -> str:
+        internal: bool = False,
+        fit_in: bool=False) -> str:
     """Generate url to an image.
 
     :param source_path: Relative path to the source image on S3.
@@ -44,6 +46,7 @@ def _generate_thumbor_url(
     :param signed: Boolean indicating if we will sign this url.
     :param meta: Url should be metadata endpoint.
     :param internal: Generate an internal url.
+    :param fit_in: Fit new image inside image box given by width and height.
     :return: URL
     """
     prefix = THUMBOR_BASE_URL
@@ -61,7 +64,8 @@ def _generate_thumbor_url(
         image_url=image_url,
         filters=filters,
         meta=meta,
-        unsafe=unsafe
+        unsafe=unsafe,
+        fit_in=fit_in
     )
     return '{base_url}{url}'.format(base_url=prefix, url=url)
 
@@ -93,7 +97,8 @@ def generate_image_url(
         smart: bool = True,
         filters: tuple = None,
         signed: bool=True,
-        internal: bool=False) -> str:
+        internal: bool=False,
+        fit_in: bool=False) -> str:
     """Generate a public url to an image.
 
     :param source_path: Relative path to the source image on S3.
@@ -103,11 +108,22 @@ def generate_image_url(
     :param filters: Filters to be applied to this image.
     :param signed: Boolean indicating if we will sign this url.
     :param internal: Generate an internal url (to be used inside our cluster).
+    :param fit_in: Fit new image inside image box given by width and height.
     :return: URL
     """
     if filters is None:
         filters = tuple()
-    return _generate_thumbor_url(source_path, width, height, smart, filters, signed, internal)
+    return _generate_thumbor_url(
+        source_path=source_path,
+        width=width,
+        height=height,
+        smart=smart,
+        filters=filters,
+        signed=signed,
+        meta=False,
+        internal=internal,
+        fit_in=fit_in
+    )
 
 
 def get_metadata_from_thumbor(source_path: str) -> dict:
@@ -125,8 +141,10 @@ def get_metadata_from_thumbor(source_path: str) -> dict:
     url = generate_metadata_url(source_path)
     try:
         response = requests.get(url, timeout=timeout)
-    except requests.exceptions.Timeout:
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+        logger.info('Connection issues updating metadata from {url}'.format(url=url))
         return metadata
+
     if response.status_code == 200:
         data = response.json()
         original = data.get('original', {})
@@ -316,3 +334,24 @@ def _get_lens_info(raw_metadata: dict) -> str:
         raw_metadata.get('Exif.Photo.LensModel', '')
     )
     return value
+
+
+def calc_scale_keep_ratio(original: tuple, scaled: tuple) -> tuple:
+    """Calculate the scale of an image keeping its original ratio.
+
+    :param original: Tuple with original width and height.
+    :param scaled: Tuple with expected width and height.
+    :return: Tuple with calculated with and height preserving original ratio.
+    """
+    ow, oh = original
+    if not (ow and oh):
+        raise ValueError('Image does not have current width and height')
+
+    tw, th = scaled
+    ratio = ow / oh
+    if ratio > 1:
+        # Landscape
+        th = int(oh * (tw / ow))
+    else:
+        tw = int(ow * (th / oh))
+    return tw, th

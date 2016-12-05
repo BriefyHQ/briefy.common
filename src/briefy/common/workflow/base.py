@@ -15,7 +15,7 @@ def _set_creation_order(instance):
     """Assign a '_creation_order' sequence to the given instance.
 
     This allows multiple instances to be sorted in order of creation
-    (typically within a single thread; the counter is not threadsafe).
+    (typically within a single thread; the counter is not thread safe).
 
     This code is from SQLAlchemy, available here:
     http://www.sqlalchemy.org/trac/browser/lib/sqlalchemy/util/langhelpers.py#L836
@@ -28,7 +28,7 @@ def _set_creation_order(instance):
 
 
 class WorkflowTransition:
-    """Transition between states."""
+    """Transition between states in a workflow."""
 
     _waiting_to_decorate = True
 
@@ -37,6 +37,7 @@ class WorkflowTransition:
                  name=None, title='', description='',
                  category='',
                  extra_states=(),
+                 require_message=False,
                  **kw):
         """Initialize a workflow transition."""
         if isinstance(permission, Permission):
@@ -52,9 +53,13 @@ class WorkflowTransition:
         self.__dict__.update(kw)
         self.transition_hook = None
         # Attribute to help stacking multiple
-        # states reusing the same transiction function
+        # states reusing the same transition function
         # by stacking transitions used as decorators:
         self._previous_transition = None
+        self._name_inherited_from_hook_method = None
+        # If require_message is True, the transition will not happen
+        # without a message being provided
+        self.require_message = require_message
         if extra_states:
             self._previous_transition = WorkflowTransition(
                 extra_states[0], state_to, permission, name, title, description, category,
@@ -84,7 +89,8 @@ class WorkflowTransition:
         if self.name not in state_from._transitions:
             raise state_from.exception_transition('Incorrect state for this transition')
 
-        if self.permission and (self.permission not in workflow.permissions()):
+        permission = workflow._existing_permissions.get(self.permission, None)
+        if permission and not permission(workflow):
             raise state_from.exception_permission('Permission not available')
 
     def _decorate(self, func):
@@ -96,6 +102,7 @@ class WorkflowTransition:
             func = self._previous_transition.transition_hook
         if not self.name:
             self.name = func.__name__
+            self._name_inherited_from_hook_method = func.__name__
 
         self.transition_hook = func
         return self
@@ -138,6 +145,9 @@ class WorkflowTransition:
         state_from = self.state_from()
         if not state_from or not workflow:
             raise RuntimeError('Tried to trigger unnatached transition')
+
+        if self.require_message and not message:
+            raise workflow.state.exception_transition('Message is required for this transition')
 
         if workflow.state is not state_from:
             return self._dispatch(*args, workflow=workflow, message=message, **kw)
@@ -259,15 +269,16 @@ class WorkflowState(object):
         """Compare this state to other."""
         return not self.__eq__(other)
 
-    def transition(self, state_to, permission=None,
-                   name=None, title='', description='', category='', **kw):
+    def transition(
+            self, state_to, permission=None, name=None, title='', description='', category='', **kw
+    ):
         """Declare a decorator for transition functions.
 
-        Usage- on a WorkflowBody,  use either:
+        Usage- on a WorkflowBody,  use either::
 
         submit = workflow_state.transition(state_to, permission, ...)
 
-        or:
+        or::
 
         @workflow_state.transition(state_to, permission, ...):
         def submit(self):
@@ -352,20 +363,18 @@ class Permission:
     take no parameters other than 'self' (the Workflow instance)
 
     A permission with the method name is made available to the current workflow
-    and will exist anytime the decorated method returns a truthy value.
+    and will exist anytime the decorated method returns a truthy value::
 
-    class MyWorkflow(Workflow):
-        @permission
-        def read(self):
-            return self.context and 'editor' in self.context.groups
+        class MyWorkflow(Workflow):
+            @permission
+            def read(self):
+                return self.context and 'editor' in self.context.groups
 
+    A non-decorator declaration can also be made by doing::
 
-    A non-decorator declaration can also be made by doing:
-
-    class MyWorkflow(Workflow):
-        read = Permission().for_groups('g:editors')
-        publish = Permission().for_groups('g:editors').for_state('pendding')
-
+        class MyWorkflow(Workflow):
+            read = Permission().for_groups('g:editors')
+            publish = Permission().for_groups('g:editors').for_state('pendding')
 
     Permissions are checked by transitions inside workflow.states -
     any transition requires a permission, which will be checked by its name.
@@ -385,8 +394,18 @@ class Permission:
         if isinstance(states, (str, WorkflowState)):
             states = [states]
         self.states = list(states) if states else list()
-        self.groups = set(groups) if groups else set()
+        self.groups = self._process_groups(groups)
         self(permission_method)
+
+    def _process_groups(self, groups=()) -> set:
+        """Process a list of groups and return a set with strings."""
+        processed = set()
+        groups = groups if groups else ()
+        for group in groups:
+            processed.add(
+                group.value if hasattr(group, 'value') else group
+            )
+        return processed
 
     def _filtered_method(self, workflow):
         """Filtered methods.
@@ -439,6 +458,7 @@ class Permission:
         Chain call that decorates this permission so that it is filtered restricting the
         permission to the groups passed in.
         """
+        args = self._process_groups(args)
         self.groups.update(args)
         return self
 
@@ -485,6 +505,8 @@ class WorkflowMeta(type):
                 attrs['_state_values'].update(base._state_values)
                 attrs['_existing_permissions'].update(base._existing_permissions)
 
+        transition_disambiguation = {}
+
         for name, value in attrs.items():
 
             if isinstance(value, WorkflowState):
@@ -500,12 +522,17 @@ class WorkflowMeta(type):
             elif isinstance(value, WorkflowTransition):
                 transition = value
                 while transition:
-                    if not transition.name:
-                        transition.name = name
+                    if not transition.name or transition._name_inherited_from_hook_method:
+                        if name != transition._name_inherited_from_hook_method:
+                            transition.name = name
                     # Bind transition to the states transitions by name,
                     # as only at this point we are sure of its name
                     transition.state_from()._transitions[transition.name] = transition
                     transition._waiting_to_decorate = False
+
+                    transition_disambiguation.setdefault(id(transition), (transition, {name}))
+                    transition_disambiguation[id(transition)][1].add(name)
+
                     transition = transition._previous_transition
 
             elif isinstance(value, Permission):
@@ -520,6 +547,25 @@ class WorkflowMeta(type):
                 permission._waiting_to_decorate = False
 
                 attrs['_existing_permissions'][value.name] = permission
+
+        # normalize transitions:
+        transition_names_to_erase = {}
+        for transition_id, data in transition_disambiguation.items():
+            transition, names = data
+            if len(names) == 1:
+                continue
+            for name in names:
+                if name == transition.transition_hook.__name__:
+                    transition_names_to_erase[name] = transition
+        for name, transition in transition_names_to_erase.items():
+            state = transition.state_from()
+            try:
+                del state._transitions[name]
+            except KeyError:
+                # Due to out of order processing of attrs,
+                # the second name may never have been added to the transition
+                pass
+            del attrs[name]
 
         attrs['_states_sorted'] = sorted(attrs['_states'].values(),
                                          key=lambda s: s._creation_order)
@@ -739,10 +785,10 @@ class Workflow(metaclass=WorkflowMeta):
     @property
     def transitions(self):
         """All transition available in the current state and context."""
-        permissions = self.permissions()
         result = OrderedDict()
         for k, v in self.state._transitions.items():
-            if v.permission is None or v.permission in permissions:
+            permission = self._existing_permissions.get(v.permission, None)
+            if permission is None or permission(self):
                 result[k] = v
         return result
 

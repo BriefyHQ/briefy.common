@@ -7,6 +7,7 @@ from conftest import mock_thumbor
 import httmock
 import json
 import os
+import pytest
 
 
 def test_generate_image_url():
@@ -112,3 +113,18 @@ def test_process_metadata():
     assert metadata['aperture'] == '126797/20000'
     assert metadata['lens_model'] == 'EF16-35mm f/2.8L II USM'
     assert metadata['orientation'] == 'Top Left'
+
+
+def test_calc_scale_keep_ratio():
+    """Test generate scale keeping ratio."""
+    func = imaging.calc_scale_keep_ratio
+
+    assert func((800, 600), (200, 200)) == (200, 150)
+    assert func((800, 600), (300, 300)) == (300, 225)
+    assert func((600, 800), (200, 200)) == (150, 200)
+
+    with pytest.raises(ValueError):
+        func((0, 0), (200, 200))
+
+    with pytest.raises(ValueError):
+        func((None, None), (200, 200))

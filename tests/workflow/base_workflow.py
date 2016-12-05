@@ -1,11 +1,11 @@
 """Base tests for briefy.common.workflow."""
+from briefy.common.db.mixins import Workflow as WorkflowMixin
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
 from briefy.common.workflow import Permission
 from briefy.common.workflow import permission
-
-from briefy.common.db.mixins import Workflow as WorkflowMixin
+from datetime import datetime
 
 
 class LegacyCustomerWorkflow(BriefyWorkflow):
@@ -102,6 +102,11 @@ class CustomerWorkflow(BriefyWorkflow):
     def quick_edit(self):
         return self.document.creator == self.context.user_id
 
+    @submit
+    def submit_hook(self):
+        """Body of retract transition"""
+        self._retracted_ok = True
+
 
 class Customer(WorkflowMixin):
     """A Customer for Briefy."""
@@ -109,13 +114,27 @@ class Customer(WorkflowMixin):
     state = ''
     state_history = None
     creator = None
+    created_at = None
+    updated_at = None
 
     _workflow = CustomerWorkflow
 
     def __init__(self, creator):
         """Initialize a customer."""
+        self.id = 'b53f33e2-b2d4-43ef-a8e0-24d2df7a391d'
         self.creator = creator
         self.state_history = []
+        self.created_at = datetime.now()
+        self.updated_at = datetime.now()
+
+    def to_dict(self) -> dict:
+        """Return a dictionary with fields and values used by this Class.
+
+        :returns: Dictionary with fields and values used by this Class
+        """
+        data = self.__dict__.copy()
+        data['state_history'] = self.state_history
+        return data
 
 
 class LegacyCustomer(Customer):
@@ -130,6 +149,7 @@ class User:
     def __init__(self, user_id, groups=()):
         """Initialize this class."""
         self.user_id = user_id
+        self.id = user_id
         self._groups = groups
 
     @property
