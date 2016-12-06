@@ -189,7 +189,6 @@ class BriefyRoles(LocalRolesMixin):
 
         :param user_id: ID of the qa_manager.
         """
-        user = BaseUser(user_id, {})
         self._add_local_role_user_id(user_id, 'qa_manager')
 
     @property
@@ -207,5 +206,4 @@ class BriefyRoles(LocalRolesMixin):
 
         :param user_id: ID of the scout_manager.
         """
-        user = BaseUser(user_id, {})
         self._add_local_role_user_id(user_id, 'scout_manager')
