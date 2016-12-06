@@ -147,6 +147,16 @@ class BriefyRoles(LocalRolesMixin):
         'qa_manager',
     )
 
+    def _add_local_role_user_id(self, user_id: str, role_name: str) -> None:
+        """Add a new local role for a user with the given id.
+
+        :param user_id: ID of the user that will receive the local role.
+        :param role_name: Local role name
+        """
+        if user_id:
+            user = BaseUser(user_id, {})
+            self.add_local_role(user, role_name)
+
     @property
     def project_manager(self) -> list:
         """Return a list of ids of project managers.
@@ -162,8 +172,7 @@ class BriefyRoles(LocalRolesMixin):
 
         :param user_id: ID of the project_manager.
         """
-        user = BaseUser(user_id, {})
-        self.add_local_role(user, 'project_manager')
+        self._add_local_role_user_id(user_id, 'project_manager')
 
     @property
     def qa_manager(self) -> list:
@@ -181,7 +190,7 @@ class BriefyRoles(LocalRolesMixin):
         :param user_id: ID of the qa_manager.
         """
         user = BaseUser(user_id, {})
-        self.add_local_role(user, 'qa_manager')
+        self._add_local_role_user_id(user_id, 'qa_manager')
 
     @property
     def scout_manager(self) -> list:
@@ -199,4 +208,4 @@ class BriefyRoles(LocalRolesMixin):
         :param user_id: ID of the scout_manager.
         """
         user = BaseUser(user_id, {})
-        self.add_local_role(user, 'scout_manager')
+        self._add_local_role_user_id(user_id, 'scout_manager')
