@@ -4,7 +4,7 @@ from briefy.common.vocabularies import roles
 
 def test_local_roles():
     """Test local roles vocabulary."""
-    vocab = roles.LocalRoles
+    vocab = roles.LocalRolesChoices
 
     assert len(vocab) == 8
     assert vocab['system'].value == 'system'

@@ -3,6 +3,7 @@ from briefy.common.types import BaseUser
 from briefy.common.db import Base
 from briefy.common.db.mixins import BriefyRoles
 from briefy.common.db.mixins import Mixin
+from briefy.common.vocabularies.roles import LocalRolesChoices
 from conftest import DBSession
 
 import pytest
@@ -59,7 +60,9 @@ class TestBriefyRolesMixin:
         user = BaseUser('c087fa7e-738b-412a-80c7-a139ab9c373d', {})
 
         assert len(job.get_user_roles(user)) == 1
-        assert job.get_local_role_for_user('project_manager', user).role_name == 'project_manager'
+
+        lr = job.get_local_role_for_user('project_manager', user)
+        assert (lr.role_name == LocalRolesChoices.project_manager)
 
         job.remove_local_role(user, 'project_manager')
         session.commit()

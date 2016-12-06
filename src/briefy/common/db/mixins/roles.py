@@ -11,7 +11,7 @@ def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
     :param local_roles: List of Local Roles
     :param role_name: Role name, i.e: project_manager
     """
-    return [lr for lr in local_roles if lr.role_name == role_name]
+    return [lr for lr in local_roles if lr.role_name.value == role_name]
 
 
 class LocalRolesMixin:
@@ -49,7 +49,7 @@ class LocalRolesMixin:
         :param user: User object
         :param role_name: Name of the role.
         """
-        roles = [lr for lr in self.get_user_roles(user) if lr.role_name == role_name]
+        roles = [lr for lr in self.get_user_roles(user) if lr.role_name.value == role_name]
         return roles[0] if roles else None
 
     def _actors_ids(self) -> list:
@@ -66,7 +66,7 @@ class LocalRolesMixin:
         """
         actors = {attr: [] for attr in self.__actors__}
         for lr in self.local_roles:
-            actors[lr.role_name].append(str(lr.user_id))
+            actors[lr.role_name.value].append(str(lr.user_id))
         return actors
 
     @hybrid_method

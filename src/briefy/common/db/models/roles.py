@@ -2,6 +2,7 @@
 from briefy.common.db.mixins import GUID
 from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
+from briefy.common.vocabularies.roles import LocalRolesChoices
 
 import colander
 import sqlalchemy as sa
@@ -58,12 +59,12 @@ class LocalRole(GUID, Timestamp, Base):
     """
 
     role_name = sa.Column(
-        sa.String(255),
+        sautils.ChoiceType(LocalRolesChoices, impl=sa.String()),
         nullable=False
     )
     """Local role name.
 
-    i.e: qa.
+    i.e: project_manager
     """
 
     can_create = sa.Column(
@@ -115,5 +116,5 @@ class LocalRole(GUID, Timestamp, Base):
                 self.entity_type,
                 self.entity_id,
                 self.user_id,
-                self.role_name
+                self.role_name.value
         )

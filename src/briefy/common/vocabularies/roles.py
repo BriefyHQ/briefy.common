@@ -14,7 +14,7 @@ options = [
 ]
 
 
-LocalRoles = LabeledEnum('LocalRoles', options)
+LocalRolesChoices = LabeledEnum('LocalRolesChoices', options)
 
 
 options = [
