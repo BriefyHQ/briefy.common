@@ -4,6 +4,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_method
 
+import sqlalchemy as sa
+
 
 def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
     """Filter LocalRole by role names.
@@ -34,6 +36,7 @@ class LocalRolesMixin:
             lazy='joined'
         )
 
+    @hybrid_method
     def get_user_roles(self, user: BaseUser) -> list:
         """List of Local Roles for a User.
 
@@ -42,6 +45,23 @@ class LocalRolesMixin:
         user_id = user.id
         roles = self.local_roles
         return [lr for lr in roles if str(lr.user_id) == user_id]
+
+    @get_user_roles.expression
+    def get_user_roles(cls, user: BaseUser) -> list:
+        """List of Local Roles for a User.
+
+        :param user: User object
+        """
+        from briefy.common.db.models.roles import LocalRole
+
+        user_id = user.id
+        return LocalRole.query().filter(
+            sa.and_(
+                cls.__name__ == LocalRole.entity_type,
+                cls.id == LocalRole.entity_id,
+                user_id == LocalRole.user_id,
+            )
+        )
 
     def get_local_role_for_user(self, role_name: str, user: BaseUser) -> object:
         """Return a Local for an user_id.
@@ -52,12 +72,30 @@ class LocalRolesMixin:
         roles = [lr for lr in self.get_user_roles(user) if lr.role_name.value == role_name]
         return roles[0] if roles else None
 
+    @hybrid_method
     def _actors_ids(self) -> list:
         """List of actors ids for this object.
 
         :return: List of actor ids.
         """
         return [str(lr.user_id) for lr in self.local_roles]
+
+    @_actors_ids.expression
+    def _actors_ids(cls) -> list:
+        """List of actors ids for this object.
+
+        :return: List of actor ids.
+        """
+        from briefy.common.db.models.roles import LocalRole
+
+        return sa.select(
+            [LocalRole.user_id]
+        ).where(
+            sa.and_(
+                cls.__name__ == LocalRole.entity_type,
+                cls.id == LocalRole.entity_id,
+            )
+        ).as_scalar()
 
     def _actors_info(self) -> dict:
         """Return actor information for this object.
@@ -94,6 +132,15 @@ class LocalRolesMixin:
         :return: Check if this id is for a user in here.
         """
         return user_id in [u for u in self._actors_ids()]
+
+    @is_actor.expression
+    def is_actor(cls, user_id: str) -> bool:
+        """Check if the user_id is an actor in this object.
+
+        :param user_id: UUID of an user.
+        :return: Check if this id is for a user in here.
+        """
+        return user_id in [u for u in cls._actors_ids()]
 
     def add_local_role(self, user: BaseUser, role_name: str) -> None:
         """Add a local role on this object to a user with given user_id.

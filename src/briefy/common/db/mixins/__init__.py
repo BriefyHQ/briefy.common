@@ -9,6 +9,7 @@ from briefy.common.db.mixins.asset import VideoMixin  # noQA
 from briefy.common.db.mixins.external import KnackMixin  # noQA
 from briefy.common.db.mixins.identifiable import GUID
 from briefy.common.db.mixins.metadata import BaseMetadata  # noQA
+from briefy.common.db.mixins.metadata import BaseMetadata  # noQA
 from briefy.common.db.mixins.person import NameMixin  # noQA
 from briefy.common.db.mixins.person import PersonalInfoMixin  # noQA
 from briefy.common.db.mixins.roles import BriefyRoles  # noQA
