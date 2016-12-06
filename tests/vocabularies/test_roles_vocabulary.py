@@ -7,8 +7,9 @@ def test_local_roles():
     vocab = roles.LocalRoles
 
     assert len(vocab) == 8
-    assert vocab['system'].value == 'r:system'
+    assert vocab['system'].value == 'system'
     assert vocab['system'].name == 'system'
+    assert vocab['system'].label == 'r:system'
 
 
 def test_groups():

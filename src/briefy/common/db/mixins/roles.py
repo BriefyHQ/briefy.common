@@ -1,136 +1,202 @@
 """Roles mixins."""
-from sqlalchemy_utils import UUIDType
+from briefy.common.types import BaseUser
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_method
 
-import colander
-import sqlalchemy as sa
+
+def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
+    """Filter LocalRole by role names.
+
+    :param local_roles: List of Local Roles
+    :param role_name: Role name, i.e: project_manager
+    """
+    return [lr for lr in local_roles if lr.role_name == role_name]
 
 
-class BriefyRoles:
+class LocalRolesMixin:
+    """A mixin providing Local role support for an object."""
+
+    __actors__ = ()
+
+    @declared_attr
+    def local_roles(cls):
+        """Relationship with LocalRoles."""
+        return relationship(
+            'LocalRole',
+            foreign_keys='LocalRole.entity_id',
+            primaryjoin='''and_(
+                LocalRole.entity_id=={entity}.id,
+                LocalRole.entity_type=="{entity}",
+            )'''.format(
+                entity=cls.__name__
+            ),
+            lazy='joined'
+        )
+
+    def get_user_roles(self, user: BaseUser) -> list:
+        """List of Local Roles for a User.
+
+        :param user: User object
+        """
+        user_id = user.id
+        roles = self.local_roles
+        return [lr for lr in roles if str(lr.user_id) == user_id]
+
+    def get_local_role_for_user(self, role_name: str, user: BaseUser) -> object:
+        """Return a Local for an user_id.
+
+        :param user: User object
+        :param role_name: Name of the role.
+        """
+        roles = [lr for lr in self.get_user_roles(user) if lr.role_name == role_name]
+        return roles[0] if roles else None
+
+    def _actors_ids(self) -> list:
+        """List of actors ids for this object.
+
+        :return: List of actor ids.
+        """
+        return [str(lr.user_id) for lr in self.local_roles]
+
+    def _actors_info(self) -> dict:
+        """Return actor information for this object.
+
+        :return: Dictionary with attr name and user id.
+        """
+        actors = {attr: [] for attr in self.__actors__}
+        for lr in self.local_roles:
+            actors[lr.role_name].append(str(lr.user_id))
+        return actors
+
+    @hybrid_method
+    def _can_list(self, user: BaseUser) -> bool:
+        """Check if the user can list this object.
+
+        :param user: User object..
+        :return: Boolean indicating if user is allowed to list this object.
+        """
+        user_groups = set(getattr(user, 'groups'))
+        acl = dict(getattr(self, '__raw_acl__'))
+        allowed = set(acl.get('list', []))
+        if user_groups.intersection(allowed):
+            return True
+        else:
+            roles = self.get_user_roles(user)
+            can_list = [lr for lr in roles if lr.can_view]
+            return True if can_list else False
+
+    @hybrid_method
+    def is_actor(self, user_id: str) -> bool:
+        """Check if the user_id is an actor in this object.
+
+        :param user_id: UUID of an user.
+        :return: Check if this id is for a user in here.
+        """
+        return user_id in [u for u in self._actors_ids()]
+
+    def add_local_role(self, user: BaseUser, role_name: str) -> None:
+        """Add a local role on this object to a user with given user_id.
+
+        :param user: User id.
+        :param role_name: Name of the role.
+        """
+        from briefy.common.db.models.roles import LocalRole
+
+        if not self.get_local_role_for_user(role_name, user):
+            payload = {
+                'entity_type': self.__class__.__name__,
+                'entity_id': self.__class__.__name__,
+                'user_id': user.id,
+                'role_name': role_name,
+            }
+            local_role = LocalRole(**payload)
+            self.local_roles.append(local_role)
+        else:
+            raise ValueError(
+                'User {user_id} already has {role} local role'.format(
+                    user_id=user.id, role=role_name
+                )
+            )
+
+    def remove_local_role(self, user: BaseUser, role_name: str) -> None:
+        """Remove a local role on this object to a user with given user_id.
+
+        :param user_id: User id.
+        :param role_name: Name of the role.
+        """
+        role = self.get_local_role_for_user(role_name, user)
+
+        if role:
+            session = getattr(self, '__session__')
+            session.delete(role)
+        else:
+            raise ValueError(
+                'User {user_id} does not have {role} local role'.format(
+                    user_id=user.id, role=role_name
+                )
+            )
+
+
+class BriefyRoles(LocalRolesMixin):
     """A Mixin providing internal Briefy roles for an object."""
 
     __actors__ = (
         'project_manager',
-        'finance_manager',
         'scout_manager',
         'qa_manager',
     )
-
-    _project_manager = sa.Column(
-        'project_manager',
-        UUIDType(binary=False),
-        info={'colanderalchemy': {
-              'title': 'Project Manager',
-              'validator': colander.uuid,
-              'missing': colander.drop,
-              'typ': colander.String}}
-    )
-    """Project manager id.
-
-    Should be accessed using :func:`BriefyRoles.project_manager`.
-    """
-
-    _finance_manager = sa.Column(
-        'finance_manager',
-        UUIDType(binary=False),
-        info={'colanderalchemy': {
-              'title': 'Finance Manager',
-              'validator': colander.uuid,
-              'missing': colander.drop,
-              'typ': colander.String}}
-    )
-    """Finance manager id.
-
-    Should be accessed using :func:`BriefyRoles.finance_manager`.
-    """
-
-    _scout_manager = sa.Column(
-        'scout_manager',
-        UUIDType(binary=False),
-        info={'colanderalchemy': {
-              'title': 'Scout Manager',
-              'validator': colander.uuid,
-              'missing': colander.drop,
-              'typ': colander.String}}
-    )
-    """Scouting manager id.
-
-    Should be accessed using :func:`BriefyRoles.scout_manager`.
-    """
-
-    _qa_manager = sa.Column(
-        'qa_manager',
-        UUIDType(binary=False),
-        info={'colanderalchemy': {
-              'title': 'QA Manager',
-              'validator': colander.uuid,
-              'missing': colander.drop,
-              'typ': colander.String}}
-    )
-    """Quality Assurance manager id.
-
-    Should be accessed using :func:`BriefyRoles.qa_manager`.
-    """
 
     @property
-    def project_manager(self) -> str:
-        """Return the project_manager id for this object.
+    def project_manager(self) -> list:
+        """Return a list of ids of project managers.
 
         :return: ID of the project_manager.
         """
-        return self._project_manager
+        roles = self.local_roles
+        return _filter_lr_by_name(roles, 'project_manager')
 
     @project_manager.setter
-    def project_manager(self, value: str):
+    def project_manager(self, user_id: str) -> None:
         """Set a new project_manager for this object.
 
-        :param value: ID of the project_manager.
+        :param user_id: ID of the project_manager.
         """
-        self._project_manager = value
+        user = BaseUser(user_id, {})
+        self.add_local_role(user, 'project_manager')
 
     @property
-    def finance_manager(self) -> str:
-        """Return the finance_manager id for this object.
-
-        :return: ID of the finance_manager.
-        """
-        return self._finance_manager
-
-    @finance_manager.setter
-    def finance_manager(self, value: str):
-        """Set a new finance_manager for this object.
-
-        :param value: ID of the finance_manager.
-        """
-        self._finance_manager = value
-
-    @property
-    def scout_manager(self) -> str:
-        """Return the scout_manager id for this object.
-
-        :return: ID of the scout_manager.
-        """
-        return self._scout_manager
-
-    @scout_manager.setter
-    def scout_manager(self, value: str):
-        """Set a new scout_manager for this object.
-
-        :param value: ID of the scout_manager.
-        """
-        self._scout_manager = value
-
-    @property
-    def qa_manager(self) -> str:
-        """Return the qa_manager id for this object.
+    def qa_manager(self) -> list:
+        """Return a list of ids of qa_managers.
 
         :return: ID of the qa_manager.
         """
-        return self._qa_manager
+        roles = self.local_roles
+        return _filter_lr_by_name(roles, 'qa_manager')
 
     @qa_manager.setter
-    def qa_manager(self, value: str):
+    def qa_manager(self, user_id: str) -> None:
         """Set a new qa_manager for this object.
 
-        :param value: ID of the qa_manager.
+        :param user_id: ID of the qa_manager.
         """
-        self._qa_manager = value
+        user = BaseUser(user_id, {})
+        self.add_local_role(user, 'qa_manager')
+
+    @property
+    def scout_manager(self) -> list:
+        """Return a list of ids of scout_managers.
+
+        :return: ID of the scout_manager.
+        """
+        roles = self.local_roles
+        return _filter_lr_by_name(roles, 'scout_manager')
+
+    @scout_manager.setter
+    def scout_manager(self, user_id: str) -> None:
+        """Set a new scout_manager for this object.
+
+        :param user_id: ID of the scout_manager.
+        """
+        user = BaseUser(user_id, {})
+        self.add_local_role(user, 'scout_manager')
