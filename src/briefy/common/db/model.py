@@ -48,6 +48,7 @@ class Security:
         else:
             return self.is_actor(user_id)
 
+
     @hybrid_method
     def is_actor(self, user_id: str) -> bool:
         """Check if the user_id is an actor in this object.

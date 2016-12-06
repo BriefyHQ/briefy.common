@@ -1,4 +1,4 @@
-"""Briefy Leica LocalRoel."""
+"""Briefy LocalRole support for databse objects."""
 from briefy.common.db.mixins import GUID
 from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
