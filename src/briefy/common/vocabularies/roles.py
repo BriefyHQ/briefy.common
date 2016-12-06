@@ -3,18 +3,18 @@ from briefy.common.vocabularies import LabeledEnum
 
 
 options = [
-    ('system', 'r:system', 'r:system'),
-    ('customer', 'r:customer', 'r:customer'),
-    ('professional', 'r:professional', 'r:professional'),
-    ('project_manager', 'r:project_manager', 'r:project_manager'),
-    ('scout_manager', 'r:scout_manager', 'r:scout_manager'),
-    ('qa_manager', 'r:qa_manager', 'r:qa_manager'),
-    ('finance_manager', 'r:finance_manager', 'r:finance_manager'),
-    ('owner', 'r:owner', 'r:owner'),
+    ('system', 'system', 'r:system'),
+    ('customer', 'customer', 'r:customer'),
+    ('professional', 'professional', 'r:professional'),
+    ('project_manager', 'project_manager', 'r:project_manager'),
+    ('scout_manager', 'scout_manager', 'r:scout_manager'),
+    ('qa_manager', 'qa_manager', 'r:qa_manager'),
+    ('finance_manager', 'finance_manager', 'r:finance_manager'),
+    ('owner', 'owner', 'r:owner'),
 ]
 
 
-LocalRoles = LabeledEnum('LocalRoles', options)
+LocalRolesChoices = LabeledEnum('LocalRolesChoices', options)
 
 
 options = [

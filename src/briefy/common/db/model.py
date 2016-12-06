@@ -4,8 +4,6 @@ from briefy.common.utils.transformers import to_serializable
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.query import Query
-from sqlalchemy.sql import or_
-from sqlalchemy.sql import text
 
 
 class Security:
@@ -50,22 +48,6 @@ class Security:
         else:
             return self.is_actor(user_id)
 
-    @_can_list.expression
-    def _can_list_expression(cls, user: 'briefy.ws.auth.AuthenticatedUser') -> bool:
-        """Check if the user can list this object.
-
-        :param id: User object..
-        :return: Boolean indicating if user is allowed to list this object.
-        """
-        user_id = getattr(user, 'id')
-        user_groups = set(getattr(user, 'groups'))
-        acl = dict(cls.__raw_acl__)
-        allowed = set(acl.get('list', []))
-        if user_groups.intersection(allowed):
-            return True
-        else:
-            return cls.is_actor_expression(user_id)
-
     @hybrid_method
     def is_actor(self, user_id: str) -> bool:
         """Check if the user_id is an actor in this object.
@@ -74,26 +56,6 @@ class Security:
         :return: Check if this id is for a user in here.
         """
         return user_id in [str(u) for u in self._actors_ids()]
-
-    @is_actor.expression
-    def is_actor_expression(cls, user_id: str) -> bool:
-        """Check if the user_id is an actor in this object.
-
-        :param id: UUID of an user.
-        :return: Check if this id is for a user in here.
-        """
-        actors = cls.__actors__
-        tablename = getattr(cls, '__tablename__')
-        expression = [
-            text("{tablename}.{column} = '{id}'".format(
-                id=user_id,
-                tablename=tablename,
-                column=column,
-            ))
-            for column in actors
-        ]
-
-        return or_(*expression)
 
 
 class Base(Security):
