@@ -28,7 +28,7 @@ def _set_creation_order(instance):
 
 
 class WorkflowTransition:
-    """Transition between states in a workflow."""
+    """Transition between two states in a workflow."""
 
     _waiting_to_decorate = True
 
@@ -39,7 +39,7 @@ class WorkflowTransition:
                  extra_states=(),
                  require_message=False,
                  **kw):
-        """Initialize a workflow transition."""
+        """Initialize this workflow transition."""
         if isinstance(permission, Permission):
             permission = permission.name
 
@@ -110,7 +110,12 @@ class WorkflowTransition:
     def _perform_transition(self, workflow, message=None):
         """Perform the transition.
 
-        Where all the magic really happens.
+        Following actions are executed here:
+
+            * Set new state on Workflow
+            * Update workflow history
+            * Call Workflow._notify, to trigger notifications.
+
         """
         workflow._set_state(self.state_to().value)
         workflow._update_history(self.title,
@@ -168,6 +173,16 @@ class WorkflowTransition:
         if not isinstance(instance, Workflow):
             return self
         return AttachedTransition(self, instance)
+
+    def __repr__(self) -> str:
+        """Representation of this object."""
+        return (
+            """<{0}(id='{1}' from='{2}' to='{3}')>""").format(
+                self.__class__.__name__,
+                self.name,
+                self.state_from().name,
+                self.state_to().name
+        )
 
 
 class AttachedState:
@@ -236,18 +251,19 @@ class WorkflowState(object):
         self.name = None  # Not named yet
         self._title = title
         self.description = description
+        self.__doc__ = description
         self._parent = None
         self._transitions = OrderedDict()
         _set_creation_order(self)
 
     @property
-    def title(self):
+    def title(self) -> str:
         """Title of the state."""
         return self._title or self.name.title()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of this state."""
-        return '<WorkflowState {}>'.format(self.title)
+        return '<WorkflowState {title}>'.format(title=self.title)
 
     def __get__(self, instance, owner):
         """Return am instance of a AttachedState."""

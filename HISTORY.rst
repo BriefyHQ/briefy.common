@@ -15,6 +15,7 @@ History
 * Add PhotoCategoryChoices and VideoCategoryChoices vocabularies (ericof).
 * Add ThreeSixtyImage and Video mixins. Move Image mixin to assets module. (ericof).
 * Add LocalRole support. (ericof).
+* Improve Workflow documentation. (ericof).
 
 
 1.1.2 (2016-10-04)

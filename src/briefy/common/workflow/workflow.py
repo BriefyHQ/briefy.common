@@ -1,5 +1,6 @@
 """Briefy base workflow."""
 from .base import Workflow
+from .base import WorkflowTransition
 from briefy.common.event.workflow import WorkflowTranstionEvent
 from zope.event import notify
 
@@ -12,17 +13,27 @@ class BriefyWorkflow(Workflow):
     """Workflow for an object on Briefy."""
 
     entity = ''
+    """Entity this workflow manages."""
+
     state_key = 'state'
+    """Attribute, on the object, to store Workflow state."""
+
     history_key = 'state_history'
+    """Attribute, on the object, to store Workflow history."""
+
     context_key = 'workflow_context'
+    """Attribute storing workflow context (User)."""
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of this workflow."""
-        return '{}.workflow'.format(self.entity)
+        return '{entity}.workflow'.format(entity=self.entity)
 
-    def _notify(self, transition):
-        """Notify when a transition happens."""
+    def _notify(self, transition: WorkflowTransition) -> None:
+        """Notify when a WorkflowTransition is executed.
+
+        Trigger a :class:`briefy.common.event.workflow.WorkflowTranstionEvent` event.
+        """
         obj = self.document
         history = self.history
         entry = history[-1] if history else {}
