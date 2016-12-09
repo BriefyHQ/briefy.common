@@ -16,6 +16,7 @@ History
 * Add ThreeSixtyImage and Video mixins. Move Image mixin to assets module. (ericof).
 * Add LocalRole support. (ericof).
 * Improve Workflow documentation. (ericof).
+* BODY-85: Auto generate workflow documentation. (ericof)
 
 
 1.1.2 (2016-10-04)

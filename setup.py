@@ -16,6 +16,7 @@ requires = [
     'colander',
     'colanderalchemy',
     'flask_babel',
+    'graphviz',
     'libthumbor',
     'newrelic',
     'prettyconf',
