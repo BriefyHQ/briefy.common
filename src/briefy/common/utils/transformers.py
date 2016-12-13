@@ -2,11 +2,16 @@
 from enum import Enum
 from functools import singledispatch
 from typing import Any
-from sqlalchemy_utils import Country
 
 import colander
 import datetime
 import json
+
+HAS_SQLALCHEMY_UTILS = True
+try:
+    from sqlalchemy_utils import Country
+except ImportError:
+    HAS_SQLALCHEMY_UTILS = False
 
 
 @singledispatch
@@ -39,10 +44,11 @@ def ts_colander_null(val: colander._null) -> None:
     return None
 
 
-@to_serializable.register(Country)
-def ts_sautils_country(val: Country) -> str:
-    """Serialize Country instance do country code string."""
-    return val.code
+if HAS_SQLALCHEMY_UTILS:
+    @to_serializable.register(Country)
+    def ts_sautils_country(val: Country) -> str:
+        """Serialize Country instance do country code string."""
+        return val.code
 
 
 @to_serializable.register(Enum)
