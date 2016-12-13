@@ -22,11 +22,11 @@ def _make_cache_key(*args, **kw):
     return key
 
 
-def timeout_cache(timeout, renew=False):
+def timeout_cache(timeout: float, renew: bool=False):
     """Decorate a function so that it is naively cached when called with the same parameters again.
 
     Similar to functools.lru_cache, but cache contents expire
-    after `timeout`seconds (which can be fractional)
+    after timeout seconds (which can be fractional)
 
     Cache is kept in an in memory, in process (thread shared) dictionary
     *warning* This is a simple implementation, and should not be relied
@@ -36,10 +36,8 @@ def timeout_cache(timeout, renew=False):
     with the same parameters, of course)
 
     :param timeout: Timeout in second to expire the cached result
-    :type timeout: float
-    :param renew: wether a new call within the timout limit resets the
-    timeout count for that parameter set
-    :type renew: bool
+    :param renew: whether a new call within the timout limit resets the
+                  timeout count for that parameter set
     :rtype: decorated callable
     """
     def decorator(func):

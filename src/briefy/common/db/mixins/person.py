@@ -60,7 +60,7 @@ class PersonalInfoMixin(NameMixin):
     birth_date = sa.Column('birth_date', sa.Date(), nullable=True)
     """Birth date of a person."""
 
-    @hybrid_property
+    @property
     def age(self) -> int:
         """Age of this person, in years.
 
@@ -68,7 +68,7 @@ class PersonalInfoMixin(NameMixin):
         """
         age = None
         bdate = self.birth_date
-        if bdate:
+        if bdate is not None:
             today = date.today()
             age = (
                 today.year - bdate.year - ((today.month, today.day) < (bdate.month, bdate.day))

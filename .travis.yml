@@ -9,12 +9,14 @@ services:
 - docker
 env:
   global:
-  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar' DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
+  - AWS_ACCESS_KEY_ID='foo' AWS_DEFAULT_REGION='us-east-1' AWS_SECRET_ACCESS_KEY='bar'
+    DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
   matrix:
   - TOXENV=py35
 install:
 - docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
-- docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common mdillon/postgis:9.5
+- docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy
+  -e POSTGRES_DB=briefy-common mdillon/postgis:9.5
 - pip install -r requirements/dev.txt
 - pip install flake8
 script:
@@ -24,3 +26,13 @@ after_success:
 - make docs
 notifications:
   slack: briefy:qxjOPwcrGEtVx3aCQBr812t9
+addons:
+  artifacts:
+    key:
+      secure: wWfvVIRVrlIhBa1mqlHagJt/9ZKQe5D7onIIt3khpuBTatZOH2700JhOk0D9YtyOgj57BK0HPJXolh9mYnPAgynC0dH5/CFn/yrsZpgNF+Yfsh28UviLbgb3V9QMq9x1j9WVYfPhWfSpEbIt1QUvW7eCJL3qhEPbcfEK3azjiw1XUp3cTlg7zaB8VPJEqUobHUuyAEMhQz4QLrZdH4QXx1dhaJSRP42DYJH7pgN0sogsckPv8V0tIIMUz/1iO5mKJXd4+4o24v5a3QAAz3zrRz5jxV02F8jPCKiYzC7wUv506EcOXg0K8Yi7vYrMTyB1iO6NLLZAT/OS/vYryWW8PVGC+d2KEPmC1XQlwL3vAgkyZlLu6zaV9d0CWVedcNeoEjSVivQBq+d7MDL3DTpJy3lnQXcH49ib/4+BsEu0oEasqYrG+F9NNjJHv5+x8zES0CkLi16LHvvN+ls4ItLPacEsTsHZI2IG9EyxuVPEzouA5NqnpsfrE0keT92jrsvc5aQldF3aIsbsPM1wXgTBYLr8hygWFWIKA8W6V26LAp3WXqtTCLMuHRfbYq+juMnC2af2ywuqdJRu7J+TEI6FlRjhl5X1jdsnevZbL4yomDbjS74eheICTNXSjJhlRI4sBDqWUEmeY1dr2UgSt6xDK7rDHaxMZS4rPbda1krVZbE=
+    secret:
+      secure: zL2/nuZbeHWv4LK1Cjcjvzt76LpEmy/DaSMResyVGaJt6Zh4k3L0zCwwlgczmtfDI/UozTPb8YKUNJcm2Ne0YPmPDapag7FznH3WpY2MRt63ahiPpNlRx+KgOaf4COCmwasT3ijOfZok6XCILvAes3eFGqQLBV2qnHIAd5O5SXlCA2795ylooW6QjHVfH4yTzIAlwLEhRKle8VM14DB7FdzXSeG46/NzqvKVb2iTlGrA3lY4CQF1SbNivxo0ym8L5JwD70cRHpDx7Io/tc/90ZV7WslSScPbzgfQXZF/2Zh7R86JqQ4eOCQ14v7ayWVvu6iWyygx86Qkg/xZM/NtObcS+eWlGt4fLhBMjO3voCps6Kh7kCFyGSFBo6SjxOCUjtZBOoy3n0aJxTG9c/CU4MkU9M2+FvK0VW4VBf9uyhjZFNUqz6DcsqqcibzVsS/SFO5puQLoR4CzulmLjRITmMbDHSYeG8DSHv86WnBsSDJd48JRaM4yOEuo8cd7Dgm7zdribY5t92sCdRDbi6ZIvEPuMH/yY6FXWiwkTlFRuG0GXtGCZG+PGm2UUNl1V/jHlrIDJHJhn2mNBFZtq8HY+DALGoVm6evV3GnBCJKWl0khmR9oJif7EDK93WI7bGWItcYM0MUFz95Vn7ZmQJGLAbQuY/0uZro4HnRqo7KXrrk=
+    bucket: briefy-dev-docs
+    target_paths: briefy.common
+    paths:
+      - docs/_build/dirhtml/

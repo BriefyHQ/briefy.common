@@ -292,13 +292,13 @@ class WorkflowState(object):
 
         Usage- on a WorkflowBody,  use either::
 
-        submit = workflow_state.transition(state_to, permission, ...)
+            submit = workflow_state.transition(state_to, permission, ...)
 
         or::
 
-        @workflow_state.transition(state_to, permission, ...):
-        def submit(self):
-            # code to run when transition happens
+            @workflow_state.transition(state_to, permission, ...):
+            def submit(self):
+                # code to run when transition happens
 
         """
         # the transition will be set in self._transitions

@@ -65,9 +65,8 @@ def generate_graph(workflow) -> str:
 
 class WorkflowDirective(Directive):
     """ Workflow directive.
-    Injects sections in the documentation about the Workflow.
 
-    Usage, in a sphinx documentation::
+    Injects sections in the documentation about the Workflow.
     """
     has_content = True
     option_spec = {
@@ -86,7 +85,6 @@ class WorkflowDirective(Directive):
         self.wf = getattr(import_module(module),klassname)
         self.wf_name = self.wf._name
         self.wf_elements = self._workflow_elements()
-
 
     def _rst2node(self, body: str) -> docutils.nodes.paragraph:
         """Process an ReSTructuredTect block and return a paragraph containing it.
@@ -218,7 +216,7 @@ class WorkflowDirective(Directive):
         node += dl
         return node
 
-    def graph_workflow(self) -> workflow_diagram:
+    def graph_workflow(self) -> nodes.section:
         """Generate a graphical representation of this Workflow."""
         source = generate_graph(self.wf)
         wf_name = self.wf_name

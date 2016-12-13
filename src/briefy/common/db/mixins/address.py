@@ -79,13 +79,12 @@ class Address:
     def coordinates(self) -> dict:
         """Return coordinates as a GeoJSON object.
 
-         For a Point it is like:
+         For a Point it is like::
 
             'coordinates': {
                 'type': 'Point',
                 'coordinates': [52.4994805, 13.4491646]
             },
-
 
         :returns: Coordinates as a GeoJSON object
         """

@@ -1,14 +1,14 @@
-briefy.common
-##########################################
+Briefy Common
+#############
 
 This package provides shared features used by other packages.
 
 Table of Contents
-==========================================
+=================
 
 .. toctree::
    :maxdepth: 1
-   :numbered: 2
+   :numbered: 1
    :titlesonly:
 
    intro
@@ -17,7 +17,7 @@ Table of Contents
    history
 
 Indices and tables
-==========================================
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`

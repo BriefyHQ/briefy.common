@@ -51,12 +51,12 @@ To run all tests, first, it is needed to setup a mock server for AWS SQS::
 
 Run all tests::
 
-    $ ./bin/tox
+    $ make tests
 
 
 Check style::
 
-    $ ./bin/flake8 src/briefy/common tests setup.py
+    $ make lint
 
 To run just a subset of the tests::
 
@@ -84,6 +84,6 @@ Install this package and its dependencies::
 
 Generate the HTML documentation::
 
-    $ make server
+    $ make docs_server
 
 Open the your browser at http://localhost:8000

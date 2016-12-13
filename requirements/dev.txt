@@ -5,6 +5,7 @@ alabaster==0.7.7
 coverage==4.1
 flake8
 flake8_docstrings
+graphviz
 httmock==1.2.5
 pydocstyle==1.0.0
 pytest==2.9.2
