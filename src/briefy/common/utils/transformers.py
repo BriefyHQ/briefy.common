@@ -10,6 +10,7 @@ import json
 HAS_SQLALCHEMY_UTILS = True
 try:
     from sqlalchemy_utils import Country
+    from sqlalchemy_utils import PhoneNumber
 except ImportError:
     HAS_SQLALCHEMY_UTILS = False
 
@@ -49,6 +50,11 @@ if HAS_SQLALCHEMY_UTILS:
     def ts_sautils_country(val: Country) -> str:
         """Serialize Country instance do country code string."""
         return val.code
+
+    @to_serializable.register(PhoneNumber)
+    def ts_sautils_phonenumber(val: PhoneNumber) -> str:
+        """Serialize PhoneNumber instance to number string."""
+        return str(val.international)
 
 
 @to_serializable.register(Enum)

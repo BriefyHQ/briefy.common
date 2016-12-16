@@ -17,6 +17,7 @@ History
     * Add LocalRole support. (ericof).
     * Improve Workflow documentation. (ericof).
     * BODY-85: Auto generate workflow documentation. (ericof)
+    * Include new serializer to sautils PhoneNumber instance (rudaporto).
 
 
 1.1.2 (2016-10-04)
