@@ -7,15 +7,6 @@ from sqlalchemy.ext.hybrid import hybrid_method
 import sqlalchemy as sa
 
 
-def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
-    """Filter LocalRole by role names.
-
-    :param local_roles: List of Local Roles
-    :param role_name: Role name, i.e: project_manager
-    """
-    return [lr for lr in local_roles if lr.role_name.value == role_name]
-
-
 class LocalRolesMixin:
     """A mixin providing Local role support for an object."""
 
@@ -185,14 +176,10 @@ class LocalRolesMixin:
             )
 
 
-class BriefyRoles(LocalRolesMixin):
-    """A Mixin providing internal Briefy roles for an object."""
+class BaseBriefyRoles(LocalRolesMixin):
+    """A Base Mixin providing internal Briefy roles for an object."""
 
-    __actors__ = (
-        'project_manager',
-        'scout_manager',
-        'qa_manager',
-    )
+    __actors__ = ()
 
     def _add_local_role_user_id(self, user_id: str, role_name: str) -> None:
         """Add a new local role for a user with the given id.
@@ -204,6 +191,25 @@ class BriefyRoles(LocalRolesMixin):
             user = BaseUser(user_id, {})
             self.add_local_role(user, role_name)
 
+    @staticmethod
+    def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
+        """Filter LocalRole by role names.
+
+        :param local_roles: List of Local Roles
+        :param role_name: Role name, i.e: project_manager
+        """
+        return [lr for lr in local_roles if lr.role_name.value == role_name]
+
+
+class BriefyRoles(BaseBriefyRoles):
+    """A Mixin providing internal Briefy roles for an object."""
+
+    __actors__ = (
+        'project_manager',
+        'scout_manager',
+        'qa_manager',
+    )
+
     @property
     def project_manager(self) -> list:
         """Return a list of ids of project managers.
@@ -211,7 +217,7 @@ class BriefyRoles(LocalRolesMixin):
         :return: ID of the project_manager.
         """
         roles = self.local_roles
-        return _filter_lr_by_name(roles, 'project_manager')
+        return self._filter_lr_by_name(roles, 'project_manager')
 
     @project_manager.setter
     def project_manager(self, user_id: str) -> None:
@@ -228,7 +234,7 @@ class BriefyRoles(LocalRolesMixin):
         :return: ID of the qa_manager.
         """
         roles = self.local_roles
-        return _filter_lr_by_name(roles, 'qa_manager')
+        return self._filter_lr_by_name(roles, 'qa_manager')
 
     @qa_manager.setter
     def qa_manager(self, user_id: str) -> None:
@@ -245,7 +251,7 @@ class BriefyRoles(LocalRolesMixin):
         :return: ID of the scout_manager.
         """
         roles = self.local_roles
-        return _filter_lr_by_name(roles, 'scout_manager')
+        return self._filter_lr_by_name(roles, 'scout_manager')
 
     @scout_manager.setter
     def scout_manager(self, user_id: str) -> None:

@@ -18,6 +18,7 @@ History
     * Improve Workflow documentation. (ericof).
     * BODY-85: Auto generate workflow documentation. (ericof)
     * Include new serializer to sautils PhoneNumber instance (rudaporto).
+    * Improve roles mixin with a new class BaseBriefyRoles to be reused in Leica (rudaporto).
 
 
 1.1.2 (2016-10-04)
