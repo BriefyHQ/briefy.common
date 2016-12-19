@@ -4,8 +4,9 @@ from briefy.common.vocabularies import LabeledEnum
 
 options = [
     ('system', 'system', 'r:system'),
-    ('customer', 'customer', 'r:customer'),
-    ('professional', 'professional', 'r:professional'),
+    ('customer_user', 'customer_user', 'r:customer'),
+    ('professional_user', 'professional_user', 'r:professional'),
+    ('account_manager', 'account_manager', 'r:account_manager'),
     ('project_manager', 'project_manager', 'r:project_manager'),
     ('scout_manager', 'scout_manager', 'r:scout_manager'),
     ('qa_manager', 'qa_manager', 'r:qa_manager'),
