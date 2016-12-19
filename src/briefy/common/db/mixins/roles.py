@@ -1,5 +1,6 @@
 """Roles mixins."""
 from briefy.common.types import BaseUser
+from briefy.common.vocabularies.roles import LocalRolesChoices
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -141,6 +142,10 @@ class LocalRolesMixin:
         """
         from briefy.common.db.models.roles import LocalRole
 
+        # make sure we add a new vocabulary instance and not a simple string
+        if not isinstance(role_name, LocalRolesChoices):
+            role_name = getattr(LocalRolesChoices, role_name)
+
         if not self.get_local_role_for_user(role_name, user):
             payload = {
                 'entity_type': self.__class__.__name__,
@@ -153,7 +158,7 @@ class LocalRolesMixin:
         else:
             raise ValueError(
                 'User {user_id} already has {role} local role'.format(
-                    user_id=user.id, role=role_name
+                    user_id=user.id, role=role_name.value
                 )
             )
 
@@ -191,8 +196,7 @@ class BaseBriefyRoles(LocalRolesMixin):
             user = BaseUser(user_id, {})
             self.add_local_role(user, role_name)
 
-    @staticmethod
-    def _filter_lr_by_name(local_roles: list, role_name: str) -> list:
+    def _filter_lr_by_name(self, local_roles: list, role_name: str) -> list:
         """Filter LocalRole by role names.
 
         :param local_roles: List of Local Roles
