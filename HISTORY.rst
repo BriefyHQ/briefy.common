@@ -20,6 +20,7 @@ History
     * Include new serializer to sautils PhoneNumber instance (rudaporto).
     * Improve roles mixin with a new class BaseBriefyRoles to be reused in Leica (rudaporto).
     * Make sure new local roles add the LocalRolesChoice enun instance and not the simple string (rudaporto).
+    * BODY-91: disable local_roles attribute "joined" load strategy and keep with the default lazy load (rudaporto).
 
 
 1.1.2 (2016-10-04)

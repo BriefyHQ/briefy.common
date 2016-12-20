@@ -25,7 +25,6 @@ class LocalRolesMixin:
             )'''.format(
                 entity=cls.__name__
             ),
-            lazy='joined'
         )
 
     @hybrid_method
