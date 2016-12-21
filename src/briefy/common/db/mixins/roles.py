@@ -148,7 +148,7 @@ class LocalRolesMixin:
         if not self.get_local_role_for_user(role_name, user):
             payload = {
                 'entity_type': self.__class__.__name__,
-                'entity_id': self.__class__.__name__,
+                'entity_id': self.id,
                 'user_id': user.id,
                 'role_name': role_name,
             }
