@@ -1,6 +1,8 @@
 """Personal information mixin."""
 from briefy.common.vocabularies.person import GenderCategories
 from datetime import date
+from sqlalchemy import orm
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import ChoiceType
 
@@ -27,18 +29,15 @@ class NameMixin:
         title = getattr(self, 'title', getattr(self, 'fullname', ''))
         return title
 
-    @hybrid_property
-    def fullname(self) -> str:
+    @declared_attr
+    def fullname(cls) -> str:
         """Fullname of this person.
 
         Concatenates first and last name.
 
         :returns: Concatenated first and last name of a person.
         """
-        return '{first_name} {last_name}'.format(
-            first_name=self.first_name,
-            last_name=self.last_name,
-        )
+        return orm.column_property(cls.first_name + ' ' + cls.last_name)
 
 
 class PersonalInfoMixin(NameMixin):

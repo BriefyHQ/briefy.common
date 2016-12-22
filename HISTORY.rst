@@ -23,6 +23,7 @@ History
     * BODY-91: disable local_roles attribute "joined" load strategy and keep with the default lazy load (rudaporto).
     * Changing local role for professional to use professional_user attribute (rudaporto).
     * Fix entity_id value in the add_local_role method from LocalRolesMixin (rudaporto).
+    * Update db person.NameMixin fullname attribute to be orm.column_property based on first and last name (rudaporto).
 
 
 1.1.2 (2016-10-04)
