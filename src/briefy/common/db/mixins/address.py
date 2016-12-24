@@ -23,7 +23,7 @@ class Address:
     """
 
     country = sa.Column(sautils.CountryType, nullable=False)
-    """Country of this adddress.
+    """Country of this address.
 
     Country will be stored as a ISO 3166-2 information.
     i.e.: DE, BR, ID
@@ -43,6 +43,8 @@ class Address:
 
         {
           'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
+          'formatted_address': 'Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE',
+          'place_id': 'ChIJ8-exwVNOqEcR8hBPr-VUmdQ',
           'province': 'Berlin',
           'locality': 'Berlin',
           'sublocality': 'Kreuzberg',
@@ -50,8 +52,9 @@ class Address:
           'street_number': '27',
           'country': 'DE',
           'postal_code': '10997'
-        },
+        }
 
+    Ref: https://maps-apis.googleblog.com/2016/11/address-geocoding-in-google-maps-apis.html
     """
 
     timezone = sa.Column(TimezoneType(backend='pytz'), default='UTC')
