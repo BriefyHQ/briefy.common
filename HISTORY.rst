@@ -24,6 +24,7 @@ History
     * Changing local role for professional to use professional_user attribute (rudaporto).
     * Fix entity_id value in the add_local_role method from LocalRolesMixin (rudaporto).
     * Update db person.NameMixin fullname attribute to be orm.column_property based on first and last name (rudaporto).
+    * Add formatted_address attribute to Address Mixin. (ericof).
 
 
 1.1.2 (2016-10-04)

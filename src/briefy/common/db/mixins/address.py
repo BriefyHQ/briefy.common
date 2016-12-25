@@ -30,10 +30,17 @@ class Address:
     """
 
     locality = sa.Column(sa.String(255), nullable=False)
-    """Locality of this adddress.
+    """Locality of this address.
 
     Locality could be a City, a Town or similar.
     i.e.: Bangkok, Berlin, São Paulo
+    """
+
+    formatted_address = sa.Column(sa.String(255), nullable=True)
+    """Address to be displayed on the user interface.
+
+    We use this as a fail safe against problems in the geocoding.
+    i.e.: Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE
     """
 
     info = sa.Column(sautils.JSONType)
