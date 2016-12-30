@@ -64,6 +64,7 @@ class Base(Security):
     __session__ = None
     __exclude_attributes__ = ['_sa_instance_state', 'request']
     __summary_attributes__ = []
+    __summary_attributes_relations__ = []
     __listing_attributes__ = []
 
     @classmethod
@@ -126,6 +127,24 @@ class Base(Security):
                 data[attr] = getattr(self, attr)
         return data
 
+    def _summarize_relationships(self) -> dict:
+        """Summarize relationship information.
+
+        :return: Dictionary with summarized info for relationships.
+        """
+        summary_relations = self.__summary_attributes_relations__
+        data = {}
+        for key in summary_relations:
+            obj = getattr(self, key, None)
+            if obj is None:
+                serialized = None
+            elif isinstance(obj, Base):
+                serialized = obj.to_summary_dict()
+            else:
+                serialized = [item.to_summary_dict() for item in obj if item]
+            data[key] = serialized
+        return data
+
     def to_dict(self, excludes: list=None) -> dict:
         """Return a dictionary with fields and values used by this Class.
 
@@ -137,6 +156,7 @@ class Base(Security):
         if isinstance(excludes, str):
             excludes = [excludes]
         data = self._to_dict(data, attrs, excludes, [])
+        data.update(self._summarize_relationships())
         return data
 
     def to_summary_dict(self) -> dict:
@@ -173,6 +193,7 @@ class Base(Security):
             excludes = [key for key in attrs if key not in listing_attributes]
 
         data = self._to_dict(data, attrs, excludes, required=listing_attributes)
+        data.update(self._summarize_relationships())
         return data
 
     def to_JSON(self):
