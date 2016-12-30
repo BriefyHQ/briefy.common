@@ -23,17 +23,24 @@ class Address:
     """
 
     country = sa.Column(sautils.CountryType, nullable=False)
-    """Country of this adddress.
+    """Country of this address.
 
     Country will be stored as a ISO 3166-2 information.
     i.e.: DE, BR, ID
     """
 
     locality = sa.Column(sa.String(255), nullable=False)
-    """Locality of this adddress.
+    """Locality of this address.
 
     Locality could be a City, a Town or similar.
     i.e.: Bangkok, Berlin, São Paulo
+    """
+
+    formatted_address = sa.Column(sa.String(255), nullable=True)
+    """Address to be displayed on the user interface.
+
+    We use this as a fail safe against problems in the geocoding.
+    i.e.: Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE
     """
 
     info = sa.Column(sautils.JSONType)
@@ -43,6 +50,8 @@ class Address:
 
         {
           'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
+          'formatted_address': 'Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE',
+          'place_id': 'ChIJ8-exwVNOqEcR8hBPr-VUmdQ',
           'province': 'Berlin',
           'locality': 'Berlin',
           'sublocality': 'Kreuzberg',
@@ -50,8 +59,9 @@ class Address:
           'street_number': '27',
           'country': 'DE',
           'postal_code': '10997'
-        },
+        }
 
+    Ref: https://maps-apis.googleblog.com/2016/11/address-geocoding-in-google-maps-apis.html
     """
 
     timezone = sa.Column(TimezoneType(backend='pytz'), default='UTC')
