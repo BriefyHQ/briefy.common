@@ -26,24 +26,18 @@ def generate_contextual_slug(context: dict) -> str:
     :param context: Dictionary containing some values like id and title.
     :return: A url-friendly slug of a value.
     """
-    slug = ''
+    context = context.current_parameters
     obj_id = context.get('id', '')
-    if obj_id:
-        # Return just the first 8 chars of an uuid
-        obj_id = str(obj_id)[:8]
-    else:
-        obj_id = ''
     title = context.get('title', '')
-    if not title:
-        title = ''
-    if not (title or obj_id):
-        return slug
-    slugfied_text = generate_slug(title)
-    if obj_id and slugfied_text:
-        slug = '{obj_id}-{title}'.format(
-            obj_id=obj_id,
-            title=slugfied_text
+
+    slug_id = str(obj_id)[:8] if obj_id else None
+    slug_title = generate_slug(title) if title else None
+
+    if slug_id and slug_title:
+        slug = '{slug_id}-{slug_title}'.format(
+            slug_id=slug_id,
+            slug_title=slug_title
         )
     else:
-        slug = obj_id if obj_id else slugfied_text
+        slug = slug_id if slug_id else slug_title
     return slug

@@ -13,7 +13,7 @@ class GUID:
     """
 
     id = sa.Column(
-        UUIDType(binary=False),
+        UUIDType(),
         unique=True,
         primary_key=True,
         default=generate_uuid,

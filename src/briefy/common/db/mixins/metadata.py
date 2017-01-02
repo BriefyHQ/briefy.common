@@ -1,6 +1,5 @@
 """Base metadata mixin."""
 from briefy.common.utils.data import generate_contextual_slug
-from sqlalchemy.ext.hybrid import hybrid_property
 
 import colander
 import sqlalchemy as sa
@@ -37,40 +36,17 @@ class BaseMetadata:
     Text field allowing a small, but meaninful description for an object.
     """
 
-    _slug = sa.Column('slug',
-                      sa.String(255),
-                      nullable=True,
-                      index=True,
-                      info={'colanderalchemy': {
-                          'title': 'Description',
-                          'missing': colander.drop,
-                          'typ': colander.String}}
-                      )
+    slug = sa.Column('slug',
+                     sa.String(255),
+                     nullable=True,
+                     default=generate_contextual_slug,
+                     index=True,
+                     info={'colanderalchemy': {
+                           'title': 'Description',
+                           'missing': colander.drop,
+                           'typ': colander.String}}
+                     )
     """Slug -- friendly id -- for the object.
 
     To be used in url.
     """
-
-    @hybrid_property
-    def slug(self) -> str:
-        """Return a slug for an object.
-
-        :return: A slug to be added to an url.
-        """
-        return self._slug
-
-    @slug.setter
-    def slug(self, value: str):
-        """Set a new slug for this object.
-
-        If the value is None, we generate a new one using
-        :func:`briefy.common.utils.data.generate_contextual_slug`
-        :param value: Value of the new slug
-        """
-        if not value:
-            context = {
-                'id': getattr(self, 'id', ''),
-                'title': getattr(self, 'title', ''),
-            }
-            value = generate_contextual_slug(context)
-        self._slug = value
