@@ -46,7 +46,7 @@ class BaseMetadata:
                             'title': 'Description',
                             'missing': colander.drop,
                             'typ': colander.String}}
-                     )
+                      )
     """Slug -- friendly id -- for the object.
 
     To be used in url.
