@@ -28,7 +28,7 @@ options = [
     ('product', 'product', 'Product'),
     ('real_state', 'real_state', 'Real Estate'),
     ('restaurant', 'restaurant', 'Restaurant'),
-    ('sports', 'sports', 'Sports'),
+    ('sport', 'sport', 'Sport'),
     ('video', 'video', 'Video'),
     ('wedding', 'wedding', 'Wedding'),
 ]
