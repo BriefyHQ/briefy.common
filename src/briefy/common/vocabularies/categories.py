@@ -8,6 +8,7 @@ options = [
     ('accommodation', 'accommodation', 'Accommodation'),
     ('aerial', 'aerial', 'Aerial'),
     ('architecture', 'architecture', 'Architecture'),
+    ('business', 'business', 'Business'),
     ('nude', 'nude', 'Boudoir/Nude'),
     ('car', 'car', 'Car'),
     ('child', 'child', 'Child/Newborn'),
