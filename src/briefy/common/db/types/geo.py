@@ -8,7 +8,12 @@ class POINT(Geography):
     from_text = 'ST_GeomFromGeoJSON'
 
     def __init__(
-            self, geometry_type='POINT', srid=4326, dimension=2, spatial_index=True, management=False
+        self,
+        geometry_type='POINT',
+        srid=4326,
+        dimension=2,
+        spatial_index=True,
+        management=False
     ):
         """Initialize the type, make sure the geometry type is a POINT."""
-        super().__init__('POINT', srid, dimension, spatial_index, management)
+        super().__init__(geometry_type, srid, dimension, spatial_index, management)
