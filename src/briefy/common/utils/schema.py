@@ -37,6 +37,33 @@ class Dictionary(SchemaType):
         return cstruct
 
 
+class Coordinate(SchemaType):
+    """New type to handle Coordinate field."""
+
+    def serialize(self, node, appstruct):
+        """Serialize the schema type."""
+        if appstruct is null or appstruct is None:
+            return None
+        elif not (isinstance(appstruct, dict)):
+            raise Invalid(node, '{struct} is not a dict'.format(struct=appstruct))
+        return appstruct
+
+    def deserialize(self, node, cstruct):
+        """Deserialize the schema type."""
+        if isinstance(cstruct, (list, tuple)):
+            value = {
+                'type': 'Point',
+                'coordinates': [cstruct[0], cstruct[1]]
+            }
+        elif isinstance(cstruct, dict):
+            value = {
+                'type': 'Point',
+                'coordinates': [cstruct['0'], cstruct['1']]
+            }
+        value = json.dumps(value)
+        return value
+
+
 class List(SchemaType):
     """A List schema type for colander."""
 
