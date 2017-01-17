@@ -8,7 +8,6 @@ from sqlalchemy.orm import object_session
 
 
 import colander
-import collections
 import json
 import sqlalchemy as sa
 import sqlalchemy_utils as sautils
@@ -128,7 +127,7 @@ class Address:
 
     @coordinates.expression
     def coordinates(cls):
-        """Expression to be used on gis queries"""
+        """Expression to be used on gis queries."""
         return cls._coordinates
 
     @hybrid_method
