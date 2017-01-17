@@ -1,10 +1,14 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
+from briefy.common.utils.schema import JSONType
 from sqlalchemy_utils import TimezoneType
+from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
 
 import colander
+import collections
 import json
 import sqlalchemy as sa
 import sqlalchemy_utils as sautils
@@ -43,7 +47,10 @@ class Address:
     i.e.: Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE
     """
 
-    info = sa.Column(sautils.JSONType)
+    info = sa.Column(
+        sautils.JSONType,
+        info={'colanderalchemy': {'typ': JSONType}}
+    )
     """Structure containing address information.
 
     Info expected schema::
@@ -85,7 +92,7 @@ class Address:
     Should always be accessed using :func:`Address.coordinates` property.
     """
 
-    @property
+    @hybrid_property
     def coordinates(self) -> dict:
         """Return coordinates as a GeoJSON object.
 
@@ -111,10 +118,25 @@ class Address:
 
         :param value: Dictionary containing a GeoJSON object
         """
+        if isinstance(value, (list, tuple)):
+            value = {
+                'type': 'Point',
+                'coordinates': [value[0], value[1]]
+            }
         value = json.dumps(value)
         self._coordinates = value
 
-    @property
+    @coordinates.expression
+    def coordinates(cls):
+        """Expression to be used on gis queries"""
+        return cls._coordinates
+
+    @hybrid_method
+    def distance(self, value=(0.0, 0.0)):
+        """Distance between this address and another location."""
+        return sa.func.ST_Distance(self.coordinates, sa.func.ST_MakePoint(*value), True)
+
+    @hybrid_property
     def latlng(self):
         """Return coordinates as a tuple.
 
