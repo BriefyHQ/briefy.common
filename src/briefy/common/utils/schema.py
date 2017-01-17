@@ -50,17 +50,12 @@ class Coordinate(SchemaType):
 
     def deserialize(self, node, cstruct):
         """Deserialize the schema type."""
-        if isinstance(cstruct, (list, tuple)):
+        value = cstruct
+        if isinstance(value, (list, tuple)):
             value = {
                 'type': 'Point',
                 'coordinates': [cstruct[0], cstruct[1]]
             }
-        elif isinstance(cstruct, dict):
-            value = {
-                'type': 'Point',
-                'coordinates': [cstruct['0'], cstruct['1']]
-            }
-        value = json.dumps(value)
         return value
 
 

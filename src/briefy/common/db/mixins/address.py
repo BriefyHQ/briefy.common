@@ -116,6 +116,7 @@ class Address:
 
         :param value: Dictionary containing a GeoJSON object
         """
+        # this should keep only for the model tests
         if isinstance(value, (list, tuple)):
             value = {
                 'type': 'Point',
