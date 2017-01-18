@@ -220,11 +220,12 @@ class LocalRolesMixin:
         """
         return user_id in [u for u in cls._actors_ids()]
 
-    def add_local_role(self, user: BaseUser, role_name: str) -> None:
+    def add_local_role(self, user: BaseUser, role_name: str, permissions: list = ()) -> None:
         """Add a local role on this object to a user with given user_id.
 
         :param user: User id.
         :param role_name: Name of the role.
+        :param permissions: list of allowed permissions
         """
         from briefy.common.db.models.roles import LocalRole
 
@@ -239,6 +240,11 @@ class LocalRolesMixin:
                 'user_id': user.id,
                 'role_name': role_name,
             }
+            # enable permissions: view, edit, create, delete, list
+            for perm in permissions:
+                perm_name = 'can_{perm}'.format(perm=perm)
+                payload[perm_name] = True
+
             local_role = LocalRole(**payload)
             self.local_roles.append(local_role)
         else:
@@ -272,7 +278,7 @@ class BaseBriefyRoles(LocalRolesMixin):
 
     __actors__ = ()
 
-    def _add_local_role_user_id(self, user_id: str, role_name: str) -> None:
+    def _add_local_role_user_id(self, user_id: str, role_name: str, permissions: list) -> None:
         """Add a new local role for a user with the given id.
 
         :param user_id: ID of the user that will receive the local role.
@@ -280,7 +286,7 @@ class BaseBriefyRoles(LocalRolesMixin):
         """
         if user_id:
             user = BaseUser(user_id, {})
-            self.add_local_role(user, role_name)
+            self.add_local_role(user, role_name, permissions)
 
     def _filter_lr_by_name(self, local_roles: list, role_name: str) -> list:
         """Filter LocalRole by role names.
@@ -315,7 +321,7 @@ class BriefyRoles(BaseBriefyRoles):
 
         :param user_id: ID of the project_manager.
         """
-        self._add_local_role_user_id(user_id, 'project_manager')
+        self._add_local_role_user_id(user_id, 'project_manager', ['view', 'list'])
 
     @property
     def qa_manager(self) -> list:
@@ -332,7 +338,7 @@ class BriefyRoles(BaseBriefyRoles):
 
         :param user_id: ID of the qa_manager.
         """
-        self._add_local_role_user_id(user_id, 'qa_manager')
+        self._add_local_role_user_id(user_id, 'qa_manager', ['view', 'list'])
 
     @property
     def scout_manager(self) -> list:
@@ -349,4 +355,4 @@ class BriefyRoles(BaseBriefyRoles):
 
         :param user_id: ID of the scout_manager.
         """
-        self._add_local_role_user_id(user_id, 'scout_manager')
+        self._add_local_role_user_id(user_id, 'scout_manager', ['view', 'list'])
