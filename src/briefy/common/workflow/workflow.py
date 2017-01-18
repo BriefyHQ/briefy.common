@@ -1,7 +1,7 @@
 """Briefy base workflow."""
 from .base import Workflow
 from .base import WorkflowTransition
-from briefy.common.event.workflow import WorkflowTranstionEvent
+from briefy.common.event.workflow import WorkflowTransitionEvent
 from zope.event import notify
 
 import logging
@@ -32,7 +32,7 @@ class BriefyWorkflow(Workflow):
     def _notify(self, transition: WorkflowTransition) -> None:
         """Notify when a WorkflowTransition is executed.
 
-        Trigger a :class:`briefy.common.event.workflow.WorkflowTranstionEvent` event.
+        Trigger a :class:`briefy.common.event.workflow.WorkflowTransitionEvent` event.
         """
         obj = self.document
         history = self.history
@@ -47,7 +47,7 @@ class BriefyWorkflow(Workflow):
         request = None
         user = self.context
         # Fire event
-        wf_transition_event = WorkflowTranstionEvent(
+        wf_transition_event = WorkflowTransitionEvent(
             self.document, request, transition, user
         )
         # Notify using zope.event

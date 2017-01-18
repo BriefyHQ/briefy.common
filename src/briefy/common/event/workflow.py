@@ -10,7 +10,7 @@ class IWorkflowTransitionEvent(IDataEvent):
 
 
 @implementer(IWorkflowTransitionEvent)
-class WorkflowTranstionEvent(BaseEvent):
+class WorkflowTransitionEvent(BaseEvent):
     """Base class for workflow transition events.
 
     This event will write to the events queue on AWS SQS.
