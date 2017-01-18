@@ -203,23 +203,6 @@ class LocalRolesMixin:
         return actors
 
     @hybrid_method
-    def _can_list(self, user: BaseUser) -> bool:
-        """Check if the user can list this object.
-
-        :param user: User object..
-        :return: Boolean indicating if user is allowed to list this object.
-        """
-        user_groups = set(getattr(user, 'groups'))
-        acl = dict(getattr(self, '__raw_acl__'))
-        allowed = set(acl.get('list', []))
-        if user_groups.intersection(allowed):
-            return True
-        else:
-            roles = self.get_user_roles(user)
-            can_list = [lr for lr in roles if lr.can_view]
-            return True if can_list else False
-
-    @hybrid_method
     def is_actor(self, user_id: str) -> bool:
         """Check if the user_id is an actor in this object.
 

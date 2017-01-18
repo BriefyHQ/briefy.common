@@ -11,6 +11,7 @@ class Security:
 
     __actors__ = ()
     __raw_acl__ = (
+        ('create', ()),
         ('list', ()),
         ('view', ()),
         ('edit', ()),
@@ -33,22 +34,6 @@ class Security:
         return {attr: getattr(self, attr, None) for attr in self.__actors__}
 
     @hybrid_method
-    def _can_list(self, user: 'briefy.ws.auth.AuthenticatedUser') -> bool:
-        """Check if the user can list this object.
-
-        :param id: User object..
-        :return: Boolean indicating if user is allowed to list this object.
-        """
-        user_id = getattr(user, 'id')
-        user_groups = set(getattr(user, 'groups'))
-        acl = dict(self.__raw_acl__)
-        allowed = set(acl.get('list', []))
-        if user_groups.intersection(allowed):
-            return True
-        else:
-            return self.is_actor(user_id)
-
-    @hybrid_method
     def is_actor(self, user_id: str) -> bool:
         """Check if the user_id is an actor in this object.
 
@@ -66,6 +51,18 @@ class Base(Security):
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
     __listing_attributes__ = []
+
+    @classmethod
+    def __acl__(cls) -> tuple:
+        """Return a tuple of pyramid ACLs based on __raw_acl__ attribute."""
+        result = dict()
+        for permission, roles in cls.__raw_acl__:
+            for role_id in roles:
+                if role_id not in result:
+                    result[role_id] = [permission]
+                else:
+                    result[role_id].append(permission)
+        return tuple([(key, value) for key, value in result.items()])
 
     @classmethod
     def query(cls) -> Query:
