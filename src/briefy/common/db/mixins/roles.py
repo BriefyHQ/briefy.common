@@ -3,6 +3,7 @@ from briefy.common.types import BaseUser
 from briefy.common.vocabularies.roles import LocalRolesChoices
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_method
 
 import sqlalchemy as sa
@@ -12,6 +13,109 @@ class LocalRolesMixin:
     """A mixin providing Local role support for an object."""
 
     __actors__ = ()
+
+    @classmethod
+    def get_permission_relationship(cls, permission_name, viewonly=True, uselist=True):
+        """Get Local Role permission relationship."""
+        return sa.orm.relationship(
+            'LocalRole',
+            foreign_keys='LocalRole.entity_id',
+            viewonly=viewonly,
+            uselist=uselist,
+            primaryjoin='''and_(
+                        LocalRole.entity_id=={entity}.id,
+                        LocalRole.entity_type=="{entity}",
+                        LocalRole.{permission_name}==True,
+                    )'''.format(
+                entity=cls.__name__,
+                permission_name=permission_name
+            )
+        )
+
+    @classmethod
+    def permission_association_proxy(cls, local_attr, remote_attr='user_id'):
+        """Get a new permission association proxy instance."""
+        return association_proxy(local_attr, remote_attr)
+
+    @declared_attr
+    def can_view_roles(cls):
+        """Relationship: return a list of LocalRoles that have the permission can_view.
+
+        :return: list of LocalRoles model instances.
+        """
+        return cls.get_permission_relationship('can_view')
+
+    @declared_attr
+    def can_view_users(cls):
+        """Return a list of user IDs that have the can_view permission
+
+        :return: list of user IDs
+        """
+        return cls.permission_association_proxy('can_view_roles')
+
+    @declared_attr
+    def can_edit_roles(cls):
+        """Relationship: return a list of LocalRoles that have the permission can_edit.
+
+        :return: list of LocalRoles model instances.
+        """
+        return cls.get_permission_relationship('can_edit')
+
+    @declared_attr
+    def can_edit_users(cls):
+        """Return a list of user IDs that have the can_edit permission
+
+        :return: list of user IDs
+        """
+        return cls.permission_association_proxy('can_edit_roles')
+
+    @declared_attr
+    def can_delete_roles(cls):
+        """Relationship: return a list of LocalRoles that have the permission can_delete.
+
+        :return: list of LocalRoles model instances.
+        """
+        return cls.get_permission_relationship('can_delete')
+
+    @declared_attr
+    def can_delete_users(cls):
+        """Return a list of user IDs that have the can_delete permission
+
+        :return: list of user IDs
+        """
+        return cls.permission_association_proxy('can_delete_roles')
+
+    @declared_attr
+    def can_create_roles(cls):
+        """Relationship: return a list of LocalRoles that have the permission can_create.
+
+        :return: list of LocalRoles model instances.
+        """
+        return cls.get_permission_relationship('can_create')
+
+    @declared_attr
+    def can_create_users(cls):
+        """Return a list of user IDs that have the can_create permission
+
+        :return: list of user IDs
+        """
+        return cls.permission_association_proxy('can_create_roles')
+
+    @declared_attr
+    def can_list_roles(cls):
+        """Relationship: return a list of LocalRoles that have the permission can_list.
+
+        :return: list of LocalRoles model instances.
+        """
+        return cls.get_permission_relationship('can_list')
+
+    @declared_attr
+    def can_delete_users(cls):
+        """Return a list of user IDs that have the can_delete permission
+
+        :return: list of user IDs
+        """
+        return cls.permission_association_proxy('can_list_roles')
 
     @declared_attr
     def local_roles(cls):

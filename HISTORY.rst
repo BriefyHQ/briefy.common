@@ -28,6 +28,7 @@ History
     * Add formatted_address attribute to Address Mixin. (ericof).
     * Fix briefy.common.utils.data.generate_contextual_slug to be used as default in the BaseMetadata._slug column argument (rudaporto).
     * Change briefy.common.db.mixins.identifiable.GUID.id column to be binary (default and less alocation space) (rudaporto).
+    * New attributes in the local roles mixin: relationships and association proxies for easy access to the user permissions. (rudaporto).
  
 
 1.1.2 (2016-10-04)
