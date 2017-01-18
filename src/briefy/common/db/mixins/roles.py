@@ -47,7 +47,7 @@ class LocalRolesMixin:
 
     @declared_attr
     def can_view_users(cls):
-        """Return a list of user IDs that have the can_view permission
+        """Return a list of user IDs that have the can_view permission.
 
         :return: list of user IDs
         """
@@ -63,7 +63,7 @@ class LocalRolesMixin:
 
     @declared_attr
     def can_edit_users(cls):
-        """Return a list of user IDs that have the can_edit permission
+        """Return a list of user IDs that have the can_edit permission.
 
         :return: list of user IDs
         """
@@ -79,7 +79,7 @@ class LocalRolesMixin:
 
     @declared_attr
     def can_delete_users(cls):
-        """Return a list of user IDs that have the can_delete permission
+        """Return a list of user IDs that have the can_delete permission.
 
         :return: list of user IDs
         """
@@ -95,7 +95,7 @@ class LocalRolesMixin:
 
     @declared_attr
     def can_create_users(cls):
-        """Return a list of user IDs that have the can_create permission
+        """Return a list of user IDs that have the can_create permission.
 
         :return: list of user IDs
         """
@@ -110,8 +110,8 @@ class LocalRolesMixin:
         return cls.get_permission_relationship('can_list')
 
     @declared_attr
-    def can_delete_users(cls):
-        """Return a list of user IDs that have the can_delete permission
+    def can_list_users(cls):
+        """Return a list of user IDs that have the can_list permission.
 
         :return: list of user IDs
         """
