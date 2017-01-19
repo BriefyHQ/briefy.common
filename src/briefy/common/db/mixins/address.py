@@ -104,10 +104,14 @@ class Address:
         :returns: Coordinates as a GeoJSON object
         """
         coordinates = self._coordinates
-        session = object_session(self)
-        if session:
-            if coordinates is not None:
-                return json.loads(session.scalar(coordinates.ST_AsGeoJSON()))
+        if not isinstance(coordinates, str):
+            session = object_session(self)
+            if session:
+                if coordinates is not None:
+                    coordinates = session.scalar(coordinates.ST_AsGeoJSON())
+                else:
+                    return
+        return json.loads(coordinates)
 
     @coordinates.setter
     def coordinates(self, value: dict):
