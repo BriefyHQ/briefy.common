@@ -1,5 +1,6 @@
 """Briefy Queue."""
 from botocore.exceptions import ClientError
+from briefy.common.config import MOCK_SQS
 from briefy.common.config import SQS_REGION
 from briefy.common.utils.transformers import json_dumps
 from briefy.common.queue.message import SQSMessage
@@ -7,10 +8,32 @@ from datetime import datetime
 from zope.interface import Attribute
 from zope.interface import Interface
 
+import botocore
 import boto3
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def mock_sqs():
+    """Use Mocked SQS."""
+    host = '127.0.0.1'
+    port = 5000
+    queue_url = 'http://{host}:{port}'.format(host=host, port=port)
+
+    class MockEndpoint(botocore.endpoint.Endpoint):
+        def __init__(self, host, *args, **kwargs):
+            super().__init__(queue_url, *args, **kwargs)
+
+    if not hasattr(botocore.endpoint, 'OrigEndpoint'):
+        botocore.endpoint.OrigEndpoint = botocore.endpoint.Endpoint
+
+    botocore.endpoint.Endpoint = MockEndpoint
+
+
+if MOCK_SQS:
+    logger.warning('Mocking SQS')
+    mock_sqs()
 
 
 class IQueue(Interface):
@@ -36,6 +59,9 @@ class Queue:
         self.logger = logger_ if logger_ else logger
         self.origin = origin
         name = self.name
+        if MOCK_SQS:
+            sqs = boto3.resource('sqs', region_name=self.region_name)
+            sqs.create_queue(QueueName=self.name)
         if not name:
             raise ValueError('Queue must have a name')
 
