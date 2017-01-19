@@ -137,7 +137,8 @@ class Address:
     @hybrid_method
     def distance(self, value=(0.0, 0.0)):
         """Distance between this address and another location."""
-        return sa.func.ST_Distance(self.coordinates, sa.func.ST_MakePoint(*value), True)
+        if self.coordinates:
+            return sa.func.ST_Distance(self.coordinates, sa.func.ST_MakePoint(*value), True)
 
     @hybrid_property
     def latlng(self):
@@ -147,7 +148,7 @@ class Address:
         :rtype: tuple
         """
         coordinates = self.coordinates
-        point = coordinates.get('coordinates', None)
+        point = coordinates.get('coordinates', None) if coordinates else None
         if point:
             lng, lat = point
             return (lat, lng)
