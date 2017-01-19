@@ -106,9 +106,8 @@ class Address:
         coordinates = self._coordinates
         session = object_session(self)
         if session:
-            return json.loads(
-                session.scalar(coordinates.ST_AsGeoJSON())
-            )
+            if coordinates is not None:
+                return json.loads(session.scalar(coordinates.ST_AsGeoJSON()))
 
     @coordinates.setter
     def coordinates(self, value: dict):
@@ -117,10 +116,15 @@ class Address:
         :param value: Dictionary containing a GeoJSON object
         """
         # this should keep only for the model tests
+        if isinstance(value['coordinates'][0], str):
+            return
+
         if isinstance(value, (list, tuple)):
+            # We assume is (lat, lng)
+            # so, to deal with GeoJSON, we swap it
             value = {
                 'type': 'Point',
-                'coordinates': [value[0], value[1]]
+                'coordinates': [value[1], value[0]]
             }
         value = json.dumps(value)
         self._coordinates = value
@@ -145,4 +149,5 @@ class Address:
         coordinates = self.coordinates
         point = coordinates.get('coordinates', None)
         if point:
-            return tuple(point)
+            lng, lat = point
+            return (lat, lng)
