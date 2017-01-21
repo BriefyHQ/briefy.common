@@ -19,6 +19,7 @@ requires = [
     'graphviz',
     'libthumbor',
     'newrelic',
+    'phonenumbers',
     'prettyconf',
     'pyCrypto',
     'python-logstash',
