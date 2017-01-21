@@ -54,7 +54,7 @@ class Coordinate(SchemaType):
         if isinstance(value, (list, tuple)):
             value = {
                 'type': 'Point',
-                'coordinates': [cstruct[0], cstruct[1]]
+                'coordinates': [cstruct[1], cstruct[0]]
             }
         return value
 

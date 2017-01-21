@@ -104,11 +104,14 @@ class Address:
         :returns: Coordinates as a GeoJSON object
         """
         coordinates = self._coordinates
-        session = object_session(self)
-        if session:
-            return json.loads(
-                session.scalar(coordinates.ST_AsGeoJSON())
-            )
+        if not isinstance(coordinates, str):
+            session = object_session(self)
+            if session:
+                if coordinates is not None:
+                    coordinates = session.scalar(coordinates.ST_AsGeoJSON())
+                else:
+                    return
+        return json.loads(coordinates)
 
     @coordinates.setter
     def coordinates(self, value: dict):
@@ -117,10 +120,15 @@ class Address:
         :param value: Dictionary containing a GeoJSON object
         """
         # this should keep only for the model tests
+        if isinstance(value['coordinates'][0], str):
+            return
+
         if isinstance(value, (list, tuple)):
+            # We assume is (lat, lng)
+            # so, to deal with GeoJSON, we swap it
             value = {
                 'type': 'Point',
-                'coordinates': [value[0], value[1]]
+                'coordinates': [value[1], value[0]]
             }
         value = json.dumps(value)
         self._coordinates = value
@@ -133,7 +141,8 @@ class Address:
     @hybrid_method
     def distance(self, value=(0.0, 0.0)):
         """Distance between this address and another location."""
-        return sa.func.ST_Distance(self.coordinates, sa.func.ST_MakePoint(*value), True)
+        if self.coordinates:
+            return sa.func.ST_Distance(self.coordinates, sa.func.ST_MakePoint(*value), True)
 
     @hybrid_property
     def latlng(self):
@@ -143,6 +152,7 @@ class Address:
         :rtype: tuple
         """
         coordinates = self.coordinates
-        point = coordinates.get('coordinates', None)
+        point = coordinates.get('coordinates', None) if coordinates else None
         if point:
-            return tuple(point)
+            lng, lat = point
+            return (lat, lng)

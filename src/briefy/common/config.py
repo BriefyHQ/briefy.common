@@ -2,6 +2,7 @@
 from prettyconf import config
 
 ENV = config('ENV', default='staging')
+MOCK_SQS = config('MOCK_SQS', default=False)
 
 # NewRelic
 NEW_RELIC_ENVIRONMENT = ENV

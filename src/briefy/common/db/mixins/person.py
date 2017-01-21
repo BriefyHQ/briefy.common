@@ -58,7 +58,15 @@ class PersonalInfoMixin(NameMixin):
     Options come from :mod:`briefy.common.vocabularies.person`
     """
 
-    birth_date = sa.Column('birth_date', sa.Date(), nullable=True)
+    birth_date = sa.Column(
+        'birth_date',
+        sa.Date(),
+        nullable=True,
+        info={'colanderalchemy': {
+              'title': 'Birthdate',
+              'missing': colander.drop,
+              'typ': colander.Date}}
+    )
     """Birth date of a person."""
 
     @property
