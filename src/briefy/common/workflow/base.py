@@ -32,13 +32,18 @@ class WorkflowTransition:
 
     _waiting_to_decorate = True
 
-    def __init__(self, state_from, state_to,
-                 permission=None,
-                 name=None, title='', description='',
-                 category='',
-                 extra_states=(),
-                 require_message=False,
-                 **kw):
+    def __init__(
+        self,
+        state_from,
+        state_to,
+        permission=None,
+        name=None, title='', description='',
+        category='',
+        extra_states=(),
+        require_message=False,
+        required_fields=(),
+        **kw
+    ):
         """Initialize this workflow transition."""
         if isinstance(permission, Permission):
             permission = permission.name
@@ -60,10 +65,19 @@ class WorkflowTransition:
         # If require_message is True, the transition will not happen
         # without a message being provided
         self.require_message = require_message
+        self.required_fields = required_fields
         if extra_states:
             self._previous_transition = WorkflowTransition(
-                extra_states[0], state_to, permission, name, title, description, category,
-                extra_states[1:]
+                extra_states[0],
+                state_to,
+                permission,
+                name,
+                title,
+                description,
+                category,
+                extra_states[1:],
+                require_message=require_message,
+                required_fields=required_fields,
             )
 
     @property
@@ -107,7 +121,7 @@ class WorkflowTransition:
         self.transition_hook = func
         return self
 
-    def _perform_transition(self, workflow, message=None):
+    def _perform_transition(self, workflow, message=None, valid_fields=None):
         """Perform the transition.
 
         Following actions are executed here:
@@ -117,6 +131,14 @@ class WorkflowTransition:
             * Call Workflow._notify, to trigger notifications.
 
         """
+        valid_fields = valid_fields if valid_fields else {}
+        document = workflow.document
+        for key in valid_fields:
+            value = valid_fields[key]
+            try:
+                setattr(document, key, value)
+            except Exception as exc:
+                raise WorkflowTransitionException(str(exc))
         workflow._set_state(self.state_to().value)
         workflow._update_history(self.title,
                                  self.state_from().value,
@@ -131,12 +153,11 @@ class WorkflowTransition:
         tied to several states in the same workflow
         """
         correct_transition = workflow.state._transitions.get(self.name, None)
-        if (correct_transition and
-                correct_transition.name == self.name):
+        if (correct_transition and correct_transition.name == self.name):
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
-    def __call__(self, *args, workflow=None, message=None, **kw):
+    def __call__(self, *args, workflow=None, message=None, fields=None, **kw):
         """Trigger the transition."""
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
@@ -151,11 +172,27 @@ class WorkflowTransition:
         if not state_from or not workflow:
             raise RuntimeError('Tried to trigger unnatached transition')
 
+        fields = fields if fields else {}
+        valid_fields = {}
+        required_fields = self.required_fields
+        if required_fields:
+            for key in required_fields:
+                if key not in fields:
+                    raise workflow.state.exception_transition(
+                        'Field {field} is required for this transition.'.format(
+                            field=key
+                        )
+                    )
+                else:
+                    valid_fields[key] = fields[key]
+
         if self.require_message and not message:
             raise workflow.state.exception_transition('Message is required for this transition')
 
         if workflow.state is not state_from:
-            return self._dispatch(*args, workflow=workflow, message=message, **kw)
+            return self._dispatch(
+                *args, workflow=workflow, message=message, fields=valid_fields, **kw
+            )
 
         self.guard(workflow)
 
@@ -164,7 +201,7 @@ class WorkflowTransition:
         else:
             result = None
 
-        self._perform_transition(workflow, message)
+        self._perform_transition(workflow, message, valid_fields)
 
         return result
 
