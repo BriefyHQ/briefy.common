@@ -31,6 +31,7 @@ History
     * New attributes in the local roles mixin: relationships and association proxies for easy access to the user permissions. (rudaporto).
     * New class method Base.__acl__ to map __raw_acl__ to the pyramid format (rudaporto).
     * Improve LocalRolesMixin.add_local_role to receive a new parameter permissions to be granted (rudaporto).
+    * Add new mixin to hold contact information: company_name, email, mobile and additional_phone (rudaporto).
  
 
 1.1.2 (2016-10-04)

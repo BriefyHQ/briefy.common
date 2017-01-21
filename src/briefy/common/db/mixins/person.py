@@ -6,7 +6,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import ChoiceType
 
+import colander
 import sqlalchemy as sa
+import sqlalchemy_utils as sautils
 
 
 class NameMixin:
@@ -73,3 +75,63 @@ class PersonalInfoMixin(NameMixin):
                 today.year - bdate.year - ((today.month, today.day) < (bdate.month, bdate.day))
             )
         return age
+
+
+class ContactInfoMixin(NameMixin):
+    """A mixin to manage contact information."""
+
+    company_name = sa.Column(
+        sa.String(),
+        nullable=True,
+        unique=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Company',
+                'default': '',
+                'typ': colander.String
+            }
+        }
+    )
+    """Name of the contact person Company."""
+
+    email = sa.Column(
+        sautils.types.EmailType(),
+        nullable=True,
+        unique=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Email',
+                'default': '',
+                'typ': colander.String
+            }
+        }
+    )
+    """Email of the contact person."""
+
+    mobile = sa.Column(
+        sautils.types.PhoneNumberType(),
+        nullable=True,
+        unique=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Mobile phone number',
+                'default': '',
+                'typ': colander.String
+            }
+        }
+    )
+    """Mobile phone number of the contact person."""
+
+    additional_phone = sa.Column(
+        sautils.types.PhoneNumberType(),
+        nullable=True,
+        unique=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Additional Phone',
+                'typ': colander.String,
+                'missing': colander.drop,
+            }
+        }
+    )
+    """Additional phone number of the contact person."""
