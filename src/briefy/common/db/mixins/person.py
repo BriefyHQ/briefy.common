@@ -96,6 +96,7 @@ class ContactInfoMixin(NameMixin):
             'colanderalchemy': {
                 'title': 'Company',
                 'default': '',
+                'missing': colander.drop,
                 'typ': colander.String
             }
         }
