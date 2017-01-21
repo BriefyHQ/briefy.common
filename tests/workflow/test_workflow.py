@@ -92,6 +92,7 @@ class TestWorkflow:
 
     def test_transitions_declared_with_multiple_state(self):
         """Test transitions for an object."""
+        from briefy.common.workflow import WorkflowTransitionException
         user = User('12345')
         customer = Customer('12345')
         wf = customer.workflow
@@ -105,9 +106,28 @@ class TestWorkflow:
         wf.approve()
         assert wf.state == wf.approved
         # This transition from the aproved state is declared as an
-        # 'extra_state' in the fixtures:
-        wf.reject()
+        # 'extra_state' in the fixtures and also requires fields and a message
+
+        fields = {'foo': 'bar', 'bar': 'not bar'}
+        message = 'Foo bar'
+
+        with pytest.raises(WorkflowTransitionException) as excinfo:
+            wf.reject()
+        assert 'Field foo is required for this transition' in str(excinfo)
+
+        with pytest.raises(WorkflowTransitionException) as excinfo:
+            wf.reject(fields=fields)
+        assert 'Message is required for this transition' in str(excinfo)
+
+        with pytest.raises(WorkflowTransitionException) as excinfo:
+            wf.reject(message=message, fields=fields)
+        assert 'The value not bar is not acceptable here' in str(excinfo)
+
+        fields['bar'] = 'foo'
+        wf.reject(message=message, fields=fields)
         assert wf.state == wf.rejected
+        assert customer.foo == 'bar'
+        assert customer.bar == 'foo'
 
     def test_transitions_with_permission_in_decorator_form(self):
         """Test transitions for an object."""
