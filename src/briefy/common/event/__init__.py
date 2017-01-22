@@ -1,4 +1,5 @@
 """Briefy base events."""
+from briefy.common.db import datetime_utcnow
 from briefy.common.queue import IQueue
 from briefy.common.queue.event import Queue
 from zope.component import getUtility
@@ -54,7 +55,7 @@ class BaseEvent:
         self.actor = actor
         self.guid = guid
         self.request_id = request_id
-        self.created_at = obj.created_at
+        self.created_at = datetime_utcnow()
 
     @property
     def queue(self) -> Queue:
