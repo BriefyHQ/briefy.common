@@ -140,7 +140,7 @@ class WorkflowTransition:
             except Exception as exc:
                 raise WorkflowTransitionException(str(exc))
         workflow._set_state(self.state_to().value)
-        workflow._update_history(self.title,
+        workflow._update_history(self.name,
                                  self.state_from().value,
                                  self.state_to().value,
                                  message=message)

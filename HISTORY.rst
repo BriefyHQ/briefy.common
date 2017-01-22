@@ -33,6 +33,7 @@ History
     * Improve LocalRolesMixin.add_local_role to receive a new parameter permissions to be granted (rudaporto).
     * Add new mixin to hold contact information: company_name, email, mobile and additional_phone (rudaporto).
     * Change event name validator to accept names with _ (underscore) (rudaporto).
+    * Fix bug in the workflow._perform_transition, it should use the name of the transition not the title (rudaporto).
  
 
 1.1.2 (2016-10-04)
