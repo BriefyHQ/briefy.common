@@ -32,6 +32,7 @@ History
     * New class method Base.__acl__ to map __raw_acl__ to the pyramid format (rudaporto).
     * Improve LocalRolesMixin.add_local_role to receive a new parameter permissions to be granted (rudaporto).
     * Add new mixin to hold contact information: company_name, email, mobile and additional_phone (rudaporto).
+    * Change event name validator to accept names with _ (underscore) (rudaporto).
  
 
 1.1.2 (2016-10-04)

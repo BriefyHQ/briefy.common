@@ -3,7 +3,7 @@ from briefy.common import _
 
 import colander
 
-EventName = colander.Regex(r'^(([a-z])+\.([a-z])+)+$', _('Invalid event name'))
+EventName = colander.Regex(r'^(([a-z_])+\.([a-z_])+)+$', _('Invalid event name'))
 
 
 def empty_or(external_validator):
