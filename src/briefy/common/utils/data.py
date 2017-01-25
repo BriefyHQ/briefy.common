@@ -43,3 +43,46 @@ def generate_contextual_slug(context: dict) -> str:
     else:
         slug = slug_id if slug_id else slug_title
     return slug
+
+
+class Objectify:
+    """Alows using values of nested JSON-like data structures as Python objects.
+
+    Makes SQS and HTTP payloads easy to use without goign too full model
+    declaration.
+
+    """
+
+    def __init__(self, dct: (dict, list)):
+        """Initalizer."""
+        self.dct = dct
+
+    def _normalize_attr(self, attr):
+        """Allow use of numbers prefixed by underscores as attributes when the object is a list."""
+        if attr.startswith("_") and attr.strip('_').isdigit():
+            attr = int(attr[1:].replace('_', '-'))
+        return attr
+
+    def __getattr__(self, attr):
+        """Retrieve attribute from underliying object."""
+        attr = self._normalize_attr(attr)
+        result = self.dct.__getitem__(attr)
+        if isinstance(result, (dict, list)):
+            return Objectify(result)
+        return result
+
+    def __setattr__(self, attr, value):
+        """Set apropriate attribute on underlying object."""
+        if attr == 'dct' or hasattr(self, attr):
+            return super().__setattr__(attr, value)
+        attr = self._normalize_attr(attr)
+        self.dct.__setitem__(attr, value)
+
+    def __repr__(self):
+        """Representation."""
+        return('Objectify({})'.format(self.dct))
+
+    def __bool__(self):
+        """Assure truthy value is False when appropriate."""
+        return bool(self.dct)
+
