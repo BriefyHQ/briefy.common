@@ -11,13 +11,21 @@ class Timestamp:
     This is used to track object creation and updates.
     """
 
-    created_at = sa.Column(AwareDateTime(), default=datetime_utcnow)
+    created_at = sa.Column(
+        AwareDateTime(),
+        default=datetime_utcnow
+    )
     """Creation date of this object.
 
     Returns a datetime object, always in UTC, representing when this object was created.
     """
 
-    updated_at = sa.Column(AwareDateTime(), default=datetime_utcnow, onupdate=datetime_utcnow)
+    updated_at = sa.Column(
+        AwareDateTime(),
+        default=datetime_utcnow,
+        # TODO: return this after migration
+        # onupdate=datetime_utcnow
+    )
     """Last update date of this object.
 
     Returns a datetime object, always in UTC, representing when this object was last updated.
