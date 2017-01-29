@@ -11,6 +11,7 @@ from zope.interface import Interface
 import botocore
 import boto3
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -180,10 +181,24 @@ class Queue:
         except ValueError as e:
             logger.exception('{}'.format(str(e)))
             raise e
+        if MOCK_SQS:
+            self._dump_message(message)
         payload = self._prepare_sqs_payload(message)
         response = queue.send_message(**payload)
         message_id = response.get('MessageId')
         return message_id.strip() if message_id else ''
+
+    def _dump_message(self, message):
+        """Dump message to filesystem.
+
+        This is used when MOCK_SQS is on.
+        """
+        dirs = 'dump/{0}'.format(message.body['event_name'])
+        if not os.path.exists(dirs):
+            os.makedirs(dirs)
+        with open('{0}/{1}.json'.format(dirs, message.body['guid']), 'w') as fo:
+            foo = json_dumps(message.body)
+            fo.write(foo)
 
     def __repr__(self):
         """Representation of a Queue."""
