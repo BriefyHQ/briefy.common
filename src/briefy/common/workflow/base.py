@@ -179,8 +179,17 @@ class WorkflowTransition:
         if not state_from or not workflow:
             raise RuntimeError('Tried to trigger unnatached transition')
 
+        # If "we are not the transition you are looking for"
+        # (i.e., the 'from_state' is a different one, we are
+        #  referring to another Transition instance)
+        if workflow.state is not state_from:
+            return self._dispatch(
+                *args, workflow=workflow, message=message, **kw
+            )
+
+        # Extract and veify document-updating fields
+        # in the transition payload
         fields = fields if fields else {}
-        valid_fields = {}
         required_fields = self.required_fields
         if required_fields:
             for key in required_fields:
@@ -190,25 +199,21 @@ class WorkflowTransition:
                             field=key
                         )
                     )
-                else:
-                    valid_fields[key] = fields[key]
+
 
         if self.require_message and not message:
             raise workflow.state.exception_transition('Message is required for this transition')
 
-        if workflow.state is not state_from:
-            return self._dispatch(
-                *args, workflow=workflow, message=message, fields=valid_fields, **kw
-            )
 
         self.guard(workflow)
 
         if self.transition_hook:
+            # 'fieds' are included in the kw:
             result = self.transition_hook(workflow, *args, **kw)
         else:
             result = None
 
-        self._perform_transition(workflow, message, valid_fields)
+        self._perform_transition(workflow, message, fields)
 
         return result
 
