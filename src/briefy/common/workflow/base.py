@@ -157,8 +157,12 @@ class WorkflowTransition:
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
-    def __call__(self, *args, workflow=None, message=None, fields=None, **kw):
-        """Trigger the transition."""
+    def __call__(self, *args, workflow=None, message=None, **kw):
+        """Trigger the transition.
+
+        An optional 'fields' attribute can be passed in the KW, with a
+        dictionary of fields to be updated on the target document.
+        """
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
                 raise TypeError("Transitions inside Workflow class bodies "
@@ -167,6 +171,9 @@ class WorkflowTransition:
             func = args[0]
 
             return self._decorate(func)
+
+        fields = kw.get('fields', {})
+        """Mandatory fields to update the document in this transition"""
 
         state_from = self.state_from()
         if not state_from or not workflow:
