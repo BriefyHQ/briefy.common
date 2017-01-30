@@ -48,7 +48,7 @@ def generate_contextual_slug(context: dict) -> str:
 class Objectify:
     """Alows using values of nested JSON-like data structures as Python objects.
 
-    Makes SQS and HTTP payloads easy to use without goign too full model
+    Makes SQS and HTTP payloads easy to use without going too full model
     declaration.
 
     """
@@ -85,4 +85,3 @@ class Objectify:
     def __bool__(self):
         """Assure truthy value is False when appropriate."""
         return bool(self.dct)
-

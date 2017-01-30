@@ -1,8 +1,12 @@
 """Briefy Common config."""
+from prettyconf import casts
 from prettyconf import config
 
 ENV = config('ENV', default='staging')
 MOCK_SQS = config('MOCK_SQS', default=False)
+
+# used to disable on update in the timestamp mixin
+IMPORT_KNACK = config('IMPORT_KNACK', casts.Boolean(), default=False)
 
 # NewRelic
 NEW_RELIC_ENVIRONMENT = ENV
