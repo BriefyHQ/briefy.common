@@ -90,8 +90,7 @@ class Objectify:
 
 
 def _accepts_pos_kw(func=None, signature=None):
-    """Return a boolean 2-tuple on whether a function accepts *args or **kw.
-    """
+    """Return a boolean 2-tuple on whether a function accepts *args or **kw."""
     signature = signature or inspect.signature(func)
     parameter_types = {p.kind for p in signature.parameters.values()}
     return (inspect.Parameter.VAR_POSITIONAL in parameter_types,
@@ -99,7 +98,7 @@ def _accepts_pos_kw(func=None, signature=None):
 
 
 def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'any':
-    """Performs a function call, injecting apropriate parameters from kwargs.
+    """Perform a function call, injecting apropriate parameters from kwargs.
 
     Other parameters are ignored.  (If you want errors on nonexisting parameters
     just call the function directly)
