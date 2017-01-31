@@ -45,6 +45,8 @@ class BriefyWorkflow(Workflow):
             extra={'history_entry': entry}
         )
         request = None
+        if hasattr(obj, 'request'):
+            request = obj.request
         user = self.context
         # Fire event
         wf_transition_event = WorkflowTransitionEvent(

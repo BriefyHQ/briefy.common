@@ -30,12 +30,13 @@ class WorkflowBase:
     List with all transitions for this object.
     """
 
-    def __init__(self, *args, workflow_context=None, **kwargs):
+    def __init__(self, *args, workflow_context=None, request=None, **kwargs):
         """Initialize object workflow.
 
         Otherwise its initial state is not set.
         """
-        self.workflow_context = workflow_context
+        self._workflow_context = workflow_context
+        self._request = request
         _ = self.workflow  # noqa
         super().__init__(*args, **kwargs)
 
@@ -55,6 +56,16 @@ class WorkflowBase:
     def workflow_context(self, value):
         """Set the workflow context (user) to this document."""
         self._workflow_context = value
+
+    @property
+    def request(self):
+        """Return current request of this document."""
+        return self._request
+
+    @request.setter
+    def request(self, value):
+        """Set the current request for this document."""
+        self._request = value
 
 
 class Workflow(WorkflowBase):
