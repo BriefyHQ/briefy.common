@@ -2,6 +2,8 @@
 from slugify import slugify
 from uuid import uuid4
 
+import inspect
+
 
 def generate_uuid() -> str:
     """Generate an uuid4.
@@ -85,3 +87,38 @@ class Objectify:
     def __bool__(self):
         """Assure truthy value is False when appropriate."""
         return bool(self.dct)
+
+
+def _accepts_pos_kw(func=None, signature=None):
+    """Return a boolean 2-tuple on whether a function accepts *args or **kw.
+    """
+    signature = signature or inspect.signature(func)
+    parameter_types = {p.kind for p in signature.parameters.values()}
+    return (inspect.Parameter.VAR_POSITIONAL in parameter_types,
+            inspect.Parameter.VAR_KEYWORD in parameter_types)
+
+
+def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'any':
+    """Performs a function call, injecting apropriate parameters from kwargs.
+
+    Other parameters are ignored.  (If you want errors on nonexisting parameters
+    just call the function directly)
+
+    :param func: the callable
+    :param args: positional args to be unconditionally forwarded to the callable
+    :param kwargs: keyword parameters that will be filtered to whatever the callable
+                   explicitly accepts before being forwarded.
+    :return: Whatever the callale returns.
+    """
+    signature = inspect.signature(func)
+
+    accepts_pos, accepts_kw = _accepts_pos_kw(signature=signature)
+    if accepts_pos:
+        # Anything goes -
+        return func(*args, **kwargs)
+
+    new_kw = {}
+    for key, value in kwargs.items():
+        if key in signature.parameters:
+            new_kw[key] = value
+    return func(*args, **new_kw)
