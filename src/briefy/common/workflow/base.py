@@ -3,6 +3,7 @@ from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
 from briefy.common.db import datetime_utcnow
+from briefy.common.utils.data import inject_call
 from collections import OrderedDict
 
 import weakref
@@ -157,11 +158,12 @@ class WorkflowTransition:
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
-    def __call__(self, *args, workflow=None, message=None, **kw):
+    def __call__(self, *args, workflow=None, message=None, fields=None, **kw):
         """Trigger the transition.
 
-        An optional 'fields' attribute can be passed in the KW, with a
-        dictionary of fields to be updated on the target document.
+        :param fields: An optional 'fields' attribute can be passed in the KW, with a
+                       dictionary of fields to be updated on the target document.
+        :return: Whatver the transitin hook fucntion returns or None
         """
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
@@ -172,7 +174,6 @@ class WorkflowTransition:
 
             return self._decorate(func)
 
-        fields = kw.get('fields', {})
         """Mandatory fields to update the document in this transition"""
 
         state_from = self.state_from()
@@ -184,7 +185,7 @@ class WorkflowTransition:
         #  referring to another Transition instance)
         if workflow.state is not state_from:
             return self._dispatch(
-                *args, workflow=workflow, message=message, **kw
+                *args, workflow=workflow, message=message, fields=fields, **kw
             )
 
         # Extract and verify document-updating fields
@@ -207,8 +208,15 @@ class WorkflowTransition:
 
         if self.transition_hook:
             # 'fields' are included in the kw and also add message
-            kw.update(message=message)
-            result = self.transition_hook(workflow, *args, **kw)
+
+            result = inject_call(
+                self.transition_hook,
+                workflow,
+                *args,
+                message=message,
+                fields=fields,
+                **kw
+            )
         else:
             result = None
 
