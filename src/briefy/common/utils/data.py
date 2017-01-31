@@ -113,7 +113,7 @@ def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'an
     signature = inspect.signature(func)
 
     accepts_pos, accepts_kw = _accepts_pos_kw(signature=signature)
-    if accepts_pos:
+    if accepts_kw:
         # Anything goes -
         return func(*args, **kwargs)
 
