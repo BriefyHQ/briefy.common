@@ -124,12 +124,14 @@ class Base(Security):
                 data[attr] = getattr(self, attr)
         return data
 
-    def _summarize_relationships(self) -> dict:
+    def _summarize_relationships(self, listing_attributes=()) -> dict:
         """Summarize relationship information.
 
         :return: Dictionary with summarized info for relationships.
         """
         summary_relations = self.__summary_attributes_relations__
+        if listing_attributes:
+            summary_relations = [item for item in summary_relations if item in listing_attributes]
         data = {}
         for key in summary_relations:
             obj = getattr(self, key, None)
@@ -190,7 +192,7 @@ class Base(Security):
             excludes = [key for key in attrs if key not in listing_attributes]
 
         data = self._to_dict(data, attrs, excludes, required=listing_attributes)
-        data.update(self._summarize_relationships())
+        data.update(self._summarize_relationships(listing_attributes))
         return data
 
     def to_JSON(self):
