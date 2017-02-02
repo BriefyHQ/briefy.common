@@ -122,7 +122,7 @@ class WorkflowTransition:
         self.transition_hook = func
         return self
 
-    def _perform_transition(self, workflow, message=None, valid_fields=None):
+    def _perform_transition(self, workflow, message=None, valid_fields=None, fire_event=True):
         """Perform the transition.
 
         Following actions are executed here:
@@ -145,7 +145,8 @@ class WorkflowTransition:
                                  self.state_from().value,
                                  self.state_to().value,
                                  message=message)
-        workflow._notify(self)
+        if fire_event:
+            workflow._notify(self)
 
     def _dispatch(self, *args, workflow=None, **kw):
         """Dispatch call to this transition to a sibling transition bound to the appropriate state.
@@ -220,7 +221,8 @@ class WorkflowTransition:
         else:
             result = None
 
-        self._perform_transition(workflow, message, fields)
+        fire_event = kw.get('fire_event', True)
+        self._perform_transition(workflow, message, fields, fire_event)
 
         return result
 
