@@ -48,10 +48,12 @@ class PersonalInfoMixin(NameMixin):
     description = sa.Column(
         sa.Text(),
         nullable=True,
-        info={'colanderalchemy': {
-              'title': 'Description',
-              'missing': colander.drop,
-        }}
+        info={
+            'colanderalchemy': {
+                'title': 'Description',
+                'missing': colander.drop,
+            }
+        }
     )
     """Description (or bio) of a person."""
 
