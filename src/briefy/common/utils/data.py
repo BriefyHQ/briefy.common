@@ -75,7 +75,7 @@ class Objectify:
 
     def __setattr__(self, attr, value):
         """Set apropriate attribute on underlying object."""
-        if attr == 'dct' or hasattr(self, attr):
+        if attr == 'dct' or attr in self.__dict__:
             return super().__setattr__(attr, value)
         attr = self._normalize_attr(attr)
         self.dct.__setitem__(attr, value)
