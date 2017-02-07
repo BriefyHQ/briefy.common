@@ -3,7 +3,6 @@ from briefy.common.db.mixins import GUID
 from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
 from briefy.common.vocabularies.roles import LocalRolesChoices
-from sqlalchemy.dialects.postgresql import UUID
 
 import colander
 import sqlalchemy as sa
@@ -26,7 +25,7 @@ class LocalRole(GUID, Timestamp, Base):
     """
 
     entity_id = sa.Column(
-        UUID(),
+        sautils.UUIDType(),
         nullable=False,
         index=True,
         info={
@@ -43,7 +42,7 @@ class LocalRole(GUID, Timestamp, Base):
     """
 
     user_id = sa.Column(
-        UUID(),
+        sautils.UUIDType(),
         nullable=False,
         index=True,
         info={
