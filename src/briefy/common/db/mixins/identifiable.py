@@ -1,6 +1,6 @@
 """Identifiable mixin."""
 from briefy.common.utils.data import generate_uuid
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_utils import UUIDType
 
 import colander
 import sqlalchemy as sa
@@ -13,7 +13,7 @@ class GUID:
     """
 
     id = sa.Column(
-        UUID(),
+        UUIDType(),
         unique=True,
         primary_key=True,
         default=generate_uuid,
