@@ -78,6 +78,7 @@ class Address:
     _coordinates = sa.Column(
         'coordinates',
         POINT,
+        index=True,
         info={
             'colanderalchemy': {
                 'title': 'Geo JSON Point coordinates',
@@ -155,4 +156,4 @@ class Address:
         point = coordinates.get('coordinates', None) if coordinates else None
         if point:
             lng, lat = point
-            return (lat, lng)
+            return lat, lng
