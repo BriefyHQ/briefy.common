@@ -14,10 +14,10 @@ import sqlalchemy_utils as sautils
 class NameMixin:
     """A mixin to handle name information."""
 
-    first_name = sa.Column(sa.String(255), nullable=False, unique=False)
+    first_name = sa.Column(sa.String(255), index=True, nullable=False, unique=False)
     """First name of a person."""
 
-    last_name = sa.Column(sa.String(255), nullable=False, unique=False)
+    last_name = sa.Column(sa.String(255), index=True, nullable=False, unique=False)
     """Last name of a person."""
 
     @hybrid_property

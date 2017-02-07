@@ -15,6 +15,7 @@ class Timestamp:
 
     created_at = sa.Column(
         AwareDateTime(),
+        index=True,
         default=datetime_utcnow
     )
     """Creation date of this object.
@@ -28,7 +29,7 @@ class Timestamp:
 
         Returns a datetime object, always in UTC, representing when this object was last updated.
         """
-        kwargs = dict(default=datetime_utcnow)
+        kwargs = dict(default=datetime_utcnow, index=True)
         if not IMPORT_KNACK:
             kwargs.update(onupdate=datetime_utcnow)
         return sa.Column(

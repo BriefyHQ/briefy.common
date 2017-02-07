@@ -36,6 +36,8 @@ History
     * Fix bug in the workflow._perform_transition, it should use the name of the transition not the title (rudaporto).
     * New config.IMPORT_KNACK to be used by the import script: disable Timestamp.updated_at onupdate parameter (rudaporto).
     * Makefile improvements (rudaporto).
+    * Added missing indexes on mixins (rudaporto).
+    * Changed UUID type to native Postgres type (rudaporto).
  
 
 1.1.2 (2016-10-04)

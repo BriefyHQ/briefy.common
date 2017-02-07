@@ -24,14 +24,14 @@ class Address:
     Additionally we have a field called info that stores a dict with more detailed information.
     """
 
-    country = sa.Column(sautils.CountryType, nullable=False)
+    country = sa.Column(sautils.CountryType, index=True, nullable=False)
     """Country of this address.
 
     Country will be stored as a ISO 3166-2 information.
     i.e.: DE, BR, ID
     """
 
-    locality = sa.Column(sa.String(255), nullable=False)
+    locality = sa.Column(sa.String(255), index=True, nullable=False)
     """Locality of this address.
 
     Locality could be a City, a Town or similar.
