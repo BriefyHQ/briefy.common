@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_method
+from uuid import UUID
 
 import sqlalchemy as sa
 
@@ -198,8 +199,13 @@ class LocalRolesMixin:
         :return: Dictionary with attr name and user id.
         """
         actors = {attr: [] for attr in self.__actors__}
-        for lr in self.local_roles:
-            actors[lr.role_name.value].append(str(lr.user_id))
+        for actor in actors:
+            value = getattr(self, actor, None)
+            if value and isinstance(value, UUID):
+                actors[actor].append(str(value))
+            elif value:
+                for user_id in value:
+                    actors[actor].append(str(user_id))
         return actors
 
     @hybrid_method
