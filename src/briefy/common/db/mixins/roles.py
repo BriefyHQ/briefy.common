@@ -201,7 +201,7 @@ class LocalRolesMixin:
         actors = {attr: [] for attr in self.__actors__}
         for actor in actors:
             value = getattr(self, actor, None)
-            if value and isinstance(value, UUID):
+            if value and isinstance(value, (UUID, str)):
                 actors[actor].append(str(value))
             elif value:
                 for user_id in value:
