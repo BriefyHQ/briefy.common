@@ -211,6 +211,7 @@ class Base(Security):
         listing_attributes = listing_attributes if listing_attributes else []
         data.update(self._summarize_relationships(listing_attributes))
         attrs = self._get_attrs()
+        attrs.extend([attr for attr in listing_attributes if attr not in attrs])
         # Remove attributes not on the listing_attributes
         excludes = []
         if listing_attributes:
