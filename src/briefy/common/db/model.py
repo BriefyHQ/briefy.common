@@ -145,7 +145,6 @@ class Base(Security):
         :param required: List of explicitly required attributes.
         :returns: Dictionary with fields and values used by this Class
         """
-
         for attr in excludes:
             if attr in data:
                 del(data[attr])
