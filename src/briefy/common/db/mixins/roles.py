@@ -204,8 +204,11 @@ class LocalRolesMixin:
             if value and isinstance(value, (UUID, str)):
                 actors[actor].append(str(value))
             elif value:
-                for local_role in value:
-                    actors[actor].append(str(local_role.user_id))
+                for item in value:
+                    if isinstance(item, (UUID, str)):
+                        actors[actor].append(str(item))
+                    else:
+                        actors[actor].append(str(item.user_id))
         return actors
 
     @hybrid_method
