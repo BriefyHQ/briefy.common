@@ -224,11 +224,12 @@ class Base(Security):
         summary_excludes = list(data.keys())
         excludes.extend(summary_excludes)
 
-        # get object data payload
-        data, attrs = self._get_obj_dict_attrs(
+        # now get attrs list obj_data and update data payload
+        obj_data, attrs = self._get_obj_dict_attrs(
             excludes=excludes,
             includes=summary_attributes
         )
+        data.update(obj_data)
         return data
 
     def to_listing_dict(self) -> dict:
