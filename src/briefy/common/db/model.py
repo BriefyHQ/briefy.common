@@ -81,14 +81,46 @@ class Base(Security):
         """
         return cls.__session__.query(cls).get(key)
 
-    def _get_obj_dict_attrs(self) -> tuple:
+    def _get_data(self, attrs) -> dict:
+        """Ger a map of obj with all data from attrs.
+
+        :return: A map containing all data from obj attrs.
+        """
+        data = {}
+        for attr in attrs:
+            try:
+                value = getattr(self, attr)
+            except AttributeError as exc:
+                print(attr)
+                pass
+            else:
+                data[attr] = value
+        return data
+
+    def _get_attrs(self, excludes=None, includes=None) -> list:
+        """Ger a list of obj attrs.
+
+        :return: A tuple containing a list of obj attrs.
+        """
+        excludes = excludes if excludes else []
+        includes = includes if includes else []
+
+        all_attrs = list(self.__dict__.keys())
+        for attr in includes:
+            if attr not in all_attrs:
+                all_attrs.append(attr)
+
+        excludes = self._excluded_attr_from_serialization(all_attrs, excludes)
+        return [key for key in all_attrs if key not in excludes]
+
+    def _get_obj_dict_attrs(self, excludes=(), includes=()) -> tuple:
         """Shortcut to get a copy of obj __dict__ and a list of obj attrs.
 
         :return: A tuple containing a copy of the obj __dict__ and a list of attrs.
         """
-        data = self.__dict__.copy()
-        attrs = [key for key in data.keys()]
-        return (data, attrs)
+        attrs = self._get_attrs(excludes=excludes, includes=includes)
+        data = self._get_data(attrs)
+        return data, attrs
 
     def _excluded_attr_from_serialization(self, attrs: list, excludes: list) -> list:
         """Compute a list of attributes to be excluded from serialization.
@@ -113,8 +145,6 @@ class Base(Security):
         :param required: List of explicitly required attributes.
         :returns: Dictionary with fields and values used by this Class
         """
-        excludes = self._excluded_attr_from_serialization(attrs, excludes)
-
         for attr in excludes:
             if attr in data:
                 del(data[attr])
@@ -144,18 +174,32 @@ class Base(Security):
             data[key] = serialized
         return data
 
-    def to_dict(self, excludes: list=None) -> dict:
+    def to_dict(self, excludes: list=None, includes: list=None) -> dict:
         """Return a dictionary with fields and values used by this Class.
 
         :param excludes: attributes to exclude from dict representation.
+        :param includes: attributes to include from dict representation.
         :returns: Dictionary with fields and values used by this Class
         """
-        data, attrs = self._get_obj_dict_attrs()
+        data = dict()
         excludes = excludes if excludes else []
+        includes = includes if includes else []
+
         if isinstance(excludes, str):
             excludes = [excludes]
-        data = self._to_dict(data, attrs, excludes, [])
+        if isinstance(includes, str):
+            includes = [includes]
+
+        # first get summary fields
         data.update(self._summarize_relationships())
+        # now get all the other fields but excluding summary fields
+        excludes.extend(list(data.keys()))
+        # get data and attrs
+        obj_data, attrs = self._get_obj_dict_attrs(
+            excludes=excludes,
+            includes=includes
+        )
+        data.update(obj_data)
         return data
 
     def to_summary_dict(self) -> dict:
@@ -164,15 +208,27 @@ class Base(Security):
         Used to serialize this object within a parent object serialization.
         :returns: Dictionary with fields and values used by this Class
         """
-        data, attrs = self._get_obj_dict_attrs()
+        data = {}
         excludes = []
         summary_attributes = self.__summary_attributes__
         summary_attributes = summary_attributes if summary_attributes else []
+        data.update(self._summarize_relationships(summary_attributes))
+
+        # get all attrs list
+        attrs = self._get_attrs(includes=summary_attributes)
         # Remove attributes not on the summary_attributes
         if summary_attributes:
             excludes = [key for key in attrs if key not in summary_attributes]
 
-        data = self._to_dict(data, attrs, excludes, required=summary_attributes)
+        # also add to excludes all already summarized fields
+        summary_excludes = list(data.keys())
+        excludes.extend(summary_excludes)
+
+        # get object data payload
+        data, attrs = self._get_obj_dict_attrs(
+            excludes=excludes,
+            includes=summary_attributes
+        )
         return data
 
     def to_listing_dict(self) -> dict:
@@ -181,18 +237,26 @@ class Base(Security):
         Used to serialize this object for listings.
         :returns: Dictionary with fields and values used by this Class
         """
-        data, attrs = self._get_obj_dict_attrs()
-        excludes = []
-
+        data = {}
         listing_attributes = self.__listing_attributes__
         listing_attributes = listing_attributes if listing_attributes else []
-
+        data.update(self._summarize_relationships(listing_attributes))
+        attrs = self._get_attrs(includes=listing_attributes)
         # Remove attributes not on the listing_attributes
+        excludes = []
         if listing_attributes:
             excludes = [key for key in attrs if key not in listing_attributes]
 
-        data = self._to_dict(data, attrs, excludes, required=listing_attributes)
-        data.update(self._summarize_relationships(listing_attributes))
+        # also add to excludes all already summarized fields
+        summary_excludes = list(data.keys())
+        excludes.extend(summary_excludes)
+
+        # now get attrs list obj_data and update data payload
+        obj_data, attrs = self._get_obj_dict_attrs(
+            excludes=excludes,
+            includes=listing_attributes
+        )
+        data.update(obj_data)
         return data
 
     def to_JSON(self):

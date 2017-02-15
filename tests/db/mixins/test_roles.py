@@ -75,4 +75,4 @@ class TestBriefyRolesMixin:
         roles = job.local_roles
         assert str(roles[0]).startswith('<LocalRole')
         assert 'e9bee447-91ea-468f-b247-1ba4b9cf79ac' in job._actors_ids()
-        assert 'e9bee447-91ea-468f-b247-1ba4b9cf79ac' in job._actors_info()['project_manager']
+        assert 'e9bee447-91ea-468f-b247-1ba4b9cf79ac' == job._actors_info()['project_manager'][0]

@@ -38,6 +38,8 @@ History
     * Makefile improvements (rudaporto).
     * Added missing indexes on mixins (rudaporto).
     * Changed UUID type to native Postgres type (rudaporto).
+    * Fix LocalRolesMixin._actors_info method (rudaporto).
+    * Change to_dict, to_summary_dict and to_listing_dict to fix performance issues (rudaporto).
  
 
 1.1.2 (2016-10-04)
