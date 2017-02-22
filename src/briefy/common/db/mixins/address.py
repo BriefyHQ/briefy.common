@@ -7,6 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
 
+import colander
 import json
 import sqlalchemy as sa
 import sqlalchemy_utils as sautils
@@ -83,6 +84,7 @@ class Address:
             'colanderalchemy': {
                 'title': 'Geo JSON Point coordinates',
                 'typ': schema.Coordinate,
+                'missing': colander.drop,
             }
         }
     )
