@@ -4,7 +4,9 @@ from briefy.common.vocabularies import LabeledEnum
 
 options = [
     ('f', 'f', 'Female'),
-    ('m', 'm', 'Male')
+    ('m', 'm', 'Male'),
+    ('o', 'o', 'Other'),
+    ('n', 'n', 'N/A')
 ]
 
 

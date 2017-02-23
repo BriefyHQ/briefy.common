@@ -2,7 +2,7 @@
 History
 =======
 
-1.1.3 (Unreleased)
+2.0.0 (Unreleased)
 ------------------
 
     * Add python-logstash as requirement (ericof).
@@ -41,6 +41,7 @@ History
     * Fix LocalRolesMixin._actors_info method (rudaporto).
     * Change to_dict, to_summary_dict and to_listing_dict to fix performance issues (rudaporto).
     * Fix: Added missing: colander.drop to AddressMixin._coordinates (rudaporto).
+    * Add two new options to the Gender vocabulary (rudaporto).
  
 
 1.1.2 (2016-10-04)
