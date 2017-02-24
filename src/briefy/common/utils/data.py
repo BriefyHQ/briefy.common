@@ -65,19 +65,38 @@ class Objectify:
             attr = int(attr[1:].replace('_', '-'))
         return attr
 
-    def __getattr__(self, attr):
-        """Retrieve attribute from underliying object."""
-        attr = self._normalize_attr(attr)
+    def __getitem__(self, attr):
+        """Retrieve attribute from data container.
+
+        If the retrieved value is itself a container, wrap it
+        into an "Objectify" instance.
+        """
         result = self.dct.__getitem__(attr)
         if isinstance(result, (dict, list)):
             return Objectify(result)
         return result
+
+    def __getattr__(self, attr):
+        """Retrieve attribute from underliying object."""
+        attr = self._normalize_attr(attr)
+        try:
+            return self.__getitem__(attr)
+        except (KeyError, IndexError) as error:
+            raise AttributeError from error
+
 
     def __setattr__(self, attr, value):
         """Set apropriate attribute on underlying object."""
         if attr == 'dct' or attr in self.__dict__:
             return super().__setattr__(attr, value)
         attr = self._normalize_attr(attr)
+        try:
+            self.__setitem__(attr, value)
+        except IndexError as error:
+            raise AttributeError from error
+
+    def __setitem__(self, attr, value):
+        """Set apropriate attribute on data container."""
         self.dct.__setitem__(attr, value)
 
     def __repr__(self):
