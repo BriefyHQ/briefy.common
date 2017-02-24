@@ -42,6 +42,7 @@ History
     * Change to_dict, to_summary_dict and to_listing_dict to fix performance issues (rudaporto).
     * Fix: Added missing: colander.drop to AddressMixin._coordinates (rudaporto).
     * Add two new options to the Gender vocabulary (rudaporto).
+    * Change ContactInfoMixin to drop value if nullable=True and make default=None explicity (rudaporto).
  
 
 1.1.2 (2016-10-04)

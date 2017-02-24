@@ -84,7 +84,6 @@ class Objectify:
         except (KeyError, IndexError) as error:
             raise AttributeError from error
 
-
     def __setattr__(self, attr, value):
         """Set apropriate attribute on underlying object."""
         if attr == 'dct' or attr in self.__dict__:

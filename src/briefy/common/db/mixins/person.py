@@ -101,10 +101,10 @@ class ContactInfoMixin(NameMixin):
         sa.String(),
         nullable=True,
         unique=False,
+        default=None,
         info={
             'colanderalchemy': {
                 'title': 'Company',
-                'default': '',
                 'missing': colander.drop,
                 'typ': colander.String
             }
@@ -116,10 +116,11 @@ class ContactInfoMixin(NameMixin):
         sautils.types.EmailType(),
         nullable=True,
         unique=False,
+        default=None,
         info={
             'colanderalchemy': {
                 'title': 'Email',
-                'default': '',
+                'missing': colander.drop,
                 'typ': colander.String
             }
         }
@@ -130,10 +131,11 @@ class ContactInfoMixin(NameMixin):
         sautils.types.PhoneNumberType(),
         nullable=True,
         unique=False,
+        default=None,
         info={
             'colanderalchemy': {
                 'title': 'Mobile phone number',
-                'default': '',
+                'missing': colander.drop,
                 'typ': colander.String
             }
         }
@@ -144,6 +146,7 @@ class ContactInfoMixin(NameMixin):
         sautils.types.PhoneNumberType(),
         nullable=True,
         unique=False,
+        default=None,
         info={
             'colanderalchemy': {
                 'title': 'Additional Phone',
