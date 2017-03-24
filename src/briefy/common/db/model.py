@@ -91,7 +91,6 @@ class Base(Security):
             try:
                 value = getattr(self, attr)
             except AttributeError as exc:
-                print(attr)
                 pass
             else:
                 data[attr] = value
