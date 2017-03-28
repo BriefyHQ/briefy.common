@@ -38,3 +38,68 @@ def test_generate_contextual_slug(value, expected):
     """Test generate_contextual_slug."""
     func = data.generate_contextual_slug
     assert func(value) == expected
+
+
+def test_objectify_works_single_dict():
+    fixture = {'image': True}
+    assert data.Objectify(fixture).image == fixture['image']
+
+
+def test_objectify_works_single_list():
+    fixture = ['image']
+    assert data.Objectify(fixture)._0 == 'image'
+    assert data.Objectify(fixture)._dct == fixture
+
+
+def test_objectify_works_chainned_dict():
+    fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
+    obj = data.Objectify(fixture)
+    assert isinstance(obj.image, data.Objectify)
+    assert isinstance(obj._dct, dict)
+    assert obj.image._dct == {'type': 'pictorial', 'dimensions': [640, 480]}
+    assert obj.image.type == 'pictorial'
+    assert obj.image.dimensions._0 == 640
+
+
+def test_objectify_iteration_works():
+    for fixture in ( {'image0': 0, 'image1': 1, 'image2': 2}, [0, 1, 2]):
+        contents = {0, 1, 2}
+        for content in data.Objectify(fixture):
+            contents.remove(content)
+        assert not contents
+
+
+def test_objectify_raise_attribute_error():
+    fixture = {'image': True}
+    obj = data.Objectify(fixture)
+    with pytest.raises(AttributeError):
+        obj.video
+
+
+def test_objectify_customize_missing_attribute_shallow():
+    fixture = {'image': True}
+    obj = data.Objectify(fixture)
+    obj._sentinel = None
+    assert obj.video is None
+
+
+def test_objectify_customize_missing_attribute_deep():
+    fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
+    obj = data.Objectify(fixture)
+    obj._sentinel = None
+    assert obj.image.dimensions.third is None
+
+
+def test_objectify_dont_double_wrap():
+    fixture = {'image': True}
+    obj1 = data.Objectify(fixture)
+    assert data.Objectify(obj1)._dct == fixture
+
+
+def test_objectify_dir_works():
+    fixture = {'image': True}
+    obj1 = data.Objectify(fixture)
+    assert dir(obj1) == sorted(['_dct', '_sentinel', 'image'])
+    obj2 = data.Objectify(['anything'])
+    assert dir(obj2) == sorted(['_dct', '_sentinel', '_0'])
+

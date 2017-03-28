@@ -47,17 +47,49 @@ def generate_contextual_slug(context: dict) -> str:
     return slug
 
 
+objectify_sentinel = object()
+
+
 class Objectify:
     """Alows using values of nested JSON-like data structures as Python objects.
 
-    Makes SQS and HTTP payloads easy to use without going too full model
-    declaration.
+    Helper class to make SQS and HTTP payloads easy to use without
+    going too full model declaration. Works great for JSON and
+    JSON like objects - avoiding a lot of extraneous
+    brackets and quotes for attribute access.
+
+    This works by wrapping a Dictionary or List in Python with
+    a  `__getattr__` call, which recursively builds more objects
+    of this class if attributes retrieved are also dict or lists.
+
+    List members work as attributes with a `_` prepending their index number.
+
+    If the data structure is needed at any point, it is always available
+    at the "_dct" parameter.
+
+    Normally, on trying to retrieve any non-existing attribute, one will get
+    an AttributeError - although setting the instance "_sentinel" attribute
+    to any object, will return that object on attribute access error instead.
 
     """
 
-    def __init__(self, dct: (dict, list)):
-        """Initalizer."""
-        self.dct = dct
+
+    def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
+        """Initalizer.
+        :param dct: Container JSON-Like object to be used.
+        """
+        # DEPRECATED: Remove '.dct' and leave '._dct' as soon
+        # as there are no other references to '.dct' on users of this helper.
+        if isinstance(dct, Objectify):
+            dct = dct._dct
+        self._dct = self.dct = dct
+        self._sentinel = sentinel
+
+    def _acceptable_attr(self, attr):
+        # DEPRECATED: Remove 'dct' from next verification soon.
+        if attr == 'dct' or (attr.startswith('_') and not attr.strip('_').isdigit()):
+            return False
+        return True
 
     def _normalize_attr(self, attr):
         """Allow use of numbers prefixed by underscores as attributes when the object is a list."""
@@ -71,9 +103,9 @@ class Objectify:
         If the retrieved value is itself a container, wrap it
         into an "Objectify" instance.
         """
-        result = self.dct.__getitem__(attr)
+        result = self._dct.__getitem__(attr)
         if isinstance(result, (dict, list)):
-            return Objectify(result)
+            return Objectify(result, self._sentinel)
         return result
 
     def __getattr__(self, attr):
@@ -81,12 +113,14 @@ class Objectify:
         attr = self._normalize_attr(attr)
         try:
             return self.__getitem__(attr)
-        except (KeyError, IndexError) as error:
+        except (KeyError, IndexError, TypeError) as error:
+            if self._sentinel is not objectify_sentinel:
+                return self._sentinel
             raise AttributeError from error
 
     def __setattr__(self, attr, value):
         """Set apropriate attribute on underlying object."""
-        if attr == 'dct' or attr in self.__dict__:
+        if not self._acceptable_attr(attr):
             return super().__setattr__(attr, value)
         attr = self._normalize_attr(attr)
         try:
@@ -96,7 +130,25 @@ class Objectify:
 
     def __setitem__(self, attr, value):
         """Set apropriate attribute on data container."""
-        self.dct.__setitem__(attr, value)
+        self._dct.__setitem__(attr, value)
+
+    def __iter__(self):
+        """Allows one to iterate over the members of this object.
+        Note that this by itself makes these objects  better than JS
+        objects due to iterating over data members, and no need to check "hasOwnProperty".
+
+        """
+        items = self._dct if isinstance(self._dct, list) else self._dct.values()
+        for item in items:
+            yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
+
+    def __dir__(self):
+        keys = (
+            list(self._dct.keys())
+            if isinstance(self._dct, dict) else
+            ['_{0}'.format(index) for index in range(len(self._dct))  ]
+        )
+        return ['_dct', '_sentinel'] + keys
 
     def __repr__(self):
         """Representation."""
@@ -139,3 +191,4 @@ def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'an
         if key in signature.parameters:
             new_kw[key] = value
     return func(*args, **new_kw)
+
