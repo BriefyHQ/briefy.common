@@ -93,6 +93,8 @@ class Objectify:
 
     def _normalize_attr(self, attr):
         """Allow use of numbers prefixed by underscores as attributes when the object is a list."""
+        if attr.isdigit():
+            return int(attr)
         if attr.startswith("_") and attr.strip('_').isdigit():
             attr = int(attr[1:].replace('_', '-'))
         return attr
@@ -157,6 +159,43 @@ class Objectify:
     def __bool__(self):
         """Assure truthy value is False when appropriate."""
         return bool(self.dct)
+
+    def _get(self,
+             path: str='',
+             default: 'any'=objectify_sentinel,
+             objectify: bool=objectify_sentinel)-> "any":
+        """Retrieve an attribute at an arbitrarily deep path.
+
+        This is a public method. "_" is used to avoid clash with data keys.
+        Paths should be a dot separated string, just as if
+        Python object atrribute access was being done. Paths that
+        traverse list components may or not prefix the index_list with
+        a "_".
+
+        :param path: path
+        :param default: default value if attribute can't be reached.
+                        if not passed, returns self._sentinel if set
+                        to anything else than 'objectify_sentinel", else raises AttributeError.
+        :param objectify: If false, a final attribute that is a list or dict
+                          will be returned raw, and not objectified.
+        """
+        dct = self._dct
+        if path:
+            try:
+                for component in path.split('.'):
+                    dct = dct[self._normalize_attr(component)]
+            except (KeyError, IndexError, TypeError) as error:
+                if default is not objectify_sentinel:
+                    return default
+                elif self._sentinel is not objectify_sentinel:
+                    return self._sentinel
+                raise AttributeError from error
+        else:
+            if objectify is objectify_sentinel:
+                objectify = False
+        if objectify and isinstance(dct, (dict, list)):
+            return Objectify(dct, self._sentinel)
+        return dct
 
 
 def _accepts_pos_kw(func=None, signature=None):

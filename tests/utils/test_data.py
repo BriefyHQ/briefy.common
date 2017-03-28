@@ -103,3 +103,52 @@ def test_objectify_dir_works():
     obj2 = data.Objectify(['anything'])
     assert dir(obj2) == sorted(['_dct', '_sentinel', '_0'])
 
+
+def test_objectify_bool_works():
+    fixture = {'image': True}
+    assert data.Objectify(fixture)
+    assert not data.Objectify({})
+
+
+def test_objectify_get_works():
+    fixture = {'image': True}
+    assert data.Objectify(fixture)._get('image')
+
+
+def test_objectify_get_empty_returns_raw():
+    fixture = {'image': True}
+    # Empty get should return data structure by default, but allow
+    # objectify parameter to be passed as True
+    assert data.Objectify(fixture)._get() == fixture
+    assert data.Objectify(fixture)._get(objectify=False) == fixture
+    assert data.Objectify(fixture)._get(objectify=True)._dct == fixture
+
+
+
+def test_objectify_get_works_deep():
+    fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
+    obj = data.Objectify(fixture)
+    assert obj._get('image.dimensions._0') == 640
+
+
+def test_objectify_get_raises_attribute_error():
+    fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
+    obj = data.Objectify(fixture)
+    with pytest.raises(AttributeError):
+        obj._get('image.dimensions._3')
+
+
+def test_objectify_get_works_with_default():
+    fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
+    obj = data.Objectify(fixture)
+    # Deep path failure
+    assert obj._get('image.dimensions._3', None) is None
+    # Early path failure
+    assert obj._get('image.other_dimensions._0', None) is None
+    # re-use obj._sentinel
+    obj._sentinel = None
+    assert obj._get('image.dimensions._3') is None
+    # Retrieves data structure
+    assert obj._get('image.dimensions', objectify=False) ==  [640, 480]
+
+
