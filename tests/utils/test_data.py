@@ -123,8 +123,6 @@ def test_objectify_get_empty_returns_raw():
     assert data.Objectify(fixture)._get(objectify=False) == fixture
     assert data.Objectify(fixture)._get(objectify=True)._dct == fixture
 
-
-
 def test_objectify_get_works_deep():
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
@@ -145,10 +143,29 @@ def test_objectify_get_works_with_default():
     assert obj._get('image.dimensions._3', None) is None
     # Early path failure
     assert obj._get('image.other_dimensions._0', None) is None
-    # re-use obj._sentinel
-    obj._sentinel = None
-    assert obj._get('image.dimensions._3') is None
+    # raises even if obj._sentinel is set:
+    with pytest.raises(AttributeError):
+        obj._sentinel = None
+        obj._get('image.dimensions._3')
+    obj._sentinel = data.objectify_sentinel
     # Retrieves data structure
     assert obj._get('image.dimensions', objectify=False) ==  [640, 480]
+
+
+def test_objectify_traversal():
+    fixture = {
+        'assignment': {
+            'order': {'requirements': {'height': 480, 'exposure': '0.2s'}},
+            'requirements': {'width': 640}
+        },
+        'requirements': {'duration': '10s', 'exposure': '1s'}
+    }
+    obj = data.Objectify(fixture)
+    t = obj._get_traverser(['requirements', 'assignment.requirements', 'assignment.order.requirements'])
+    assert t.width == 640
+    assert t.height == 480
+    assert t.duration == '10s'
+    assert t.exposure == '1s'
+
 
 

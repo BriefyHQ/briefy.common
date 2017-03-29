@@ -65,7 +65,14 @@ class Objectify:
     List members work as attributes with a `_` prepending their index number.
 
     If the data structure is needed at any point, it is always available
-    at the "_dct" parameter.
+    from an empty call to _get
+
+    The `_get` method works as a dictionary get but allows for a dot
+    separated attribute path.
+
+    The `_traverse` and `_get_traverser` methods allow retrieving
+    attributes from a relative path retrieved from two or more root-paths
+    in an hierarchical order,
 
     Normally, on trying to retrieve any non-existing attribute, one will get
     an AttributeError - although setting the instance "_sentinel" attribute
@@ -161,7 +168,7 @@ class Objectify:
         return bool(self.dct)
 
     def _get(self,
-             path: str='',
+             path: str=None,
              default: 'any'=objectify_sentinel,
              objectify: bool=objectify_sentinel)-> "any":
         """Retrieve an attribute at an arbitrarily deep path.
@@ -180,22 +187,128 @@ class Objectify:
                           will be returned raw, and not objectified.
         """
         dct = self._dct
-        if path:
-            try:
-                for component in path.split('.'):
-                    dct = dct[self._normalize_attr(component)]
-            except (KeyError, IndexError, TypeError) as error:
-                if default is not objectify_sentinel:
-                    return default
-                elif self._sentinel is not objectify_sentinel:
-                    return self._sentinel
-                raise AttributeError from error
-        else:
-            if objectify is objectify_sentinel:
-                objectify = False
+        if path is None:
+            if not objectify or objectify is objectify_sentinel:
+                return dct
+            return self
+        try:
+            for component in path.split('.'):
+                if not component:
+                    continue
+                dct = dct[self._normalize_attr(component)]
+        except (KeyError, IndexError, TypeError) as error:
+            if default is not objectify_sentinel:
+                return default
+            raise AttributeError from error
+
         if objectify and isinstance(dct, (dict, list)):
             return Objectify(dct, self._sentinel)
         return dct
+
+    def _traverse(self,
+                  roots: list,
+                  branch: str,
+                  default: 'any'=objectify_sentinel,
+                  objectify: bool=True)-> 'any':
+        """Retrieve attribute from one of various sub-structures withn main struct.
+
+        Prefer to use ._get_traverser instead.
+
+        :param roots: list of paths as strings from which to try to retrieve 'branch' attribute
+        :param branch: path relative to roots where attribute will be sought
+        :param default: what to return if attribut is not find in any root.
+                        Raises AttributeError by default.
+        :param objectify: Whether to return an Objetify wrapper if
+                          retrieved attribute is a list or dict,
+        :return: retrieved attribute.
+        """
+        for path in roots:
+            try:
+                value = self._get('.'.join((path, branch)), objectify=objectify)
+            except AttributeError:
+                continue
+            else:
+                return value
+        if default is objectify_sentinel:
+            raise AttributeError
+        return default
+
+    def _get_traverser(self,
+                  roots: list,
+                  default: 'any' = objectify_sentinel) -> 'any':
+        """Return callable to retrieve attribute in path from one of
+        various sub-structures within main struct.
+
+        Prefer this to ._traverse above.
+
+        Justificative: within many configuration parameters we have subsets of
+        parameters that override those present in another place in the same
+        JSON structure. For example, an Assignment will be linked
+        to an Order and a Project. If the Order has any "tech_requirements"
+        those should superceed the tech_requirements for the Project.
+
+        Another example: Delivery configuration for projects can have configurations for
+        "Archiving" and "Delivery" - but most fields will be the same for both
+        configurations, but for one or two ('parent_folder', for example).
+        Traversal allows a "deliver_requirements' section to hold all common fields
+        (like renaming operations, resizing, and such) while differing fields
+        are each retrived from its own section.
+
+        Example:
+        data = {'order': {'requirements': {'width': 640}},
+                'project': {'requirements': {'height': 480}},
+                'requirements': {'duration': '10s'}
+                }
+        obj = Objectify(data)._get_traverser([
+                'requirements', 'order.requirements', 'project.requirements'])
+        obj('width') -> 640
+        obj('height') -> 480
+        obj('duration') -> '10s'
+
+        :param roots: list of paths as strings from which to try to retrieve 'branch' attribute
+        :param default: what to return if attribut is not find in any root.
+                        Raises AttributeError by default.
+        :return: retrieved attribute.
+        """
+        return _Traverser(self, roots, default)
+
+
+class _Traverser:
+    """Helper class used by Objectify.
+
+    Should not be instantiated directly - use Objectify(...)._get_traverser(...)
+    """
+
+    def __init__(self, obj: Objectify, roots: list, default, branch=None):
+        """Keep configuration attributes."""
+        self._obj = obj
+        self._roots = roots
+        self._default = default
+        self._branch = branch if branch else []
+
+    def __getattr__(self, attr):
+        """Perform a search in the configured root paths on the parent object.
+
+        Returns a new instance of _Traverser if the retrieved attribute is
+        an Objectify instance - so that the search can proceed from the
+        walked path so far.
+        """
+        result = self(attr)
+        if isinstance(result, Objectify):
+            return _Traverser(self._obj, self._roots, self._default, self._branch + [attr])
+        return result
+
+    def __call__(self, path: str, objectify=True):
+        """Performs a single search on given path under all configured roots.
+
+        Path can be a dotted path to an attribute. The resulting object
+        is either an Objectify instance, or its raw data structure -
+        and can no longer perform traversal.
+        """
+        return self._obj._traverse(self._roots,
+                                   '.'.join(self._branch + [path]),
+                                    default=self._default,
+                                    objectify=True)
 
 
 def _accepts_pos_kw(func=None, signature=None):
