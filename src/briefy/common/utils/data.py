@@ -82,6 +82,7 @@ class Objectify:
 
     def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
         """Initalizer.
+
         :param dct: Container JSON-Like object to be used.
         """
         # DEPRECATED: Remove '.dct' and leave '._dct' as soon
@@ -141,8 +142,9 @@ class Objectify:
         self._dct.__setitem__(attr, value)
 
     def __iter__(self):
-        """Allows one to iterate over the members of this object.
-        Note that this by itself makes these objects  better than JS
+        """Allow one to iterate over the members of this object.
+
+        Note that this by itself makes these objects  better than Javascript
         objects due to iterating over data members, and no need to check "hasOwnProperty".
 
         """
@@ -151,6 +153,7 @@ class Objectify:
             yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
 
     def __dir__(self):
+        """Dir: enables autocomplete."""
         keys = (
             list(self._dct.keys())
             if isinstance(self._dct, dict) else
@@ -236,8 +239,7 @@ class Objectify:
             self,
             roots: list,
             default: 'any' = objectify_sentinel) -> 'any':
-        """Return callable to retrieve attribute in path from one of
-        various sub-structures within main struct.
+        """Return a "traverser" able to retrieve relative attributes starting from multiple paths.
 
         Prefer this to ._traverse above.
 
@@ -299,7 +301,7 @@ class _Traverser:
         return result
 
     def __call__(self, path: str, objectify=True):
-        """Performs a single search on given path under all configured roots.
+        """Perform a single search on given path under all configured roots.
 
         Path can be a dotted path to an attribute. The resulting object
         is either an Objectify instance, or its raw data structure -
