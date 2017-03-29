@@ -62,7 +62,7 @@ def test_objectify_works_chainned_dict():
 
 
 def test_objectify_iteration_works():
-    for fixture in ( {'image0': 0, 'image1': 1, 'image2': 2}, [0, 1, 2]):
+    for fixture in ({'image0': 0, 'image1': 1, 'image2': 2}, [0, 1, 2]):
         contents = {0, 1, 2}
         for content in data.Objectify(fixture):
             contents.remove(content)
@@ -123,6 +123,7 @@ def test_objectify_get_empty_returns_raw():
     assert data.Objectify(fixture)._get(objectify=False) == fixture
     assert data.Objectify(fixture)._get(objectify=True)._dct == fixture
 
+
 def test_objectify_get_works_deep():
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
@@ -149,7 +150,7 @@ def test_objectify_get_works_with_default():
         obj._get('image.dimensions._3')
     obj._sentinel = data.objectify_sentinel
     # Retrieves data structure
-    assert obj._get('image.dimensions', objectify=False) ==  [640, 480]
+    assert obj._get('image.dimensions', objectify=False) == [640, 480]
 
 
 def test_objectify_traversal():
@@ -161,11 +162,10 @@ def test_objectify_traversal():
         'requirements': {'duration': '10s', 'exposure': '1s'}
     }
     obj = data.Objectify(fixture)
-    t = obj._get_traverser(['requirements', 'assignment.requirements', 'assignment.order.requirements'])
+    t = obj._get_traverser([
+        'requirements', 'assignment.requirements', 'assignment.order.requirements'
+    ])
     assert t.width == 640
     assert t.height == 480
     assert t.duration == '10s'
     assert t.exposure == '1s'
-
-
-

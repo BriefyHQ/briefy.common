@@ -80,7 +80,6 @@ class Objectify:
 
     """
 
-
     def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
         """Initalizer.
         :param dct: Container JSON-Like object to be used.
@@ -155,7 +154,7 @@ class Objectify:
         keys = (
             list(self._dct.keys())
             if isinstance(self._dct, dict) else
-            ['_{0}'.format(index) for index in range(len(self._dct))  ]
+            ['_{0}'.format(index) for index in range(len(self._dct))]
         )
         return ['_dct', '_sentinel'] + keys
 
@@ -233,9 +232,10 @@ class Objectify:
             raise AttributeError
         return default
 
-    def _get_traverser(self,
-                  roots: list,
-                  default: 'any' = objectify_sentinel) -> 'any':
+    def _get_traverser(
+            self,
+            roots: list,
+            default: 'any' = objectify_sentinel) -> 'any':
         """Return callable to retrieve attribute in path from one of
         various sub-structures within main struct.
 
@@ -305,10 +305,12 @@ class _Traverser:
         is either an Objectify instance, or its raw data structure -
         and can no longer perform traversal.
         """
-        return self._obj._traverse(self._roots,
-                                   '.'.join(self._branch + [path]),
-                                    default=self._default,
-                                    objectify=True)
+        return self._obj._traverse(
+            self._roots,
+            '.'.join(self._branch + [path]),
+            default=self._default,
+            objectify=True
+        )
 
 
 def _accepts_pos_kw(func=None, signature=None):
@@ -343,4 +345,3 @@ def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'an
         if key in signature.parameters:
             new_kw[key] = value
     return func(*args, **new_kw)
-
