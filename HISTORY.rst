@@ -43,6 +43,10 @@ History
     * Fix: Added missing: colander.drop to AddressMixin._coordinates (rudaporto).
     * Add two new options to the Gender vocabulary (rudaporto).
     * Change ContactInfoMixin to drop value if nullable=True and make default=None explicity (rudaporto).
+    * Added Objectify helper class to navigate JSON attributes (jsbueno).
+    * Improve Objectify to allow defaults and get interation (jsbueno).
+    * Added attribute traversal capability to Objectify (jsbueno).
+
  
 
 1.1.2 (2016-10-04)
