@@ -221,6 +221,9 @@ class WorkflowTransition:
         else:
             result = None
 
+        updated_message = result.get('message', None) if isinstance(result, dict) else None
+        if updated_message:
+            message = updated_message
         fire_event = kw.get('fire_event', True)
         self._perform_transition(workflow, message, fields, fire_event)
 
