@@ -1,7 +1,9 @@
 """Briefy base events."""
 from briefy.common.db import datetime_utcnow
+from briefy.common.db.model import Base
 from briefy.common.queue import IQueue
 from briefy.common.queue.event import Queue
+from briefy.common.users import SystemUser
 from uuid import uuid4
 from zope.component import getUtility
 from zope.interface import Interface
@@ -19,7 +21,11 @@ class IDataEvent(IEvent):
     """Interface for data events on Briefy."""
 
 
-class BaseEvent:
+class ITaskEvent(IEvent):
+    """Interface for task events on Briefy."""
+
+
+class Event:
     """A base event class used by all Briefy related events.
 
     Any event subclassing this one will write to an AWS SQS queue.
@@ -48,18 +54,20 @@ class BaseEvent:
 
     logger = logger
     data = None
-    obj = None
 
-    def __init__(self, obj, actor=None, request_id=None):
-        """Initialize the event."""
-        if not obj.created_at:
-            raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
-        guid = obj.id
-        self.obj = obj
-        self.actor = actor
+    def __init__(self, guid: str, data: dict, actor: str, request_id: str):
+        """Initialize the event.
+
+        :param guid: ID of the object or data on this event
+        :param data: Dictionary containing the payload to be used on the event message
+        :param actor: The id of the user triggering this event.
+        :param request_id: ID of the request triggering this event
+        """
+        self.data = data
+        self.actor = actor if actor else ''
         self.id = str(uuid4())
         self.guid = guid
-        self.request_id = request_id
+        self.request_id = request_id if request_id else ''
         self.created_at = datetime_utcnow()
 
     @property
@@ -81,7 +89,7 @@ class BaseEvent:
             'guid': self.guid,
             'created_at': self.created_at,
             'request_id': self.request_id,
-            'data': self.obj.to_dict(),
+            'data': self.data,
         }
         message_id = ''
         try:
@@ -102,3 +110,61 @@ class BaseEvent:
             )
 
         return message_id
+
+
+class BaseEvent(Event):
+    """A base event class used by all Briefy related events.
+
+    Any event subclassing this one will write to an AWS SQS queue.
+    """
+
+    obj = None
+
+    def __init__(self, obj: Base, actor: str='', request_id: str=''):
+        """Initialize the event.
+
+        :param obj: A SQLAlchemy object inheriting from briefy.common.db.models.Base
+        :param actor: The id of the user triggering this event.
+        :param request_id: ID of the request triggering this event
+        """
+        if not getattr(obj, 'created_at'):
+            raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
+        guid = getattr(obj, 'id')
+        self.obj = obj
+        data = obj.to_dict()
+        super().__init__(guid, data=data, actor=actor, request_id=request_id)
+
+
+class TaskEvent(Event):
+    """An event class to be specialized by Task Events."""
+
+    def __init__(self, task_name: str, success: bool=True, data: dict=None, obj: Base=None):
+        """Initialize the event.
+
+        :param task_name: Name of the task triggering this event. i.e.: leica.pool_assign
+        :param success: Was it successful or not?
+        :param data: Dictionary containing the payload to be used on the event message
+        :param obj: A SQLAlchemy object inheriting from briefy.common.db.models.Base
+        """
+        logger = self.logger
+        if obj:
+            guid = getattr(obj, 'id')
+            if data:
+                logger.warning('Both data and obj passed to event. Data is overridden')
+            data = obj.to_dict()
+        elif data:
+            guid = data.get('id', '')
+        else:
+            msg = 'Task {task_name} event not fired. Exception: {exc}'.format(
+                task_name=self.event_name,
+                exc='Need data or obj'
+            )
+            logger.error(msg)
+            raise ValueError(msg)
+        actor = str(SystemUser.id)
+        request_id = ''
+        self.event_name = '{task_name}.{status}'.format(
+            task_name=task_name,
+            status='success' if success else 'failure'
+        )
+        super().__init__(guid, data=data, actor=actor, request_id=request_id)
