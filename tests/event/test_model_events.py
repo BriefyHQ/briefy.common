@@ -96,6 +96,9 @@ class TestSQSMessage(BriefyQueueBaseTest):
         y = session.query(SimpleModel).all()[0]
         self._setup_queue()
         event = SimpleCreated(y, actor=str(SystemUser.id))
+
+        assert event.obj == y
+
         event()
         message = self.get_from_queue()
         data = json.loads(message.body)['data']

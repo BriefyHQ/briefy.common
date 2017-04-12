@@ -118,6 +118,8 @@ class BaseEvent(Event):
     Any event subclassing this one will write to an AWS SQS queue.
     """
 
+    obj = None
+
     def __init__(self, obj: Base, actor: str='', request_id: str=''):
         """Initialize the event.
 
@@ -128,6 +130,7 @@ class BaseEvent(Event):
         if not getattr(obj, 'created_at'):
             raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
         guid = getattr(obj, 'id')
+        self.obj = obj
         data = obj.to_dict()
         super().__init__(guid, data=data, actor=actor, request_id=request_id)
 
