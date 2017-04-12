@@ -47,6 +47,20 @@ class TestTaskEvent(BriefyQueueBaseTest):
 
     schema = SimpleSchema
 
+    def test_task_event_with_object_and_data(self, new_dummy, session):
+        self._setup_queue()
+        task_name = 'briefy.internal.tick'
+        success = True
+        x = new_dummy
+        obj = session.query(DummyModel).all()[0]
+        data = obj.to_dict()
+        event = InternalTask(task_name=task_name, success=success, obj=obj, data=data)
+        event()
+        message = self.get_from_queue()
+        body = json.loads(message.body)
+        assert body['event_name'] == 'briefy.internal.tick.success'
+        assert body['data']['title'] == x.title
+
     def test_task_event_with_object(self, new_dummy, session):
         self._setup_queue()
         task_name = 'briefy.internal.tick'

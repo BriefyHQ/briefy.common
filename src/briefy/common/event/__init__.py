@@ -146,8 +146,11 @@ class TaskEvent(Event):
         :param data: Dictionary containing the payload to be used on the event message
         :param obj: A SQLAlchemy object inheriting from briefy.common.db.models.Base
         """
+        logger = self.logger
         if obj:
             guid = getattr(obj, 'id')
+            if data:
+                logger.warning('Both data and obj passed to event. Data is overridden')
             data = obj.to_dict()
         elif data:
             guid = data.get('id', '')
