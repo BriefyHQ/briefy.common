@@ -4,9 +4,9 @@ from base_workflow import CustomerWorkflow
 from base_workflow import LegacyCustomer
 from base_workflow import User
 from briefy import common
-from conftest import queue_url
 from briefy.common import workflow
 from briefy.common.workflow import WorkflowPermissionException
+from conftest import queue_url
 from datetime import datetime
 from zope.configuration.xmlconfig import XMLConfig
 

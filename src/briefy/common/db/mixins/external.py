@@ -5,6 +5,7 @@ import colander
 import pkg_resources
 import sqlalchemy as sa
 
+
 try:
     pkg_resources.get_distribution('briefy.knack')
 except pkg_resources.DistributionNotFound:

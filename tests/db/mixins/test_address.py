@@ -40,7 +40,7 @@ class Location(AddressMixin, Base):
     __session__ = DBSession
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestAddressMixin:
     """Test Professional database model."""
 

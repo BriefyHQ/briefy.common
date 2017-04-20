@@ -7,6 +7,7 @@ from sqlalchemy_utils import JSONType
 import logging
 import sqlalchemy as sa
 
+
 logger = logging.getLogger(__name__)
 
 

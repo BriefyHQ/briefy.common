@@ -3,6 +3,7 @@ from briefy.common import _
 
 import colander
 
+
 EventName = colander.Regex(r'^(([a-z_])+\.([a-z_0-9])+)+$', _('Invalid event name'))
 
 

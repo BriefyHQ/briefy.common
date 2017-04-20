@@ -59,8 +59,8 @@ def simple_workflow():
     class SimpleWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
-        s1 = WorkflowState("s1", title="1", description="first")
-        s2 = WorkflowState("s2", title="2", description="second")
+        s1 = WorkflowState('s1', title='1', description='first')
+        s2 = WorkflowState('s2', title='2', description='second')
     return SimpleWorkflow
 
 
@@ -85,8 +85,8 @@ def medium_workflow():
     class MediumWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
-        s1 = WorkflowState("s1", title="1", description="first")
-        s2 = WorkflowState("s2", title="2", description="second")
+        s1 = WorkflowState('s1', title='1', description='first')
+        s2 = WorkflowState('s2', title='2', description='second')
 
         def permissions(self):
             return ['just_do_it']
@@ -178,8 +178,8 @@ def test_workflow_transition_with_incorrect_name_fails(mock_sqs):
     class MediumWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
-        s1 = WorkflowState("s1", title="1", description="first")
-        s2 = WorkflowState("s2", title="2", description="second")
+        s1 = WorkflowState('s1', title='1', description='first')
+        s2 = WorkflowState('s2', title='2', description='second')
 
         def permissions(self):
             return ['just_do_it']
@@ -212,8 +212,8 @@ def test_workflow_transition_from(mock_sqs):
     class MediumWorkflow(BriefyWorkflow):
         entity = 'test'
         initial_state = 's1'
-        s1 = WorkflowState("s1", title="1", description="first")
-        s2 = WorkflowState("s2", title="2", description="second")
+        s1 = WorkflowState('s1', title='1', description='first')
+        s2 = WorkflowState('s2', title='2', description='second')
 
         def permissions(self):
             return ['just_do_it']

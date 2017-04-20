@@ -2,8 +2,8 @@
 from briefy.common.worker import Worker
 from conftest import MockLogger
 
-import time
 import pytest
+import time
 
 
 class MinimalWorker(Worker):

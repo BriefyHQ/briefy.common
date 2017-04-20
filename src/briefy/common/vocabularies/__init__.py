@@ -1,5 +1,6 @@
 """Vocabularies used by Briefy systems."""
 from enum import Enum
+
 import sys
 
 

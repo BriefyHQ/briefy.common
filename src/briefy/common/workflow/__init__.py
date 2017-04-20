@@ -1,23 +1,23 @@
 """Briefy.Workflow."""
-from .base import Permission
-from .base import permission
-from .base import WorkflowState
-from .base import WorkflowStateGroup
-from .base import WorkflowTransition
-from .exceptions import WorkflowException
-from .exceptions import WorkflowPermissionException
-from .exceptions import WorkflowStateException
-from .exceptions import WorkflowTransitionException
-from .workflow import BriefyWorkflow
+from briefy.common.workflow.base import permission as permission  # To bypass an error with isort
+from briefy.common.workflow.base import Permission
+from briefy.common.workflow.base import WorkflowState
+from briefy.common.workflow.base import WorkflowStateGroup
+from briefy.common.workflow.base import WorkflowTransition
+from briefy.common.workflow.exceptions import WorkflowException
+from briefy.common.workflow.exceptions import WorkflowPermissionException
+from briefy.common.workflow.exceptions import WorkflowStateException
+from briefy.common.workflow.exceptions import WorkflowTransitionException
+from briefy.common.workflow.workflow import BriefyWorkflow
 from zope.interface import Attribute
 from zope.interface import Interface
 
 
 __all__ = (
-    'permission',
-    'Permission',
     'BriefyWorkflow',
     'IWorkflow',
+    'permission',
+    'Permission',
     'WorkflowException',
     'WorkflowPermissionException',
     'WorkflowState',

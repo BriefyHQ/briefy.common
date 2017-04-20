@@ -1,9 +1,12 @@
 """Briefy base worker."""
+# Make other workers available to common users
+from .queue import QueueWorker  # noqa
 from abc import ABCMeta
 from abc import abstractmethod
 
 import logging
 import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -64,13 +67,11 @@ class Worker(metaclass=ABCMeta):
             try:
                 self.process()
             except Exception:
-                self.logger.exception('{}: Error executing process'.format(name))
+                self.logger.exception('{0}: Error executing process'.format(name))
             self.sleep(self.run_interval)
-        self.logger.info('Exiting worker loop for {}'.format(self.__class__))
+        self.logger.info('Exiting worker loop for {0}'.format(self.__class__))
 
     sleep = time.sleep
 
-# Make other workers available to common users
-from .queue import QueueWorker  # noqa
 
 __all__ = ('Worker', 'QueueWorker')

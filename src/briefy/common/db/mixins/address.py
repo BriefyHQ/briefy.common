@@ -1,11 +1,10 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
 from briefy.common.utils import schema
-from sqlalchemy_utils import TimezoneType
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
-
+from sqlalchemy_utils import TimezoneType
 
 import colander
 import json

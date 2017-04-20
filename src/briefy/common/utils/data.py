@@ -102,7 +102,7 @@ class Objectify:
         """Allow use of numbers prefixed by underscores as attributes when the object is a list."""
         if attr.isdigit():
             return int(attr)
-        if attr.startswith("_") and attr.strip('_').isdigit():
+        if attr.startswith('_') and attr.strip('_').isdigit():
             attr = int(attr[1:].replace('_', '-'))
         return attr
 
@@ -163,7 +163,7 @@ class Objectify:
 
     def __repr__(self):
         """Representation."""
-        return('Objectify({})'.format(self.dct))
+        return('Objectify({0})'.format(self.dct))
 
     def __bool__(self):
         """Assure truthy value is False when appropriate."""
@@ -172,7 +172,7 @@ class Objectify:
     def _get(self,
              path: str=None,
              default: 'any'=objectify_sentinel,
-             objectify: bool=objectify_sentinel)-> "any":
+             objectify: bool=objectify_sentinel)-> 'any':
         """Retrieve an attribute at an arbitrarily deep path.
 
         This is a public method. "_" is used to avoid clash with data keys.

@@ -24,7 +24,7 @@ class QueueWorker(Worker):
         :rtype: list
         """
         messages = self.input_queue.get_messages()
-        self.logger.debug('Got {} messages'.format(len(messages)))
+        self.logger.debug('Got {0} messages'.format(len(messages)))
         return messages
 
     def process_message(self, message):
