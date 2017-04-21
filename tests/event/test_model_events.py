@@ -3,6 +3,7 @@ from briefy.common.db import Base
 from briefy.common.db.mixins import Mixin
 from briefy.common.event import BaseEvent
 from briefy.common.queue.message import SQSMessage
+from briefy.common.users import SystemUser
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from conftest import BriefyQueueBaseTest
@@ -57,14 +58,14 @@ class SimpleCreated(BaseEvent):
 @pytest.fixture
 def new_simple(request, session):
     x = SimpleModel()
-    x.name = "foo"
+    x.name = 'foo'
     x.birthday = date.today()
     session.add(x)
     session.flush()
     return x
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestSQSMessage(BriefyQueueBaseTest):
 
     schema = SimpleSchema
@@ -80,7 +81,10 @@ class TestSQSMessage(BriefyQueueBaseTest):
         z = SimpleModel.get(x.id)
         assert x.name == y.name == z.name
         assert x.birthday == y.birthday == z.birthday
-        assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))  # noqa
+        assert re.match(
+            r'''\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>''',
+            repr(y)
+        )
 
     def test_init_with_valid_body(self):
         """Test message with a valid body."""
@@ -94,9 +98,28 @@ class TestSQSMessage(BriefyQueueBaseTest):
         x = new_simple
         y = session.query(SimpleModel).all()[0]
         self._setup_queue()
-        event = SimpleCreated(y)
+        event = SimpleCreated(y, actor=str(SystemUser.id))
+
+        assert event.obj == y
+
         event()
         message = self.get_from_queue()
         data = json.loads(message.body)['data']
         assert data['birthday'] == x.birthday.isoformat() + 'T00:00:00'
         assert data['name'] == x.name
+
+    def test_model_raising_error_on_write(self, new_simple, session):
+        self._setup_queue()
+        event = SimpleCreated(new_simple, actor=str(SystemUser.id))
+        # Will not have an event name
+        event.event_name = ''
+        event()
+        messages = self.queue.receive_messages(MaxNumberOfMessages=10)
+        assert len(messages) == 0
+
+    def test_model_without_created_at(self, session):
+        self._setup_queue()
+        y = session.query(SimpleModel).all()[0]
+        del(y.created_at)
+        with pytest.raises(ValueError):
+            SimpleCreated(y, actor=str(SystemUser.id))

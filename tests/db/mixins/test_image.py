@@ -148,7 +148,7 @@ class ImageAsset(Image, Mixin, Base):
     __session__ = DBSession
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestImageMixin:
     """Test ImageMixin database model."""
 

@@ -1,8 +1,8 @@
 """Test BriefyRoles mixin."""
-from briefy.common.types import BaseUser
 from briefy.common.db import Base
 from briefy.common.db.mixins import BriefyRoles
 from briefy.common.db.mixins import Mixin
+from briefy.common.types import BaseUser
 from briefy.common.vocabularies.roles import LocalRolesChoices
 from conftest import DBSession
 
@@ -26,7 +26,7 @@ class DummyJob(BriefyRoles, Mixin, Base):
     __session__ = DBSession
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestBriefyRolesMixin:
     """Test BriefyRoles mixin."""
 

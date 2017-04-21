@@ -1,9 +1,9 @@
 """Briefy base worker."""
-from briefy.common.worker import Worker
+from briefy.common.worker.base import Worker
 
 
 class QueueWorker(Worker):
-    """Base class for workers."""
+    """Base class for workers using a Queue."""
 
     name = ''
     input_queue = None
@@ -24,7 +24,7 @@ class QueueWorker(Worker):
         :rtype: list
         """
         messages = self.input_queue.get_messages()
-        self.logger.debug('Got {} messages'.format(len(messages)))
+        self.logger.debug('Got {0} messages'.format(len(messages)))
         return messages
 
     def process_message(self, message):

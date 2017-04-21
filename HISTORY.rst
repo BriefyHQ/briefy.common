@@ -47,8 +47,8 @@ History
     * Improve Objectify to allow defaults and get interation (jsbueno).
     * Added attribute traversal capability to Objectify (jsbueno).
     * Update transition message based on the result of a transition hook, if message key is returned (rudaporto).
-
-
+    * Add TaskEvent (ericof).
+ 
 1.1.2 (2016-10-04)
 ------------------
 

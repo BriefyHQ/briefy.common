@@ -5,10 +5,11 @@ from functools import wraps
 import logging
 import time
 
+
 logger = logging.getLogger(__name__)
 
 
-TimeStampedResult = namedtuple("TimeStampedResult", 'timestamp result')
+TimeStampedResult = namedtuple('TimeStampedResult', 'timestamp result')
 
 
 def _make_cache_key(*args, **kw):
@@ -50,7 +51,7 @@ def timeout_cache(timeout: float, renew: bool=False):
                 key = _make_cache_key(*args, **kw)
             except TypeError:
                 # Uncacheable parameters
-                logger.warn('Failed to cache call to \'{}\': unhashable parameters!'.format(
+                logger.warning('Failed to cache call to \'{0}\': unhashable parameters!'.format(
                     func.__name__))
                 return func(*args, **kw)
             if key in cache and time.monotonic() - cache[key].timestamp < timeout:

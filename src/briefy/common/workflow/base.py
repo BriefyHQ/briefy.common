@@ -92,7 +92,7 @@ class WorkflowTransition:
     def set_permission(self, func):
         """Set a permission."""
         if self.permission:
-            raise TypeError('Conflict: trying to set more than one permission for {}'.format(self))
+            raise TypeError('Conflict: trying to set more than one permission for {0}'.format(self))
         permission = Permission(func)
         self.permission = permission.name
         return permission
@@ -168,8 +168,8 @@ class WorkflowTransition:
         """
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
-                raise TypeError("Transitions inside Workflow class bodies "
-                                "should only be used as decorators for a transition function")
+                raise TypeError('Transitions inside Workflow class bodies '
+                                'should only be used as decorators for a transition function')
 
             func = args[0]
 
@@ -274,7 +274,7 @@ class AttachedState:
 
     def __repr__(self):
         """Repr of AttachedState."""
-        return '<Attached {}'.format(repr(self.state).lstrip('<'))
+        return '<Attached {0}'.format(repr(self.state).lstrip('<'))
 
 
 class AttachedTransition:
@@ -295,7 +295,7 @@ class AttachedTransition:
 
     def __repr__(self):
         """Repr of AttachedTransition."""
-        return '<Attached {}'.format(repr(self.transition).lstrip('<'))
+        return '<Attached {0}'.format(repr(self.transition).lstrip('<'))
 
 
 class WorkflowState(object):
@@ -412,7 +412,7 @@ class WorkflowStateGroup(WorkflowState):
 
     def __repr__(self):
         """Representation of a WorkflowStateGroup."""
-        return '<WorkflowStateGroup {}>'.format(self.title)
+        return '<WorkflowStateGroup {0}>'.format(self.title)
 
     def __call__(self):
         """Execute."""
@@ -682,7 +682,7 @@ class WorkflowStates:
 
     def __repr__(self):
         """Repr for WorkflowStates."""
-        return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
+        return '<Allowed states for {0}: {1}>'.format(self._owner.__name__, list(self))
 
 
 class Workflow(metaclass=WorkflowMeta):
@@ -716,7 +716,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     def __repr__(self):
         """Representation of the object."""
-        return '<Workflow {}>'.format(self._name)
+        return '<Workflow {0}>'.format(self._name)
 
     @property
     def user(self):

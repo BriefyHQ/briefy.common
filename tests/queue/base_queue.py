@@ -1,7 +1,8 @@
 """Base tests for briefy.common.queue."""
+from conftest import queue_url
+
 import boto3
 import botocore.endpoint
-from conftest import queue_url
 
 
 class BaseTest:

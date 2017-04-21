@@ -1,10 +1,10 @@
 """Base tests for briefy.common.workflow."""
 from briefy.common.db.mixins import Workflow as WorkflowMixin
+from briefy.common.workflow import permission as permission
 from briefy.common.workflow import BriefyWorkflow
+from briefy.common.workflow import Permission
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
-from briefy.common.workflow import Permission
-from briefy.common.workflow import permission
 from datetime import datetime
 
 

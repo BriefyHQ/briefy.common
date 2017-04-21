@@ -4,6 +4,7 @@ from briefy.common.config import LOG_SERVER
 import logging
 import logstash
 
+
 logger = logging.getLogger('briefy.common')
 
 log_handler = None

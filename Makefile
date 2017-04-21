@@ -76,7 +76,6 @@ lint: ## check style with flake8
 test: lint ## run tests quickly with the default Python
 	py.test  --cov-report term-missing --cov=briefy.common tests
 
-
 test-all: ## run tests on every Python version with tox
 	tox
 
