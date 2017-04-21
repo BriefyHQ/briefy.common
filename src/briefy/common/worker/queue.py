@@ -1,9 +1,9 @@
 """Briefy base worker."""
-from briefy.common.worker import Worker
+from briefy.common.worker.base import Worker
 
 
 class QueueWorker(Worker):
-    """Base class for workers."""
+    """Base class for workers using a Queue."""
 
     name = ''
     input_queue = None
