@@ -2,7 +2,7 @@
 History
 =======
 
-2.0.0 (Unreleased)
+2.0.0 (2017-04-21)
 ------------------
 
     * Add python-logstash as requirement (ericof).
@@ -48,7 +48,6 @@ History
     * Added attribute traversal capability to Objectify (jsbueno).
     * Update transition message based on the result of a transition hook, if message key is returned (rudaporto).
 
- 
 
 1.1.2 (2016-10-04)
 ------------------
@@ -92,4 +91,3 @@ History
     * Implements the Base Workflow (ericof)
     * Implements the base class for a queue and the events queue (ericof)
     * Implements the base class for a worker (ericof)
-
