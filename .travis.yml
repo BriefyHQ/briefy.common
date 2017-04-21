@@ -20,7 +20,7 @@ install:
 - pip install -r requirements/dev.txt
 - pip install flake8
 script:
-- make tests
+- make test
 after_success:
 - make docs
 notifications:
