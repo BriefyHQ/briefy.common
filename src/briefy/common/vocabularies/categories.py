@@ -1,96 +1,41 @@
 """Job categories."""
-from enum import Enum
+from briefy.common.vocabularies import LabeledEnum
 
 
-class CategoryChoices(Enum):
-    """Categories available for jobs and professionals."""
-
-    undefined = 'undefined'
-    three_sixty = '360 Degree'
-    accommodation = 'Accommodation'
-    aerial = 'Aerial'
-    architecture = 'Architecture'
-    nude = 'Boudoir/Nude'
-    car = 'Car'
-    child = 'Child/Newborn'
-    city = 'City'
-    company = 'Company'
-    event = 'Event'
-    fashion = 'Fashion'
-    food = 'Food'
-    interior = 'Interior'
-    journalism = 'Journalism/Documentary'
-    landscape = 'Landscape'
-    lifestype = 'Lifestyle'
-    macro = 'Macro'
-    misc = 'Miscellaneous'
-    nature = 'Nature'
-    portrait = 'Portrait'
-    product = 'Product'
-    real_state = 'Real Estate'
-    restaurant = 'Restaurant'
-    sports = 'Sports'
-    video = 'Video'
-    wedding = 'Wedding'
-
-
-class PhotoCategoryChoices(Enum):
-    """Categories available for jobs and photographer profiles."""
-
-    undefined = 'undefined'
-    three_sixty = '360 Degree'
-    accommodation = 'Accommodation'
-    aerial = 'Aerial'
-    architecture = 'Architecture'
-    nude = 'Boudoir/Nude'
-    car = 'Car'
-    child = 'Child/Newborn'
-    city = 'City'
-    company = 'Company'
-    event = 'Event'
-    fashion = 'Fashion'
-    food = 'Food'
-    interior = 'Interior'
-    journalism = 'Journalism/Documentary'
-    landscape = 'Landscape'
-    lifestype = 'Lifestyle'
-    macro = 'Macro'
-    misc = 'Miscellaneous'
-    nature = 'Nature'
-    portrait = 'Portrait'
-    product = 'Product'
-    real_state = 'Real Estate'
-    restaurant = 'Restaurant'
-    sports = 'Sports'
-    wedding = 'Wedding'
+options = [
+    ('undefined', 'undefined', 'undefined'),
+    ('three_sixty', 'three_sixty', '360 Degree'),
+    ('accommodation', 'accommodation', 'Accommodation'),
+    ('aerial', 'aerial', 'Aerial'),
+    ('architecture', 'architecture', 'Architecture'),
+    ('business', 'business', 'Business'),
+    ('nude', 'nude', 'Boudoir/Nude'),
+    ('car', 'car', 'Car'),
+    ('child', 'child', 'Child/Newborn'),
+    ('city', 'city', 'City'),
+    ('company', 'company', 'Company'),
+    ('event', 'event', 'Event'),
+    ('fashion', 'fashion', 'Fashion'),
+    ('food', 'food', 'Food'),
+    ('interior', 'interior', 'Interior'),
+    ('journalism', 'journalism', 'Journalism/Documentary'),
+    ('landscape', 'landscape', 'Landscape'),
+    ('lifestype', 'lifestype', 'Lifestyle'),
+    ('macro', 'macro', 'Macro'),
+    ('misc', 'misc', 'Miscellaneous'),
+    ('nature', 'nature', 'Nature'),
+    ('portrait', 'portrait', 'Portrait'),
+    ('product', 'product', 'Product'),
+    ('real_state', 'real_state', 'Real Estate'),
+    ('restaurant', 'restaurant', 'Restaurant'),
+    ('sport', 'sport', 'Sport'),
+    ('video', 'video', 'Video'),
+    ('wedding', 'wedding', 'Wedding'),
+]
 
 
-class VideoCategoryChoices(Enum):
-    """Categories available for jobs and videographer profiles."""
+CategoryChoices = LabeledEnum('CategoryChoices', options)
 
-    undefined = 'undefined'
-    three_sixty = '360 Degree'
-    accommodation = 'Accommodation'
-    aerial = 'Aerial'
-    architecture = 'Architecture'
-    nude = 'Boudoir/Nude'
-    car = 'Car'
-    child = 'Child/Newborn'
-    city = 'City'
-    company = 'Company'
-    event = 'Event'
-    fashion = 'Fashion'
-    food = 'Food'
-    interior = 'Interior'
-    journalism = 'Journalism/Documentary'
-    landscape = 'Landscape'
-    lifestype = 'Lifestyle'
-    macro = 'Macro'
-    misc = 'Miscellaneous'
-    nature = 'Nature'
-    portrait = 'Portrait'
-    product = 'Product'
-    real_state = 'Real Estate'
-    restaurant = 'Restaurant'
-    sports = 'Sports'
-    wedding = 'Wedding'
+PhotoCategoryChoices = LabeledEnum('PhotoCategoryChoices', options)
+
+VideoCategoryChoices = LabeledEnum('VideoCategoryChoices', options)

@@ -1,9 +1,13 @@
 """Personal categories."""
-from enum import Enum
+from briefy.common.vocabularies import LabeledEnum
 
 
-class GenderCategories(Enum):
-    """Possible gender options."""
+options = [
+    ('f', 'f', 'Female'),
+    ('m', 'm', 'Male'),
+    ('o', 'o', 'Other'),
+    ('n', 'n', 'N/A')
+]
 
-    f = 'Female'
-    m = 'Male'
+
+GenderCategories = LabeledEnum('GenderCategories', options)

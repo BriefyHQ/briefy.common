@@ -11,12 +11,14 @@ location_data = {
     'updated_at': '2016-09-08T15:36:28.087123Z',
     'locality': 'Berlin',
     'country': 'DE',
+    'formatted_address': 'Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE',
     'coordinates': {
         'type': 'Point',
         'coordinates': [52.4994805, 13.4491646]
     },
     'info': {
         'additional_info': 'House 3, Entry C, 1st. floor, c/o GLG',
+        'formatted_address': 'Schlesische Straße 27, Kreuzberg, Berlin, 10997, DE',
         'province': 'Berlin',
         'locality': 'Berlin',
         'sublocality': 'Kreuzberg',
@@ -38,7 +40,7 @@ class Location(AddressMixin, Base):
     __session__ = DBSession
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestAddressMixin:
     """Test Professional database model."""
 

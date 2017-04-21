@@ -1,7 +1,13 @@
 """Briefy Common config."""
+from prettyconf import casts
 from prettyconf import config
 
+
 ENV = config('ENV', default='staging')
+MOCK_SQS = config('MOCK_SQS', default=False)
+
+# used to disable on update in the timestamp mixin
+IMPORT_KNACK = config('IMPORT_KNACK', casts.Boolean(), default=False)
 
 # NewRelic
 NEW_RELIC_ENVIRONMENT = ENV
@@ -18,7 +24,7 @@ AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
 SQS_REGION = config('SQS_REGION', default=_region)
 
 # Queues
-EVENT_QUEUE = config('EVENT_QUEUE', default='event-{}'.format(_queue_suffix))
+EVENT_QUEUE = config('EVENT_QUEUE', default='event-{0}'.format(_queue_suffix))
 
 # Thumbor
 THUMBOR_PREFIX_SOURCE = config('THUMBOR_PREFIX_SOURCE', default='source/')

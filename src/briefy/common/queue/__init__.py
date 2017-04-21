@@ -1,16 +1,41 @@
 """Briefy Queue."""
 from botocore.exceptions import ClientError
+from briefy.common.config import MOCK_SQS
 from briefy.common.config import SQS_REGION
-from briefy.common.utils.transformers import json_dumps
 from briefy.common.queue.message import SQSMessage
+from briefy.common.utils.transformers import json_dumps
 from datetime import datetime
 from zope.interface import Attribute
 from zope.interface import Interface
 
 import boto3
+import botocore
 import logging
+import os
+
 
 logger = logging.getLogger(__name__)
+
+
+def mock_sqs():
+    """Use Mocked SQS."""
+    host = '127.0.0.1'
+    port = 5000
+    queue_url = 'http://{host}:{port}'.format(host=host, port=port)
+
+    class MockEndpoint(botocore.endpoint.Endpoint):
+        def __init__(self, host, *args, **kwargs):
+            super().__init__(queue_url, *args, **kwargs)
+
+    if not hasattr(botocore.endpoint, 'OrigEndpoint'):
+        botocore.endpoint.OrigEndpoint = botocore.endpoint.Endpoint
+
+    botocore.endpoint.Endpoint = MockEndpoint
+
+
+if MOCK_SQS:
+    logger.warning('Mocking SQS')
+    mock_sqs()
 
 
 class IQueue(Interface):
@@ -36,6 +61,9 @@ class Queue:
         self.logger = logger_ if logger_ else logger
         self.origin = origin
         name = self.name
+        if MOCK_SQS:
+            sqs = boto3.resource('sqs', region_name=self.region_name)
+            sqs.create_queue(QueueName=self.name)
         if not name:
             raise ValueError('Queue must have a name')
 
@@ -59,7 +87,7 @@ class Queue:
                 sqs = boto3.resource('sqs', region_name=region_name)
                 queue = sqs.get_queue_by_name(QueueName=name)
             except ClientError:
-                error_message = 'Error getting queue named {} in the {} region'.format(
+                error_message = 'Error getting queue named {0} in the {1} region'.format(
                     name, region_name
                 )
                 self.logger.exception(error_message)
@@ -108,7 +136,7 @@ class Queue:
             try:
                 new_message = self._create_sqs_message(message=message)
             except ValueError as e:
-                logger.exception('{}'.format(str(e)))
+                logger.exception('{0}'.format(str(e)))
             else:
                 messages.append(new_message)
         return messages
@@ -152,12 +180,26 @@ class Queue:
         try:
             message = self._create_sqs_message(body=body)
         except ValueError as e:
-            logger.exception('{}'.format(str(e)))
+            logger.exception('{0}'.format(str(e)))
             raise e
+        if MOCK_SQS:
+            self._dump_message(message)
         payload = self._prepare_sqs_payload(message)
         response = queue.send_message(**payload)
         message_id = response.get('MessageId')
         return message_id.strip() if message_id else ''
+
+    def _dump_message(self, message):
+        """Dump message to filesystem.
+
+        This is used when MOCK_SQS is on.
+        """
+        dirs = 'dump/{0}'.format(message.body['event_name'])
+        if not os.path.exists(dirs):
+            os.makedirs(dirs)
+        with open('{0}/{1}.json'.format(dirs, message.body['guid']), 'w') as fo:
+            foo = json_dumps(message.body)
+            fo.write(foo)
 
     def __repr__(self):
         """Representation of a Queue."""

@@ -1,6 +1,7 @@
 """Rests for briefy.common.queue.message."""
 from briefy.common.config import SQS_REGION
 from briefy.common.db import Base
+from briefy.common.db.models.roles import LocalRole
 from briefy.common.queue import IQueue
 from prettyconf import config
 from sqlalchemy import create_engine
@@ -14,6 +15,7 @@ import httmock
 import os
 import pytest
 
+
 DBSession = scoped_session(sessionmaker())
 
 
@@ -25,10 +27,11 @@ def sql_engine(request):
     """
     database_url = config('DATABASE_URL',
                           default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
-    engine = create_engine(
-        database_url, echo=False
-    )
+    engine = create_engine(database_url, echo=False)
     DBSession.configure(bind=engine)
+
+    LocalRole.__session__ = DBSession
+
     Base.metadata.create_all(engine)
 
     def teardown():
@@ -100,7 +103,7 @@ def queue_url():
     """Return the url for the SQS server."""
     host = os.environ.get('SQS_IP', '127.0.0.1')
     port = os.environ.get('SQS_PORT', '5000')
-    return 'http://{}:{}'.format(host, port)
+    return 'http://{0}:{1}'.format(host, port)
 
 
 class BaseSQSTest:

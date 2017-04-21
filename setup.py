@@ -4,6 +4,7 @@ from setuptools import setup
 
 import os
 
+
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
@@ -14,9 +15,12 @@ requires = [
     'babel',
     'boto3',
     'colander',
+    'colanderalchemy',
     'flask_babel',
+    'graphviz',
     'libthumbor',
     'newrelic',
+    'phonenumbers',
     'prettyconf',
     'pyCrypto',
     'python-logstash',
@@ -47,11 +51,11 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='1.1.3',
+    version='2.0.0',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
-        "Programming Language :: Python",
+        'Programming Language :: Python',
     ],
     author='Briefy Tech Team',
     author_email='developers@briefy.co',

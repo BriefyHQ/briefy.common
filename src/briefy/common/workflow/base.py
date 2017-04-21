@@ -3,6 +3,7 @@ from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
 from briefy.common.db import datetime_utcnow
+from briefy.common.utils.data import inject_call
 from collections import OrderedDict
 
 import weakref
@@ -28,18 +29,23 @@ def _set_creation_order(instance):
 
 
 class WorkflowTransition:
-    """Transition between states in a workflow."""
+    """Transition between two states in a workflow."""
 
     _waiting_to_decorate = True
 
-    def __init__(self, state_from, state_to,
-                 permission=None,
-                 name=None, title='', description='',
-                 category='',
-                 extra_states=(),
-                 require_message=False,
-                 **kw):
-        """Initialize a workflow transition."""
+    def __init__(
+        self,
+        state_from,
+        state_to,
+        permission=None,
+        name=None, title='', description='',
+        category='',
+        extra_states=(),
+        require_message=False,
+        required_fields=(),
+        **kw
+    ):
+        """Initialize this workflow transition."""
         if isinstance(permission, Permission):
             permission = permission.name
 
@@ -60,10 +66,19 @@ class WorkflowTransition:
         # If require_message is True, the transition will not happen
         # without a message being provided
         self.require_message = require_message
+        self.required_fields = required_fields
         if extra_states:
             self._previous_transition = WorkflowTransition(
-                extra_states[0], state_to, permission, name, title, description, category,
-                extra_states[1:]
+                extra_states[0],
+                state_to,
+                permission,
+                name,
+                title,
+                description,
+                category,
+                extra_states[1:],
+                require_message=require_message,
+                required_fields=required_fields,
             )
 
     @property
@@ -77,7 +92,7 @@ class WorkflowTransition:
     def set_permission(self, func):
         """Set a permission."""
         if self.permission:
-            raise TypeError('Conflict: trying to set more than one permission for {}'.format(self))
+            raise TypeError('Conflict: trying to set more than one permission for {0}'.format(self))
         permission = Permission(func)
         self.permission = permission.name
         return permission
@@ -107,17 +122,31 @@ class WorkflowTransition:
         self.transition_hook = func
         return self
 
-    def _perform_transition(self, workflow, message=None):
+    def _perform_transition(self, workflow, message=None, valid_fields=None, fire_event=True):
         """Perform the transition.
 
-        Where all the magic really happens.
+        Following actions are executed here:
+
+            * Set new state on Workflow
+            * Update workflow history
+            * Call Workflow._notify, to trigger notifications.
+
         """
+        valid_fields = valid_fields if valid_fields else {}
+        document = workflow.document
+        for key in valid_fields:
+            value = valid_fields[key]
+            try:
+                setattr(document, key, value)
+            except Exception as exc:
+                raise WorkflowTransitionException(str(exc))
         workflow._set_state(self.state_to().value)
-        workflow._update_history(self.title,
+        workflow._update_history(self.name,
                                  self.state_from().value,
                                  self.state_to().value,
                                  message=message)
-        workflow._notify(self)
+        if fire_event:
+            workflow._notify(self)
 
     def _dispatch(self, *args, workflow=None, **kw):
         """Dispatch call to this transition to a sibling transition bound to the appropriate state.
@@ -126,40 +155,77 @@ class WorkflowTransition:
         tied to several states in the same workflow
         """
         correct_transition = workflow.state._transitions.get(self.name, None)
-        if (correct_transition and
-                correct_transition.name == self.name):
+        if (correct_transition and correct_transition.name == self.name):
             return correct_transition(*args, workflow=workflow, **kw)
         raise workflow.state.exception_transition('Incorrect state for this transition')
 
-    def __call__(self, *args, workflow=None, message=None, **kw):
-        """Trigger the transition."""
+    def __call__(self, *args, workflow=None, message=None, fields=None, **kw):
+        """Trigger the transition.
+
+        :param fields: An optional 'fields' attribute can be passed in the KW, with a
+                       dictionary of fields to be updated on the target document.
+        :return: Whatver the transitin hook fucntion returns or None
+        """
         if self._waiting_to_decorate:
             if len(args) != 1 or kw:
-                raise TypeError("Transitions inside Workflow class bodies "
-                                "should only be used as decorators for a transition function")
+                raise TypeError('Transitions inside Workflow class bodies '
+                                'should only be used as decorators for a transition function')
 
             func = args[0]
 
             return self._decorate(func)
 
+        """Mandatory fields to update the document in this transition"""
+
         state_from = self.state_from()
         if not state_from or not workflow:
-            raise RuntimeError('Tried to trigger unnatached transition')
+            raise RuntimeError('Tried to trigger unattached transition')
+
+        # If "we are not the transition you are looking for"
+        # (i.e., the 'from_state' is a different one, we are
+        #  referring to another Transition instance)
+        if workflow.state is not state_from:
+            return self._dispatch(
+                *args, workflow=workflow, message=message, fields=fields, **kw
+            )
+
+        # Extract and verify document-updating fields
+        # in the transition payload
+        fields = fields if fields else {}
+        required_fields = self.required_fields
+        if required_fields:
+            for key in required_fields:
+                if key not in fields:
+                    raise workflow.state.exception_transition(
+                        'Field {field} is required for this transition.'.format(
+                            field=key
+                        )
+                    )
 
         if self.require_message and not message:
             raise workflow.state.exception_transition('Message is required for this transition')
 
-        if workflow.state is not state_from:
-            return self._dispatch(*args, workflow=workflow, message=message, **kw)
-
         self.guard(workflow)
 
         if self.transition_hook:
-            result = self.transition_hook(workflow, *args, **kw)
+            # 'fields' are included in the kw and also add message
+
+            result = inject_call(
+                self.transition_hook,
+                workflow,
+                *args,
+                message=message,
+                fields=fields,
+                **kw
+            )
         else:
             result = None
 
-        self._perform_transition(workflow, message)
+        updated_message = result.get('message', None) if isinstance(result, dict) else None
+        if updated_message:
+            message = updated_message
+        fire_event = kw.get('fire_event', True)
+        self._perform_transition(workflow, message, fields, fire_event)
 
         return result
 
@@ -168,6 +234,16 @@ class WorkflowTransition:
         if not isinstance(instance, Workflow):
             return self
         return AttachedTransition(self, instance)
+
+    def __repr__(self) -> str:
+        """Representation of this object."""
+        return (
+            """<{0}(id='{1}' from='{2}' to='{3}')>""").format(
+                self.__class__.__name__,
+                self.name,
+                self.state_from().name,
+                self.state_to().name
+        )
 
 
 class AttachedState:
@@ -198,7 +274,7 @@ class AttachedState:
 
     def __repr__(self):
         """Repr of AttachedState."""
-        return '<Attached {}'.format(repr(self.state).lstrip('<'))
+        return '<Attached {0}'.format(repr(self.state).lstrip('<'))
 
 
 class AttachedTransition:
@@ -219,7 +295,7 @@ class AttachedTransition:
 
     def __repr__(self):
         """Repr of AttachedTransition."""
-        return '<Attached {}'.format(repr(self.transition).lstrip('<'))
+        return '<Attached {0}'.format(repr(self.transition).lstrip('<'))
 
 
 class WorkflowState(object):
@@ -236,18 +312,19 @@ class WorkflowState(object):
         self.name = None  # Not named yet
         self._title = title
         self.description = description
+        self.__doc__ = description
         self._parent = None
         self._transitions = OrderedDict()
         _set_creation_order(self)
 
     @property
-    def title(self):
+    def title(self) -> str:
         """Title of the state."""
         return self._title or self.name.title()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of this state."""
-        return '<WorkflowState {}>'.format(self.title)
+        return '<WorkflowState {title}>'.format(title=self.title)
 
     def __get__(self, instance, owner):
         """Return am instance of a AttachedState."""
@@ -276,13 +353,13 @@ class WorkflowState(object):
 
         Usage- on a WorkflowBody,  use either::
 
-        submit = workflow_state.transition(state_to, permission, ...)
+            submit = workflow_state.transition(state_to, permission, ...)
 
         or::
 
-        @workflow_state.transition(state_to, permission, ...):
-        def submit(self):
-            # code to run when transition happens
+            @workflow_state.transition(state_to, permission, ...):
+            def submit(self):
+                # code to run when transition happens
 
         """
         # the transition will be set in self._transitions
@@ -335,7 +412,7 @@ class WorkflowStateGroup(WorkflowState):
 
     def __repr__(self):
         """Representation of a WorkflowStateGroup."""
-        return '<WorkflowStateGroup {}>'.format(self.title)
+        return '<WorkflowStateGroup {0}>'.format(self.title)
 
     def __call__(self):
         """Execute."""
@@ -506,7 +583,6 @@ class WorkflowMeta(type):
                 attrs['_existing_permissions'].update(base._existing_permissions)
 
         transition_disambiguation = {}
-
         for name, value in attrs.items():
 
             if isinstance(value, WorkflowState):
@@ -522,6 +598,9 @@ class WorkflowMeta(type):
             elif isinstance(value, WorkflowTransition):
                 transition = value
                 while transition:
+                    hook = transition.transition_hook
+                    doc = hook.__doc__ if hook else transition.__doc__
+                    transition.__doc__ = doc
                     if not transition.name or transition._name_inherited_from_hook_method:
                         if name != transition._name_inherited_from_hook_method:
                             transition.name = name
@@ -542,6 +621,8 @@ class WorkflowMeta(type):
                 # there is no need to set a stub decorated method:
                 if permission.method is None:
                     permission._name = name
+                else:
+                    permission.__doc__ = permission.method.__doc__
 
                 # Activate the permission callable:
                 permission._waiting_to_decorate = False
@@ -601,7 +682,7 @@ class WorkflowStates:
 
     def __repr__(self):
         """Repr for WorkflowStates."""
-        return "<Allowed states for {}: {}>".format(self._owner.__name__, list(self))
+        return '<Allowed states for {0}: {1}>'.format(self._owner.__name__, list(self))
 
 
 class Workflow(metaclass=WorkflowMeta):
@@ -635,7 +716,7 @@ class Workflow(metaclass=WorkflowMeta):
 
     def __repr__(self):
         """Representation of the object."""
-        return '<Workflow {}>'.format(self._name)
+        return '<Workflow {0}>'.format(self._name)
 
     @property
     def user(self):

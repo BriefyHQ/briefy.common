@@ -2,8 +2,8 @@
 from briefy.common.worker import QueueWorker
 from conftest import MockLogger
 
-import time
 import pytest
+import time
 
 
 # FIXME: a call to SQS get_messages is NOT deterministic

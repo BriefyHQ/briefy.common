@@ -1,13 +1,14 @@
 Briefy Common
 =============
 
-TODO
-----
- * make briefy.common.queue.BaseQueue use environment variables to connect to local sqs
+This package provides base codebase to be used by other packages in the Briefy solution.
+
+A comprehensive documentation is available at the `Developer Documentation`_ server.
 
 Code Health
 ============
-Broker Service codebase is tested using Travis CI
+
+This package is tested using TravisCI.
 
 ============ ======================================================================================================================== 
 Branch       Status
@@ -23,3 +24,4 @@ Branch       Status
 
 .. _`master`: https://github.com/BriefyHQ/briefy.common/tree/master
 .. _`develop`: https://github.com/BriefyHQ/briefy.common/tree/develop
+.. _`Developer Documentation`: https://docs.stg.briefy.co/briefy.common/

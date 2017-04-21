@@ -14,7 +14,7 @@ class BaseUser:
         for field in self._fields:
             setattr(self, field, data.get(field))
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Create a dict representation of current user.
 
         :return: dict serializable user data

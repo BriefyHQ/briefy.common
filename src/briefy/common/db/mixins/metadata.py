@@ -1,57 +1,74 @@
 """Base metadata mixin."""
-from briefy.common.utils.data import generate_slug
+from briefy.common.utils.data import generate_contextual_slug
+from sqlalchemy.ext.hybrid import hybrid_property
 
 import colander
 import sqlalchemy as sa
 
 
 class BaseMetadata:
-    """A Mixin slug, title and description."""
+    """A Mixin providing slug, title and description.
 
-    title = sa.Column('title', sa.String(), nullable=False)
-    description = sa.Column('description',
-                            sa.Text,
-                            nullable=True,
-                            info={'colanderalchemy': {
-                                'title': 'Description',
-                                'missing': colander.drop,
-                                'typ': colander.String}}
-                            )
+    These fields are used by most, if not all, content objects.
+    """
+
+    title = sa.Column('title', sa.String(), index=True, nullable=False)
+    """Title for the object.
+
+    This is the main display information for the object and it can have UI aliases for each usage
+
+    i.e.: Job Name, Display Name
+    """
+
+    description = sa.Column(
+        'description',
+        sa.Text,
+        nullable=True,
+        info={
+            'colanderalchemy': {
+                'title': 'Description',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
+    """Description for the object.
+
+    Text field allowing a small, but meaninful description for an object.
+    """
+
     _slug = sa.Column('slug',
                       sa.String(255),
                       nullable=True,
+                      default=generate_contextual_slug,
+                      index=True,
                       info={'colanderalchemy': {
-                          'title': 'Description',
-                          'missing': colander.drop,
-                          'typ': colander.String}}
+                            'title': 'Description',
+                            'missing': colander.drop,
+                            'typ': colander.String}}
                       )
+    """Slug -- friendly id -- for the object.
 
-    @property
+    To be used in url.
+    """
+
+    @hybrid_property
     def slug(self) -> str:
         """Return a slug for an object.
 
-        If slug has not been set on this object, fallback to a composition of
-        the first 8 chars of an id field, and a slug of the title itself.
         :return: A slug to be added to an url.
         """
-        slug = self._slug
-        if not slug:
-            obj_id = getattr(self, 'id', None)
-            if obj_id:
-                # Return just the first 8 chars of an uuid
-                obj_id = str(obj_id)[:8]
-            else:
-                obj_id = ''
-            slug = '{obj_id}-{title}'.format(
-                obj_id=obj_id,
-                title=generate_slug(self.title)
-            )
-        return slug
+        return self._slug
 
     @slug.setter
     def slug(self, value: str):
         """Set a new slug for this object.
 
+        If the value is None, we generate a new one using
+        :func:`briefy.common.utils.data.generate_contextual_slug`
         :param value: Value of the new slug
         """
+        if not value:
+            data = dict(id=self.id, title=self.title)
+            value = generate_contextual_slug(data)
         self._slug = value

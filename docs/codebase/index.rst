@@ -4,6 +4,6 @@ Codebase
 Documentation for *briefy.common* codebase.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   briefy
+   briefy.common

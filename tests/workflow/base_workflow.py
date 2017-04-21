@@ -1,10 +1,10 @@
 """Base tests for briefy.common.workflow."""
 from briefy.common.db.mixins import Workflow as WorkflowMixin
+from briefy.common.workflow import permission as permission
 from briefy.common.workflow import BriefyWorkflow
+from briefy.common.workflow import Permission
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
-from briefy.common.workflow import Permission
-from briefy.common.workflow import permission
 from datetime import datetime
 
 
@@ -84,7 +84,10 @@ class CustomerWorkflow(BriefyWorkflow):
     # Permissions can be given by instance or name:
     approve = pending.transition(approved, review, title='Approve')
     # extra_states for a transition can be given:
-    reject = pending.transition(rejected, 'review', title='Reject', extra_states=(approved,))
+    reject = pending.transition(
+        rejected, 'review', title='Reject', extra_states=(approved,),
+        require_message=True, required_fields=('foo', 'bar')
+    )
     retract = approved.transition(pending, title='Retract')
 
     @retract.set_permission
@@ -119,13 +122,30 @@ class Customer(WorkflowMixin):
 
     _workflow = CustomerWorkflow
 
-    def __init__(self, creator):
+    foo = ''
+    _bar = ''
+
+    def __init__(self, creator, foo='', bar=''):
         """Initialize a customer."""
         self.id = 'b53f33e2-b2d4-43ef-a8e0-24d2df7a391d'
         self.creator = creator
         self.state_history = []
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
+        self.foo = foo
+        self.bar = bar
+
+    @property
+    def bar(self) -> str:
+        """Bar property."""
+        return self._bar
+
+    @bar.setter
+    def bar(self, value: str):
+        """Bar property setter."""
+        if value == 'not bar':
+            raise ValueError('The value not bar is not acceptable here')
+        self._bar = value
 
     def to_dict(self) -> dict:
         """Return a dictionary with fields and values used by this Class.
