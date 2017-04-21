@@ -42,7 +42,7 @@ def new_dummy(request, session):
     return x
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestTaskEvent(BriefyQueueBaseTest):
 
     schema = SimpleSchema

@@ -24,7 +24,7 @@ class Content(BaseMetadata, Mixin, Base):
     __session__ = DBSession
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestBaseMetadataMixin:
     """Test Base metadata mixin."""
 

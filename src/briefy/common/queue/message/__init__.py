@@ -2,8 +2,8 @@
 
 from briefy.common.utils.schema import validate_and_serialize
 
-import json
 import colander
+import json
 
 
 class SQSMessage:
@@ -72,7 +72,7 @@ class SQSMessage:
             try:
                 value = validate_and_serialize(schema, value)
             except colander.Invalid as e:
-                raise ValueError('Not a valid message body: {}'.format(str(e)))
+                raise ValueError('Not a valid message body: {0}'.format(str(e)))
         self._body = value
 
     def delete(self):

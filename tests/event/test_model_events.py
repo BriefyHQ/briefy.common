@@ -58,14 +58,14 @@ class SimpleCreated(BaseEvent):
 @pytest.fixture
 def new_simple(request, session):
     x = SimpleModel()
-    x.name = "foo"
+    x.name = 'foo'
     x.birthday = date.today()
     session.add(x)
     session.flush()
     return x
 
 
-@pytest.mark.usefixtures("db_transaction")
+@pytest.mark.usefixtures('db_transaction')
 class TestSQSMessage(BriefyQueueBaseTest):
 
     schema = SimpleSchema
@@ -81,7 +81,10 @@ class TestSQSMessage(BriefyQueueBaseTest):
         z = SimpleModel.get(x.id)
         assert x.name == y.name == z.name
         assert x.birthday == y.birthday == z.birthday
-        assert re.match(r"\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>", repr(y))  # noqa
+        assert re.match(
+            r'''\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>''',
+            repr(y)
+        )
 
     def test_init_with_valid_body(self):
         """Test message with a valid body."""

@@ -2,16 +2,17 @@
 from botocore.exceptions import ClientError
 from briefy.common.config import MOCK_SQS
 from briefy.common.config import SQS_REGION
-from briefy.common.utils.transformers import json_dumps
 from briefy.common.queue.message import SQSMessage
+from briefy.common.utils.transformers import json_dumps
 from datetime import datetime
 from zope.interface import Attribute
 from zope.interface import Interface
 
-import botocore
 import boto3
+import botocore
 import logging
 import os
+
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ class Queue:
                 sqs = boto3.resource('sqs', region_name=region_name)
                 queue = sqs.get_queue_by_name(QueueName=name)
             except ClientError:
-                error_message = 'Error getting queue named {} in the {} region'.format(
+                error_message = 'Error getting queue named {0} in the {1} region'.format(
                     name, region_name
                 )
                 self.logger.exception(error_message)
@@ -135,7 +136,7 @@ class Queue:
             try:
                 new_message = self._create_sqs_message(message=message)
             except ValueError as e:
-                logger.exception('{}'.format(str(e)))
+                logger.exception('{0}'.format(str(e)))
             else:
                 messages.append(new_message)
         return messages
@@ -179,7 +180,7 @@ class Queue:
         try:
             message = self._create_sqs_message(body=body)
         except ValueError as e:
-            logger.exception('{}'.format(str(e)))
+            logger.exception('{0}'.format(str(e)))
             raise e
         if MOCK_SQS:
             self._dump_message(message)

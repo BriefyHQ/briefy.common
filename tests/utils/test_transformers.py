@@ -26,7 +26,7 @@ testdata = [
 ]
 
 
-@pytest.mark.parametrize("value,expected", testdata)
+@pytest.mark.parametrize('value,expected', testdata)
 def test_serialize(value, expected):
     """Test serialization of am object."""
     assert json_dumps(value) == expected

@@ -1,8 +1,8 @@
 """Briefy Event Queue."""
 from briefy.common import validators
 from briefy.common.config import EVENT_QUEUE
-from briefy.common.queue import IQueue
 from briefy.common.queue import Queue as BaseQueue
+from briefy.common.queue import IQueue
 from briefy.common.utils.schema import Dictionary
 from zope.interface import implementer
 

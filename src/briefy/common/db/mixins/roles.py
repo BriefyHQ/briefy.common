@@ -1,10 +1,10 @@
 """Roles mixins."""
 from briefy.common.types import BaseUser
 from briefy.common.vocabularies.roles import LocalRolesChoices
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm import relationship
 from uuid import UUID
 
 import sqlalchemy as sa

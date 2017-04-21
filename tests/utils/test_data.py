@@ -15,7 +15,7 @@ testdata = [
 ]
 
 
-@pytest.mark.parametrize("value,expected", testdata)
+@pytest.mark.parametrize('value,expected', testdata)
 def test_generate_slug(value, expected):
     """Test generate_slug."""
     func = data.generate_slug
@@ -33,7 +33,7 @@ testdata = [
 ]
 
 
-@pytest.mark.parametrize("value,expected", testdata)
+@pytest.mark.parametrize('value,expected', testdata)
 def test_generate_contextual_slug(value, expected):
     """Test generate_contextual_slug."""
     func = data.generate_contextual_slug
