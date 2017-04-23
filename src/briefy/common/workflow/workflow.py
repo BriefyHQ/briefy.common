@@ -16,6 +16,9 @@ class BriefyWorkflow(Workflow):
     entity = ''
     """Entity this workflow manages."""
 
+    update_event = None
+    """Updated event to fire when document is changed (transitioned) by this workflow."""
+
     state_key = 'state'
     """Attribute, on the object, to store Workflow state."""
 
@@ -53,7 +56,13 @@ class BriefyWorkflow(Workflow):
         wf_transition_event = WorkflowTransitionEvent(
             self.document, request, transition, user
         )
+
         # Notify using zope.event
+        update_event = self.update_event
+        if update_event:
+            # this will clear any cache before notify transition
+            notify(update_event)
+
         notify(wf_transition_event)
 
         wf_transition_event()
