@@ -2,6 +2,10 @@
 History
 =======
 
+2.0.1 (Unreleased)
+------------------
+    * When transition happens we also notify also model updated event (if available) (rudaporto).
+
 2.0.0 (2017-04-21)
 ------------------
 
