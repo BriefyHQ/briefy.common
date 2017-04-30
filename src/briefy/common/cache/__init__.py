@@ -7,13 +7,15 @@ from sqlalchemy.orm.session import object_session
 from zope.component import getUtility
 from zope.interface import implements
 from zope.interface import Interface
+from zope.interface import Attribute
 
 
 class ICacheManager(Interface):
     """Utility that manages the cache for model objects."""
 
-    _config = None
-    _region = None
+    _config = Attribute('Cache region configuration dict.')
+    _backend = Attribute('Cache backend.')
+    _region = Attribute('Cache region instance.')
 
     def refresh(obj):
         """Invalidate and refresh a given model object.."""
