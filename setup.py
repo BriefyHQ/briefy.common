@@ -37,6 +37,7 @@ requires = [
 
 requires_db = [
     'alembic',
+    'dogpile.cache',
     'geoalchemy2',
     'psycopg2',
     'sqlalchemy',

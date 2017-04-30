@@ -1,0 +1,6 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+    <!-- CacheManager -->
+    <utility component=".cache.BaseCacheManager" provides=".cache.ICacheManager" />
+
+</configure>
