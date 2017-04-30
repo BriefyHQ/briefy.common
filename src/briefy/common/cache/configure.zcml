@@ -1,6 +1,11 @@
 <configure xmlns="http://namespaces.zope.org/zope">
 
-    <!-- CacheManager -->
-    <utility component=".cache.BaseCacheManager" provides=".cache.ICacheManager" />
+    <!-- CacheManager Utility -->
+    <utility component=".BaseCacheManager" provides=".cache.ICacheManager" />
+
+    <!-- Refresh subscriber -->
+    <subscriber for="briefy.common.event.workflow.IWorkflowTransitionEvent"
+    handler=".handle_workflow_transition"
+    />
 
 </configure>

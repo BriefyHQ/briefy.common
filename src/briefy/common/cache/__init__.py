@@ -4,6 +4,7 @@ from multiprocessing import Process
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.session import object_session
+from zope.component import getUtility
 from zope.interface import implements
 from zope.interface import Interface
 
@@ -45,6 +46,14 @@ def cache_refresh(session, refresher, *args, **kwargs):
         p = Process(target=refresher, args=args, kwargs=kwargs)
         p.start()
         p.join()
+
+
+def handle_workflow_transition(event):
+    """Handle workflow transition event."""
+    # TODO: avoid executing this twice in the same request for the same object
+    manager = getUtility(ICacheManager)
+    obj = event.obj
+    manager.refresh(obj)
 
 
 class BaseCacheManager:
