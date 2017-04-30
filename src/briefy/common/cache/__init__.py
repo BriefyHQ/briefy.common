@@ -5,7 +5,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.session import object_session
 from zope.component import getUtility
-from zope.interface import implements
+from zope.interface import implementer
 from zope.interface import Interface
 from zope.interface import Attribute
 
@@ -58,10 +58,9 @@ def handle_workflow_transition(event):
     manager.refresh(obj)
 
 
+@implementer(ICacheManager)
 class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
-
-    implements(ICacheManager)
 
     _config = {
         'expiration_time': 3600
