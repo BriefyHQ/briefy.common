@@ -2,9 +2,9 @@
 from briefy.common.log import logger
 from dogpile.cache import make_region
 from zope.component import getUtility
+from zope.interface import Attribute
 from zope.interface import implementer
 from zope.interface import Interface
-from zope.interface import Attribute
 
 
 class ICacheManager(Interface):
@@ -36,13 +36,11 @@ class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
 
     _config = {
-        'host': 'localhost',
-        'port': 6379,
-        'db': 0,
-        'redis_expiration_time': 60*60*1,   # 1 hours
-        'distributed_lock': True
+        'url': ['127.0.0.1'],
+        'binary': True,
+        'behaviors': {'tcp_nodelay': True, 'ketama': True}
     }
-    _backend = 'dogpile.cache.redis'
+    _backend = 'dogpile.cache.pylibmc'
     _region = None
 
     def __init__(self):
