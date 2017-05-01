@@ -40,6 +40,7 @@ requires_db = [
     'dogpile.cache',
     'geoalchemy2',
     'psycopg2',
+    'redis',
     'sqlalchemy',
     'sqlalchemy-utils',
     'zope.sqlalchemy',

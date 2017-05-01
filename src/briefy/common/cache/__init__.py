@@ -1,9 +1,6 @@
 """Utility and helper functions to manage cached data."""
+from briefy.common.log import logger
 from dogpile.cache import make_region
-from multiprocessing import Process
-from sqlalchemy import event
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.session import object_session
 from zope.component import getUtility
 from zope.interface import implementer
 from zope.interface import Interface
@@ -20,39 +17,15 @@ class ICacheManager(Interface):
     def refresh(obj):
         """Invalidate and refresh a given model object.."""
 
-    def region(config):
+    def region():
         """Get the existing cache region."""
 
     def key_generator(namespace, fn, **kw):
         """Generate keys for all models objects."""
 
 
-def refresher(obj, **kwargs):
-    """Function to refresh one model object."""
-    obj.to_dict()
-    obj.to_sumary_dict()
-    obj.to_listing_dict()
-
-
-def cache_refresh(session, refresher, *args, **kwargs):
-    """Refresh the functions cache data in a new thread.
-
-    Starts refreshing only after the session was committed.
-    So all database data is available.
-    """
-    assert isinstance(session, Session), \
-        'Need a session, not a sessionmaker or scoped_session'
-
-    @event.listens_for(session, 'after_commit')
-    def do_refresh(session):
-        p = Process(target=refresher, args=args, kwargs=kwargs)
-        p.start()
-        p.join()
-
-
 def handle_workflow_transition(event):
     """Handle workflow transition event."""
-    # TODO: avoid executing this twice in the same request for the same object
     manager = getUtility(ICacheManager)
     obj = event.obj
     manager.refresh(obj)
@@ -63,17 +36,30 @@ class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
 
     _config = {
-        'expiration_time': 3600
+        'host': 'localhost',
+        'port': 6379,
+        'db': 0,
+        'redis_expiration_time': 60*60*1,   # 1 hours
+        'distributed_lock': True
     }
-    _backend = 'dogpile.cache.memory'
+    _backend = 'dogpile.cache.redis'
     _region = None
+
+    def __init__(self):
+        """Initialize the cache manager."""
+        self._create_region()
 
     def refresh(self, obj):
         """Invalidate and refresh a given model object.."""
         region = self.region()
-        session = object_session(obj)
         region.invalidate(obj)
-        cache_refresh(session, refresher, obj)
+        klass = obj.__class__
+        klass_name = klass.__name__
+        uid = obj.id
+        logger.info('Invalidate model {name} : {uid}'.format(
+            name=klass_name,
+            uid=uid
+        ))
 
     def _create_region(self):
         """Create a new region instance."""
@@ -81,15 +67,18 @@ class BaseCacheManager:
         config = self._config
         region = make_region(
             function_key_generator=self.key_generator
-        ).configure(backend, **config,)
-        return region
+        ).configure(
+            backend,
+            expiration_time=3600,
+            arguments=config
+        )
+        self._region = region
 
-    def region(self, config):
+    def region(self):
         """Get the existing cache region."""
-        _region = self._region
-        if not _region:
-            self._region = self._create_region()
-        return _region
+        if not self._region:
+            self._create_region()
+        return self._region
 
     def key_generator(self, namespace, fn, **kw):
         """Generate keys for all models objects."""
@@ -111,3 +100,8 @@ class BaseCacheManager:
             return key
 
         return generate_key
+
+
+def get_cache_manager():
+    """Create a new CacheManager instance."""
+    return BaseCacheManager()
