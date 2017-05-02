@@ -12,8 +12,8 @@ from zope.interface import Interface
 BACKENDS_CONFIG = {
     'dogpile.cache.redis': {
         'arguments': {
-            'host': 'localhost',
-            'port': 6379,
+            'host': config.CACHE_HOST,
+            'port': config.CACHE_PORT,
             'db': 0,
             'redis_expiration_time': config.CACHE_EXPIRATION_TIME,
             'distributed_lock': True
