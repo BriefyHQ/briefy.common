@@ -118,7 +118,7 @@ start_dockers: export_db_env ## start docker containers
 	sleep 5
 
 create_dockers: export_db_env ## create docker containers
-	docker run --name memcached -d memcached memcached -m 64
+	docker run -d -p 127.0.0.1:11211:11211 --name memcached -d memcached memcached -m 64
 	docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
 	docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common --name briefy-common-test mdillon/postgis:9.5
 	sleep 5

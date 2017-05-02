@@ -10,6 +10,15 @@ from zope.interface import Interface
 
 
 BACKENDS_CONFIG = {
+    'dogpile.cache.redis': {
+        'arguments': {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'redis_expiration_time': config.CACHE_EXPIRATION_TIME,
+            'distributed_lock': True
+        },
+    },
     'dogpile.cache.pylibmc': {
         'arguments': {
             'url': ['{0}:{1}'.format(config.CACHE_HOST, config.CACHE_PORT)],
@@ -118,7 +127,7 @@ class BaseCacheManager:
             namespace=namespace,
         )
 
-        def generate_key(*args):
+        def generate_key(*args, **kwargs):
             """Create unique key for each model using UID."""
             obj = args[0]
             name = obj.__class__.__name__
