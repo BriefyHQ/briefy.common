@@ -47,7 +47,7 @@ class Base(Security):
     """Base Declarative model."""
 
     __session__ = None
-    __exclude_attributes__ = ['_sa_instance_state', 'request']
+    __exclude_attributes__ = ['_sa_instance_state', 'request', 'versions']
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
     __listing_attributes__ = []
