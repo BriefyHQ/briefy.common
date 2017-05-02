@@ -1,8 +1,10 @@
 """Declarative base model to be extended by other models."""
+from briefy.common.log import logger
 from briefy.common.utils.transformers import json_dumps
 from briefy.common.utils.transformers import to_serializable
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.query import Query
 
 
@@ -47,7 +49,9 @@ class Base(Security):
     """Base Declarative model."""
 
     __session__ = None
-    __exclude_attributes__ = ['_sa_instance_state', 'request', 'versions']
+    __exclude_attributes__ = [
+        '_sa_instance_state', 'request', 'versions',
+    ]
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
     __listing_attributes__ = []
@@ -90,9 +94,19 @@ class Base(Security):
         for attr in attrs:
             try:
                 value = getattr(self, attr)
-            except AttributeError as exc:
-                pass
+            except AttributeError as error:
+                logger.error(
+                    'Attribute not found in model {name}. Error: {error}'.format(
+                        error=error,
+                        name=self.__class__.__name__
+                    )
+                )
             else:
+                if isinstance(value, InstrumentedList):
+                    new_list = []
+                    for item in value:
+                        new_list.append(item)
+                    value = new_list
                 data[attr] = value
         return data
 
