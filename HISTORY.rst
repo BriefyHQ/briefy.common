@@ -6,6 +6,7 @@ History
 ------------------
     
     * When transition happens we also notify model updated event (if available) (rudaporto).
+    * New cache manager utility with base dogpile.cache implementation (rudaporto).
 
 2.0.0 (2017-04-21)
 ------------------

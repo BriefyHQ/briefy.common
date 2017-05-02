@@ -1,10 +1,27 @@
 """Utility and helper functions to manage cached data."""
+from briefy.common import config
 from briefy.common.log import logger
 from dogpile.cache import make_region
+from threading import Thread
 from zope.component import getUtility
 from zope.interface import Attribute
 from zope.interface import implementer
 from zope.interface import Interface
+
+
+BACKENDS_CONFIG = {
+    'dogpile.cache.pylibmc': {
+        'arguments': {
+            'url': ['{0}:{1}'.format(config.CACHE_HOST, config.CACHE_PORT)],
+            'binary': True,
+            'behaviors': {'tcp_nodelay': True, 'ketama': True}
+        },
+        'expiration_time': config.CACHE_EXPIRATION_TIME
+    },
+    'dogpile.cache.memory': {
+        'expiration_time': config.CACHE_EXPIRATION_TIME
+    }
+}
 
 
 class ICacheManager(Interface):
@@ -31,20 +48,31 @@ def handle_workflow_transition(event):
     manager.refresh(obj)
 
 
+def refresher(obj, *args, **kwargs):
+    """Refresh model object cache."""
+    logger.info('Starting async refresh for model {name} : {uid}'.format(
+        **kwargs
+    ))
+    obj.to_dict()
+    obj.to_listing_dict()
+    obj.to_summary_dict()
+    logger.info('Finishing async refresh for model {name} : {uid}'.format(
+        **kwargs
+    ))
+
+
 @implementer(ICacheManager)
 class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
 
-    _config = {
-        'url': ['127.0.0.1'],
-        'binary': True,
-        'behaviors': {'tcp_nodelay': True, 'ketama': True}
-    }
-    _backend = 'dogpile.cache.pylibmc'
+    _backend = config.CACHE_BACKEND
+    _config = BACKENDS_CONFIG.get(_backend)
     _region = None
 
-    def __init__(self):
+    def __init__(self, config=_config, backend=_backend):
         """Initialize the cache manager."""
+        self._config = config
+        self._backend = backend
         self._create_region()
 
     def refresh(self, obj):
@@ -54,10 +82,15 @@ class BaseCacheManager:
         klass = obj.__class__
         klass_name = klass.__name__
         uid = obj.id
+        log_kwargs = {
+            'name': klass_name,
+            'uid': uid
+        }
         logger.info('Invalidate model {name} : {uid}'.format(
-            name=klass_name,
-            uid=uid
+            **log_kwargs
         ))
+        if config.CACHE_ASYNC_REFRESH:
+            Thread(target=refresher, args=[obj], kwargs=log_kwargs)
 
     def _create_region(self):
         """Create a new region instance."""
@@ -67,8 +100,7 @@ class BaseCacheManager:
             function_key_generator=self.key_generator
         ).configure(
             backend,
-            expiration_time=3600,
-            arguments=config
+            **config
         )
         self._region = region
 
