@@ -47,7 +47,7 @@ LOG_SERVER = config('LOG_SERVER', default='')
 
 # Cache config
 CACHE_HOST = config('CACHE_HOST', default='localhost')
-CACHE_PORT = config('CACHE_PORT', default='11212')
-CACHE_BACKEND = config('CACHE_BACKEND', default='dogpile.cache.pylibmc')
+CACHE_PORT = config('CACHE_PORT', default='6379')
+CACHE_BACKEND = config('CACHE_BACKEND', default='dogpile.cache.redis')
 CACHE_EXPIRATION_TIME = config('CACHE_EXPIRATION_TIME', default=3600)
 CACHE_ASYNC_REFRESH = config('CACHE_ASYNC_REFRESH', casts.Boolean(), default=False)

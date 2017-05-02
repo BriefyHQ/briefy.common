@@ -39,7 +39,7 @@ requires_db = [
     'alembic',
     'dogpile.cache',
     'geoalchemy2',
-    'pylibmc',
+    'redis',
     'psycopg2',
     'sqlalchemy',
     'sqlalchemy-utils',
