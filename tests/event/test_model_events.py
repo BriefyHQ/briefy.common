@@ -120,6 +120,6 @@ class TestSQSMessage(BriefyQueueBaseTest):
     def test_model_without_created_at(self, session):
         self._setup_queue()
         y = session.query(SimpleModel).all()[0]
-        del(y.created_at)
+        del y.created_at
         with pytest.raises(ValueError):
             SimpleCreated(y, actor=str(SystemUser.id))

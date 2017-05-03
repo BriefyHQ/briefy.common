@@ -75,17 +75,17 @@ class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
 
     _backend = config.CACHE_BACKEND
-    _config = BACKENDS_CONFIG.get(_backend)
+    _config = None
+    _enable_refresh = False
     _region = None
 
-    def __init__(self, config=_config, backend=_backend):
+    def __init__(self, backend=_backend):
         """Initialize the cache manager."""
-        self._config = config
         self._backend = backend
-        self._create_region()
+        self._enable_refresh = config.CACHE_ASYNC_REFRESH
 
     def refresh(self, obj):
-        """Invalidate and refresh a given model object.."""
+        """Invalidate and refresh a given model object."""
         region = self.region()
         region.invalidate(obj)
         klass = obj.__class__
@@ -98,13 +98,14 @@ class BaseCacheManager:
         logger.info('Invalidate model {name} : {uid}'.format(
             **log_kwargs
         ))
-        if config.CACHE_ASYNC_REFRESH:
-            Thread(target=refresher, args=[obj], kwargs=log_kwargs)
+        if self._enable_refresh:
+            thread = Thread(target=refresher, args=[obj], kwargs=log_kwargs)
+            thread.start()
 
     def _create_region(self):
         """Create a new region instance."""
         backend = self._backend
-        config = self._config
+        config = self._config = BACKENDS_CONFIG.get(backend)
         region = make_region(
             function_key_generator=self.key_generator
         ).configure(
