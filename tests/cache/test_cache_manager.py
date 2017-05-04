@@ -38,7 +38,7 @@ class DummyCache(BriefyRoles, Mixin, Base):
 
 
 @pytest.fixture
-def dummy_cache_obj(cache_manager, session):
+def dummy_cache_obj(session):
     """Create a new DummyCache content."""
     uid = dummy_cache_data.get('id')
     content = DummyCache.get(uid)
