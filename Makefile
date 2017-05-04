@@ -98,15 +98,13 @@ docs_server: docs
 	@cd $(BUILDDIR)/dirhtml; python3 -m http.server 8000
 
 stop_dockers: ## stop and remove docker containers
-	# sqs
+	docker stop redis
 	docker stop sqs
-	# postgres
 	docker stop briefy-common-test
 
 clean_dockers: stop_dockers ## remove docker containers
-	# sqs
+	docker rm redis
 	docker rm sqs
-	# postgres
 	docker rm briefy-common-test
 
 export_db_env:
@@ -114,11 +112,13 @@ export_db_env:
 	export DATABASE_URL=postgresql://briefy:briefy@127.0.0.1:9999/briefy-common
 
 start_dockers: export_db_env ## start docker containers
+	docker start redis
 	docker start sqs
 	docker start briefy-common-test
 	sleep 5
 
 create_dockers: export_db_env ## create docker containers
+	docker run -d -p 127.0.0.1:6379:6379 --name redis redis
 	docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
 	docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common --name briefy-common-test mdillon/postgis:9.5
 	sleep 5

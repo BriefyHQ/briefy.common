@@ -37,8 +37,10 @@ requires = [
 
 requires_db = [
     'alembic',
+    'dogpile.cache',
     'geoalchemy2',
     'psycopg2',
+    'redis',
     'sqlalchemy',
     'sqlalchemy-utils',
     'zope.sqlalchemy',
@@ -51,7 +53,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='2.0.0',
+    version='2.0.1',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

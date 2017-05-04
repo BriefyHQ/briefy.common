@@ -7,15 +7,20 @@ from prettyconf import config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
+from unittest.mock import patch
+from unittest.mock import PropertyMock
 from zope import component
+from zope.configuration.xmlconfig import XMLConfig
 
 import boto3
 import botocore.endpoint
+import briefy.common
 import httmock
 import os
 import pytest
 
 
+XMLConfig('configure.zcml', briefy.common)()
 DBSession = scoped_session(sessionmaker())
 
 
@@ -29,9 +34,7 @@ def sql_engine(request):
                           default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
     engine = create_engine(database_url, echo=False)
     DBSession.configure(bind=engine)
-
     LocalRole.__session__ = DBSession
-
     Base.metadata.create_all(engine)
 
     def teardown():
@@ -104,6 +107,34 @@ def queue_url():
     host = os.environ.get('SQS_IP', '127.0.0.1')
     port = os.environ.get('SQS_PORT', '5000')
     return 'http://{0}:{1}'.format(host, port)
+
+
+@pytest.fixture
+def cache_manager(request, backend, enable_refresh):
+    """Return the registered ICacheManager utility."""
+    _backend = PropertyMock(return_value=backend)
+    _enable_refresh = PropertyMock(return_value=enable_refresh)
+    backend_patch = patch(
+        'briefy.common.cache.BaseCacheManager._backend',
+        _backend
+    )
+    backend_patch.start()
+
+    refresh_patch = patch(
+        'briefy.common.cache.BaseCacheManager._enable_refresh',
+        _enable_refresh
+    )
+    refresh_patch.start()
+
+    def finalizer():
+        backend_patch.stop()
+        refresh_patch.stop()
+
+    request.addfinalizer(finalizer)
+
+    from briefy.common.cache import ICacheManager
+    from zope.component import getUtility
+    return getUtility(ICacheManager)
 
 
 class BaseSQSTest:

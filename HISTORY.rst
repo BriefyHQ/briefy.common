@@ -2,6 +2,14 @@
 History
 =======
 
+2.0.1 (Unreleased)
+------------------
+    
+    * When transition happens we also notify model updated event (if available) (rudaporto).
+    * New cache manager utility based on dogpile.cache library with support to redis, memcached and memory backends (rudaporto).
+    * Change WorkflowBase mixin to store request instance without a property (rudaporto).
+    * Base model attribute serialization now make sure we do not return InstrumentedList instances (rudaporto).
+
 2.0.0 (2017-04-21)
 ------------------
 

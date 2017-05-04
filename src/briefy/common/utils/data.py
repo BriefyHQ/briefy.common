@@ -181,6 +181,10 @@ class Objectify:
         traverse list components may or not prefix the index_list with
         a "_".
 
+        If "path" is omitted or 'None' the wrapped data strucure is returned
+        in "raw" form (i.e. as dict or list). Unless "objectify" is set,
+        in that case, an empty path just returns the same object (self).
+
         :param path: path
         :param default: default value if attribute can't be reached.
                         if not passed, returns self._sentinel if set
