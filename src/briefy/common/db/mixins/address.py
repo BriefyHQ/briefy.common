@@ -121,10 +121,6 @@ class Address:
 
         :param value: Dictionary containing a GeoJSON object
         """
-        # this should keep only for the model tests
-        if isinstance(value['coordinates'][0], str):
-            return
-
         if isinstance(value, (list, tuple)):
             # We assume is (lat, lng)
             # so, to deal with GeoJSON, we swap it
@@ -132,6 +128,12 @@ class Address:
                 'type': 'Point',
                 'coordinates': [value[1], value[0]]
             }
+
+        # this should keep only for the model tests
+        elif isinstance(value, dict):
+            if isinstance(value['coordinates'][0], str):
+                return
+
         value = json.dumps(value)
         self._coordinates = value
 
