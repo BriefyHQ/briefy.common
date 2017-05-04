@@ -37,6 +37,7 @@ def test_labeled_enums_with_2_items(options):
     assert Categories.interior.value == 'interior'
     assert Categories.interior.label == 'Interior'
 
+
 MCategories = LabeledEnum('MCategories', options())
 """ Pickable enums have to be retrievable from the module level."""
 
