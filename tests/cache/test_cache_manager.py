@@ -3,6 +3,8 @@ from briefy.common.db import Base
 from briefy.common.db.mixins import BriefyRoles
 from briefy.common.db.mixins import Mixin
 from conftest import DBSession
+from dogpile.cache.backends.memory import MemoryBackend
+from dogpile.cache.backends.redis import RedisBackend
 
 import pytest
 
@@ -15,6 +17,11 @@ dummy_cache_data = {
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',
     'created_at': '2016-09-08T15:36:28.087112Z',
     'state': 'created',
+}
+
+CACHE_BACKENDS = {
+    'dogpile.cache.memory': MemoryBackend,
+    'dogpile.cache.redis': RedisBackend
 }
 
 
@@ -49,38 +56,16 @@ class TestCacheManager:
     """Test CacheManager."""
 
     @pytest.mark.parametrize('enable_refresh', [True, False])
-    @pytest.mark.parametrize('backend', ['dogpile.cache.memory'])
-    def test_config_backend_memory(self, cache_manager, dummy_cache_obj):
+    @pytest.mark.parametrize('backend', ['dogpile.cache.memory', 'dogpile.cache.redis'])
+    def test_cache_backends_refresh(self, cache_manager, dummy_cache_obj):
         """Test cache manager memory backend configuration."""
-        assert cache_manager._backend == 'dogpile.cache.memory'
+        backend_klass = CACHE_BACKENDS.get(cache_manager._backend)
+        cache_manager._create_region()
+        region = cache_manager.region()
+        assert isinstance(region.backend, backend_klass) is True
+
         content = dummy_cache_obj
         data = content.to_dict()
-        region = cache_manager.region()
-        generator = cache_manager.key_generator('', content.to_dict)
-        key = generator(content)
-        region.set(key, data)
-        cached_data = region.get(key)
-        assert cached_data == data
-        assert data.get('state') == dummy_cache_data.get('state')
-        cache_manager.refresh(content)
-
-        new_state = 'new_state'
-        content.state = new_state
-        data = content.to_dict()
-        assert data.get('state') != dummy_cache_data.get('state')
-        assert data.get('state') == new_state
-        content.state = 'created'
-        cache_manager.refresh(content)
-
-    @pytest.mark.parametrize('enable_refresh', [True, False])
-    @pytest.mark.parametrize('backend', ['dogpile.cache.redis'])
-    def test_config_backend_redis(self, cache_manager, dummy_cache_obj):
-        """Test cache manager redis backend configuration."""
-        assert cache_manager._backend == 'dogpile.cache.redis'
-        content = dummy_cache_obj
-        data = content.to_dict()
-
-        region = cache_manager.region()
         generator = cache_manager.key_generator('', content.to_dict)
         key = generator(content)
         region.set(key, data)
