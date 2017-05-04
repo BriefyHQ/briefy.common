@@ -3,8 +3,10 @@ from briefy.common.vocabularies import LabeledEnum
 
 import pytest
 
+
 @pytest.fixture
 def options():
+    """Enum options fixture."""
     options = (
         ('food', 'Food'),
         ('interior', 'Interior'),
@@ -13,7 +15,9 @@ def options():
     )
     return options
 
+
 def test_labeled_enums():
+    """Test labeled enums."""
     options = (
         ('food', 'food', 'Food'),
         ('interior', 'interior', 'Interior'),
@@ -27,6 +31,7 @@ def test_labeled_enums():
 
 
 def test_labeled_enums_with_2_items(options):
+    """Test labeled enums with 2 items."""
     Categories = LabeledEnum('Categories', options)
     assert str(Categories.interior) == 'Categories.interior'
     assert Categories.interior.value == 'interior'
@@ -37,6 +42,7 @@ MCategories = LabeledEnum('MCategories', options())
 
 
 def test_labeled_enums_are_pickable():
+    """Test labeled enums are pickable."""
     import pickle
     assert pickle.dumps(MCategories.food)
     v = pickle.dumps(MCategories.interior)
