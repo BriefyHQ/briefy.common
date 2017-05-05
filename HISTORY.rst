@@ -10,6 +10,7 @@ History
     * Change WorkflowBase mixin to store request instance without a property (rudaporto).
     * Base model attribute serialization now make sure we do not return InstrumentedList instances (rudaporto).
     * Improve AddressMixin.coordinates setter (rudaporto).
+    * Allows our Enum items to be pickled (fix caching issues) (jsbueno).
 
 2.0.0 (2017-04-21)
 ------------------
