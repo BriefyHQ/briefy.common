@@ -2,7 +2,11 @@
 History
 =======
 
-2.0.1 (Unreleased)
+2.0.2 (2017-05-18)
+------------------
+    * Allows our Enum items to be pickled (fix caching issues) (jsbueno).
+
+2.0.1 (2017-05-04)
 ------------------
     
     * When transition happens we also notify model updated event (if available) (rudaporto).
