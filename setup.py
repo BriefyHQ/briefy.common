@@ -53,7 +53,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='2.0.1',
+    version='2.0.2',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

@@ -2,7 +2,11 @@
 History
 =======
 
-2.0.1 (Unreleased)
+2.0.2 (2017-05-18)
+------------------
+    * Allows our Enum items to be pickled (fix caching issues) (jsbueno).
+
+2.0.1 (2017-05-04)
 ------------------
     
     * When transition happens we also notify model updated event (if available) (rudaporto).
@@ -10,7 +14,6 @@ History
     * Change WorkflowBase mixin to store request instance without a property (rudaporto).
     * Base model attribute serialization now make sure we do not return InstrumentedList instances (rudaporto).
     * Improve AddressMixin.coordinates setter (rudaporto).
-    * Allows our Enum items to be pickled (fix caching issues) (jsbueno).
 
 2.0.0 (2017-04-21)
 ------------------
