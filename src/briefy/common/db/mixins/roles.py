@@ -23,11 +23,11 @@ class LocalRolesMixin:
             foreign_keys='LocalRole.entity_id',
             viewonly=viewonly,
             uselist=uselist,
-            primaryjoin='''and_(
+            primaryjoin="""and_(
                         LocalRole.entity_id=={entity}.id,
                         LocalRole.entity_type=="{entity}",
                         LocalRole.{permission_name}==True,
-                    )'''.format(
+                    )""".format(
                 entity=cls.__name__,
                 permission_name=permission_name
             )
@@ -124,10 +124,10 @@ class LocalRolesMixin:
         return relationship(
             'LocalRole',
             foreign_keys='LocalRole.entity_id',
-            primaryjoin='''and_(
+            primaryjoin="""and_(
                 LocalRole.entity_id=={entity}.id,
                 LocalRole.entity_type=="{entity}",
-            )'''.format(
+            )""".format(
                 entity=cls.__name__
             ),
         )

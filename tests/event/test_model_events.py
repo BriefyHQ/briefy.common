@@ -82,7 +82,7 @@ class TestSQSMessage(BriefyQueueBaseTest):
         assert x.name == y.name == z.name
         assert x.birthday == y.birthday == z.birthday
         assert re.match(
-            r'''\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>''',
+            r"""\<SimpleModel\(id='.+?' state='created' created='.+?' updated='.+?'\)\>""",
             repr(y)
         )
 
