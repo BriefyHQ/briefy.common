@@ -112,6 +112,7 @@ class BaseCacheManager:
             backend,
             **config
         )
+        logger.info('New dogpile.cache region created')
         self._region = region
 
     def region(self):
