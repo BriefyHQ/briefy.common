@@ -1,20 +1,18 @@
 """Test CacheManager utility."""
-from briefy.common.db import Base
-from briefy.common.db.mixins import BriefyRoles
-from briefy.common.db.mixins import Mixin
+from briefy.common.db.mixins import SubItemMixin
+from briefy.common.db.models import Item
 from conftest import DBSession
 from dogpile.cache.backends.memory import MemoryBackend
 from dogpile.cache.backends.redis import RedisBackend
 
 import pytest
+import uuid
 
 
 dummy_cache_data = {
     'updated_at': '2016-09-08T15:36:28.087123Z',
-    'project_manager': 'e9bee447-91ea-468f-b247-1ba4b9cf79ac',
-    'qa_manager': '92a40b92-8c04-407d-9922-097ba5171e2d',
-    'scout_manager': 'edb4d4be-8b22-4818-894e-3da6317087f4',
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',
+    'path': [uuid.UUID('6b6f0b2a-25ed-401c-8c65-3d4009e398ea')],
     'created_at': '2016-09-08T15:36:28.087112Z',
     'state': 'created',
 }
@@ -25,7 +23,7 @@ CACHE_BACKENDS = {
 }
 
 
-class DummyCache(BriefyRoles, Mixin, Base):
+class DummyCache(SubItemMixin, Item):
     """A content containing title, description and a slug."""
 
     __tablename__ = 'dummy_cache'

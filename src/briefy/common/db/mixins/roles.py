@@ -20,12 +20,11 @@ class LocalRolesMixin:
         """Get Local Role permission relationship."""
         return sa.orm.relationship(
             'LocalRole',
-            foreign_keys='LocalRole.entity_id',
+            foreign_keys='LocalRole.item_id',
             viewonly=viewonly,
             uselist=uselist,
             primaryjoin="""and_(
-                        LocalRole.entity_id=={entity}.id,
-                        LocalRole.entity_type=="{entity}",
+                        LocalRole.item_id=={entity}.id,
                         LocalRole.{permission_name}==True,
                     )""".format(
                 entity=cls.__name__,
