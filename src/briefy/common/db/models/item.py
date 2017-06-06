@@ -2,7 +2,6 @@
 from briefy.common.db import Base
 from briefy.common.db.mixins import Mixin
 from briefy.common.db.models.local_role import LocalRole
-from briefy.common.db.models.local_role import LocalRolesGetSetFactory
 from briefy.common.log import logger
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
@@ -80,16 +79,10 @@ class Item(Mixin, Base):
             """Create a new local role instance."""
             return cls.create_local_role(principal_id, role_name)
 
-        getset_factory = LocalRolesGetSetFactory(
-            role_name=role_name,
-            session=session
-        )
-
         return association_proxy(
             local_attr,
             'principal_id',
-            creator=creator,
-            getset_factory=getset_factory
+            creator=creator
         )
 
     def set_local_role(self, values: list, role_name: str):
