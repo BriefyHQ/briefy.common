@@ -4,9 +4,6 @@ from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from briefy.common.db.models.local_role import LocalRole
 from conftest import DBSession
-from sqlalchemy import and_
-from sqlalchemy import select
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
 import pytest

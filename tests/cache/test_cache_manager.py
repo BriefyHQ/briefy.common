@@ -11,6 +11,7 @@ import uuid
 
 
 dummy_cache_data = {
+    'title': 'Dummy Cache Item',
     'updated_at': '2016-09-08T15:36:28.087123Z',
     'id': '6b6f0b2a-25ed-401c-8c65-3d4009e398ea',
     'path': [uuid.UUID('6b6f0b2a-25ed-401c-8c65-3d4009e398ea')],
