@@ -2,6 +2,7 @@
 from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
+from briefy.common.db.models.local_role import LocalRole
 from conftest import DBSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -67,12 +68,12 @@ class Customer(BaseMetadata, SubItemMixin, Item):
 
         :return: IDs of the customer users.
         """
-        return cls.create_lr_proxy('customer_manager', DBSession)
+        return cls.create_lr_proxy('customer_manager')
 
     @hybrid_property
     def lr_customer_manager(self) -> list:
         """Return the list of user_ids with local role of customer_manager."""
-        return self.customer_manager
+        return self.principals_by_role('customer_manager')
 
     @lr_customer_manager.setter
     def lr_customer_manager(self, values: list):
@@ -127,8 +128,14 @@ class TestLocalRoles:
         assert isinstance(obj, Item)
 
         new_principal = uuid.uuid4()
-        obj.attr_customer_manager = [new_principal]
+        obj.lr_customer_manager = [new_principal]
         session.flush()
         session.commit()
         obj = model.get(obj_id)
-        assert obj.attr_customer_manager == [new_principal]
+        assert obj.lr_customer_manager == [new_principal]
+
+        customers = session.query(model).join(LocalRole).filter(
+            LocalRole.principal_id.in_([new_principal])
+        ).all()
+
+        assert obj.id == customers[0].id

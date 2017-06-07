@@ -47,6 +47,7 @@ class Item(Mixin, Base):
         return sa.orm.relationship(
             'LocalRole',
             uselist=uselist,
+            lazy='noload',
             foreign_keys='LocalRole.item_id',
             primaryjoin="""and_(
                     LocalRole.item_id==Item.id,
@@ -70,7 +71,7 @@ class Item(Mixin, Base):
         return LocalRole(**payload)
 
     @classmethod
-    def create_lr_proxy(cls, role_name, session, local_attr=None):
+    def create_lr_proxy(cls, role_name, local_attr=None):
         """Get a new association proxy instance."""
         if not local_attr:
             local_attr = '_{role_name}'.format(role_name=role_name)
@@ -84,6 +85,15 @@ class Item(Mixin, Base):
             'principal_id',
             creator=creator
         )
+
+    def principals_by_role(self, role_name):
+        """Query principals with local roles in this Item."""
+        session = object_session(self)
+        local_roles = session.query(LocalRole).filter(
+            LocalRole.role_name == role_name,
+            LocalRole.item_id == self.id
+        )
+        return [role.principal_id for role in local_roles]
 
     def set_local_role(self, values: list, role_name: str):
         """Set local role collection."""
