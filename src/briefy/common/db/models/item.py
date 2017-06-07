@@ -6,7 +6,6 @@ from briefy.common.log import logger
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import column_property
 from sqlalchemy.orm.session import object_session
 
 import sqlalchemy as sa
@@ -39,7 +38,7 @@ class Item(Mixin, Base):
         LocalRole,
         order_by='asc(LocalRole.created_at)',
         backref=sa.orm.backref('item'),
-        lazy='dynamic'
+        lazy='noload'
     )
 
     @classmethod
