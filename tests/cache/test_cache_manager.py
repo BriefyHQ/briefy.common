@@ -1,4 +1,5 @@
 """Test CacheManager utility."""
+from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from conftest import DBSession
@@ -23,12 +24,11 @@ CACHE_BACKENDS = {
 }
 
 
-class DummyCache(SubItemMixin, Item):
+class DummyCache(BaseMetadata, SubItemMixin, Item):
     """A content containing title, description and a slug."""
 
-    __tablename__ = 'dummy_cache'
+    __tablename__ = 'dummycaches'
     __session__ = DBSession
-    __table_args__ = {'extend_existing': True}
 
     def to_dict(self, excludes: list = None, includes: list = None) -> dict:
         """Return a dict version to serialize the object."""

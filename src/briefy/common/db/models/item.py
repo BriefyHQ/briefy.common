@@ -89,10 +89,12 @@ class Item(Mixin, Base):
     def principals_by_role(self, role_name):
         """Query principals with local roles in this Item."""
         session = object_session(self)
-        local_roles = session.query(LocalRole).filter(
-            LocalRole.role_name == role_name,
-            LocalRole.item_id == self.id
-        )
+        local_roles = []
+        if session:
+            local_roles = session.query(LocalRole).filter(
+                LocalRole.role_name == role_name,
+                LocalRole.item_id == self.id
+            )
         return [role.principal_id for role in local_roles]
 
     def set_local_role(self, values: list, role_name: str):
@@ -103,28 +105,32 @@ class Item(Mixin, Base):
         to_remove = current_users - updated_users
         session = object_session(self)
 
-        # delete
-        remove_roles = session.query(LocalRole).filter(
-            LocalRole.role_name == role_name,
-            LocalRole.principal_id.in_(to_remove),
-            LocalRole.item_id == self.id
-        )
-        for lr in remove_roles:
-            logger.debug('Deleted: {0}'.format(lr))
-            session.delete(lr)
-
-        # add
-        for principal_id in to_add:
-            lr = LocalRole(
-                item_id=self.id,
-                role_name=role_name,
-                principal_id=principal_id
+        if session and to_remove:
+            # delete
+            remove_roles = session.query(LocalRole).filter(
+                LocalRole.role_name == role_name,
+                LocalRole.principal_id.in_(to_remove),
+                LocalRole.item_id == self.id
             )
-            session.add(lr)
-            self.local_roles.append(lr)
-            logger.debug('Added: {0}'.format(lr))
+            for lr in remove_roles:
+                logger.debug('Deleted: {0}'.format(lr))
+                session.delete(lr)
 
-        session.flush()
+            session.flush()
+
+        if session and to_add:
+            # add
+            for principal_id in to_add:
+                lr = LocalRole(
+                    item_id=self.id,
+                    role_name=role_name,
+                    principal_id=principal_id
+                )
+                session.add(lr)
+                self.local_roles.append(lr)
+                logger.debug('Added: {0}'.format(lr))
+
+            session.flush()
 
     def __repr__(self) -> str:
         """Representation model Item."""

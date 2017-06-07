@@ -4,6 +4,8 @@ from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from briefy.common.db.models.local_role import LocalRole
 from conftest import DBSession
+from sqlalchemy import and_
+from sqlalchemy import select
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -54,31 +56,24 @@ class Customer(BaseMetadata, SubItemMixin, Item):
     __tablename__ = 'customers'
     __session__ = DBSession
 
-    @declared_attr
-    def _customer_manager(cls):
-        """Relationship with customer_manager role_name.
-
-        :return: LocalRoles instances of customer_manager role_name.
-        """
-        return cls.create_lr_relationship('customer_manager')
-
-    @declared_attr
-    def customer_manager(cls) -> list:
-        """Return a list of ids of customer_manager.
-
-        :return: IDs of the customer users.
-        """
-        return cls.create_lr_proxy('customer_manager')
+    __actors__ = (
+        'customer_manager',
+    )
 
     @hybrid_property
-    def lr_customer_manager(self) -> list:
+    def customer_manager(self) -> list:
         """Return the list of user_ids with local role of customer_manager."""
         return self.principals_by_role('customer_manager')
 
-    @lr_customer_manager.setter
-    def lr_customer_manager(self, values: list):
+    @customer_manager.setter
+    def customer_manager(self, values: list):
         """Update customer manager collection"""
         self.set_local_role(values, role_name='customer_manager')
+
+    @customer_manager.expression
+    def customer_manager(cls):
+        """Expression that return principal ids from database."""
+        return LocalRole.principal_id
 
 
 class Project(SubItemMixin, Item):
@@ -119,7 +114,7 @@ class TestLocalRoles:
         """Create new model items"""
         attr_name, model, model_data = model
         assert issubclass(model, Item)
-        obj = model(**model_data)
+        obj = model.create(model_data)
         obj_id = obj.id
         session.add(obj)
         session.flush()
@@ -128,14 +123,13 @@ class TestLocalRoles:
         assert isinstance(obj, Item)
 
         new_principal = uuid.uuid4()
-        obj.lr_customer_manager = [new_principal]
-        session.flush()
-        session.commit()
-        obj = model.get(obj_id)
-        assert obj.lr_customer_manager == [new_principal]
+        obj.customer_manager = [new_principal]
 
-        customers = session.query(model).join(LocalRole).filter(
-            LocalRole.principal_id.in_([new_principal])
+        obj = model.get(obj_id)
+        assert obj.customer_manager == [new_principal]
+
+        customers = session.query(model).filter(
+            model.customer_manager.in_([new_principal])
         ).all()
 
-        assert obj.id == customers[0].id
+        assert obj.id == str(customers[0].id)
