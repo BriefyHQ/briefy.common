@@ -5,11 +5,12 @@ from briefy.common.db.models.local_role import LocalRole
 from briefy.common.log import logger
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import column_property
 from sqlalchemy.orm.session import object_session
 
 import sqlalchemy as sa
+import uuid
 
 
 class Item(Mixin, Base):
@@ -42,60 +43,46 @@ class Item(Mixin, Base):
     )
 
     @classmethod
-    def create_lr_relationship(cls, role_name, uselist=True):
-        """Create LocalRole relationship for a specific role name."""
-        return sa.orm.relationship(
-            'LocalRole',
-            uselist=uselist,
-            lazy='noload',
-            foreign_keys='LocalRole.item_id',
-            primaryjoin="""and_(
-                    LocalRole.item_id==Item.id,
-                    LocalRole.role_name=="{role_name}"
-                )""".format(
-                role_name=role_name
+    def get_expression(cls, role_name):
+        """Get expression for a specific role name."""
+        return sa.select([LocalRole.principal_id]).where(
+            sa.and_(
+                LocalRole.item_id == cls.id,
+                LocalRole.role_name == role_name
             )
-        )
+        ).as_scalar()
 
     @classmethod
-    def create_local_role(cls, principal_id, role_name, item_id=None):
-        """Create local LocalRole instance for role and user_id."""
-        if not item_id:
-            item_id = cls.id
+    def create(cls, payload) -> object:
+        """Factory that creates a new instance of this object.
 
-        payload = dict(
-            item_id=item_id,
-            principal_id=principal_id,
-            role_name=role_name,
-        )
-        return LocalRole(**payload)
+        :param payload: Dictionary containing attributes and values
+        :type payload: dict
+        """
+        actors_data = {
+            actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
+        }
 
-    @classmethod
-    def create_lr_proxy(cls, role_name, local_attr=None):
-        """Get a new association proxy instance."""
-        if not local_attr:
-            local_attr = '_{role_name}'.format(role_name=role_name)
+        parent_id = payload.pop('parent_id', None)
+        obj_id = payload.setdefault('id', uuid.uuid4())
 
-        def creator(principal_id):
-            """Create a new local role instance."""
-            return cls.create_local_role(principal_id, role_name)
+        if parent_id:
+            parent = Item.get(parent_id)
+            path = parent.path
+        else:
+            path = []
 
-        return association_proxy(
-            local_attr,
-            'principal_id',
-            creator=creator
-        )
+        path.append(obj_id)
+        payload['path'] = path
+
+        obj = cls(**payload)
+        obj.update(actors_data)
+        return obj
 
     def principals_by_role(self, role_name):
         """Query principals with local roles in this Item."""
-        session = object_session(self)
-        local_roles = []
-        if session:
-            local_roles = session.query(LocalRole).filter(
-                LocalRole.role_name == role_name,
-                LocalRole.item_id == self.id
-            )
-        return [role.principal_id for role in local_roles]
+        return [role.principal_id for role in self.local_roles
+                if role.role_name == role_name]
 
     def set_local_role(self, values: list, role_name: str):
         """Set local role collection."""

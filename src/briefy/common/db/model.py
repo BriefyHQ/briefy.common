@@ -298,12 +298,7 @@ class Base(Security):
         :param payload: Dictionary containing attributes and values
         :type payload: dict
         """
-        actors_data = {
-            actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
-        }
-        obj = cls(**payload)
-        obj.update(actors_data)
-        return obj
+        return cls(**payload)
 
 
 Base = declarative_base(cls=Base)
