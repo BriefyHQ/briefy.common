@@ -120,7 +120,7 @@ class Customer(SubItemMixin, BaseMetadata, Item):
     @customer_managers.expression
     def customer_managers(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('customer_managers')
+        return cls.get_lr_expression('customer_managers')
 
 
 class Project(SubItemMixin, BaseMetadata, Item):
@@ -150,7 +150,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     @customer_pms.expression
     def customer_pms(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('customer_pms')
+        return cls.get_lr_expression('customer_pms')
 
     @hybrid_property
     def customer_qas(self) -> list:
@@ -165,7 +165,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     @customer_qas.expression
     def customer_qas(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('customer_qas')
+        return cls.get_lr_expression('customer_qas')
 
     @hybrid_property
     def scouts(self) -> list:
@@ -180,7 +180,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     @scouts.expression
     def scouts(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('scouts')
+        return cls.get_lr_expression('scouts')
 
     @hybrid_property
     def pms(self) -> list:
@@ -195,7 +195,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     @pms.expression
     def pms(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('pms')
+        return cls.get_lr_expression('pms')
 
     @hybrid_property
     def qas(self) -> list:
@@ -210,7 +210,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     @qas.expression
     def qas(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('qas')
+        return cls.get_lr_expression('qas')
 
 
 class Order(SubItemMixin, BaseMetadata, Item):
@@ -236,7 +236,7 @@ class Order(SubItemMixin, BaseMetadata, Item):
     @customer_qa.expression
     def customer_qa(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('customer_qa')
+        return cls.get_lr_expression('customer_qa')
 
 
 class Assignment(SubItemMixin, BaseMetadata, Item):
@@ -264,7 +264,7 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
     @qa_manager.expression
     def qa_manager(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('qa_manager')
+        return cls.get_lr_expression('qa_manager')
 
     @hybrid_property
     def scout_manager(self) -> list:
@@ -279,7 +279,7 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
     @scout_manager.expression
     def scout_manager(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('scout_manager')
+        return cls.get_lr_expression('scout_manager')
 
     @hybrid_property
     def professional_user(self) -> list:
@@ -294,7 +294,7 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
     @professional_user.expression
     def professional_user(cls):
         """Expression that return principal ids from database."""
-        return cls.get_expression('professional_user')
+        return cls.get_lr_expression('professional_user')
 
 
 model_tuples = (

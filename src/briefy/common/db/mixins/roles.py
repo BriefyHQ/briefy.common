@@ -181,14 +181,14 @@ class LocalRolesMixin:
 
         :return: List of actor ids.
         """
-        from briefy.common.db.models.roles import LocalRole
+        from briefy.common.db.models.roles import LocalRoleDeprecated
 
         return sa.select(
-            [LocalRole.user_id]
+            [LocalRoleDeprecated.user_id]
         ).where(
             sa.and_(
-                cls.__name__ == LocalRole.entity_type,
-                cls.id == LocalRole.entity_id,
+                cls.__name__ == LocalRoleDeprecated.entity_type,
+                cls.id == LocalRoleDeprecated.entity_id,
             )
         ).as_scalar()
 
