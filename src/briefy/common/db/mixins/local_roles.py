@@ -88,8 +88,9 @@ class LocalRolesMixin:
 
     __actors__ = ()
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls, *args, **kwargs):
         """Initialize local roles in the cls."""
+        super().__init_subclass__(*args, **kwargs)
         for actor in cls.__actors__:
             setattr(cls, actor, make_lr_attr(actor))
 
