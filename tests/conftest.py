@@ -2,7 +2,6 @@
 from briefy.common.config import SQS_REGION
 from briefy.common.db import Base
 from briefy.common.db.models import Item
-from briefy.common.db.models.local_permission import LocalPermission
 from briefy.common.db.models.local_role import LocalRole
 from briefy.common.db.models.roles import LocalRoleDeprecated
 from briefy.common.queue import IQueue
@@ -40,7 +39,6 @@ def sql_engine(request):
     LocalRoleDeprecated.__session__ = DBSession
     Item.__session__ = DBSession
     LocalRole.__session__ = DBSession
-    LocalPermission.__session__ = DBSession
     Base.metadata.create_all(engine)
 
     def teardown():
