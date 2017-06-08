@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import object_session
 
 import sqlalchemy as sa
@@ -12,6 +13,7 @@ import sqlalchemy as sa
 def get_lr_expression(cls, role_name):
     """Get expression for a specific role name."""
     from briefy.common.db.models.local_role import LocalRole
+
     return sa.select([LocalRole.principal_id]).where(
         sa.and_(
             LocalRole.item_id == cls.id,
@@ -29,6 +31,7 @@ def principals_by_role(obj, role_name):
 def set_local_role(obj, values: list, role_name: str):
     """Set local role collection."""
     from briefy.common.db.models.local_role import LocalRole
+
     current_users = set(getattr(obj, role_name))
     updated_users = set(values)
     to_add = updated_users - current_users
@@ -89,10 +92,29 @@ class LocalRolesMixin:
     __actors__ = ()
 
     def __init_subclass__(cls, *args, **kwargs):
-        """Initialize local roles in the cls."""
+        """Initialize local roles in the subclass."""
         super().__init_subclass__(*args, **kwargs)
         for actor in cls.__actors__:
             setattr(cls, actor, make_lr_attr(actor))
+
+    @classmethod
+    def query(cls, principal_id=None) -> Query:
+        """Return query object.
+
+        :returns: A query object
+        """
+        from briefy.common.db.models.local_role import LocalRole
+
+        query = cls.__session__.query(cls)
+        if principal_id:
+            query.join(
+                LocalRole,
+                sa.and_(
+                    LocalRole.item_id == sa.any_(cls.path),
+                    LocalRole.role_name == sa.any_(cls.can_view)
+                )
+            ).filter(LocalRole.principal_id == principal_id)
+        return query
 
     can_view = sa.Column(ARRAY(sa.String()), default=[], nullable=False)
     """List of local roles that can view an item."""
@@ -104,5 +126,4 @@ class LocalRolesMixin:
             'LocalRole',
             order_by='asc(LocalRole.created_at)',
             backref=sa.orm.backref('item'),
-            lazy='noload'
         )

@@ -25,6 +25,7 @@ customer_data = [
         ],
         'id': CUSTOMER_ID_01,
         'title': 'Customer 01',
+        'can_view': ['customer_managers', ]
     },
     {
         'customer_managers': [
@@ -33,6 +34,7 @@ customer_data = [
         ],
         'id': CUSTOMER_ID_02,
         'title': 'Customer 02',
+        'can_view': ['customer_managers', ]
     },
 ]
 
@@ -46,6 +48,9 @@ project_data = [
         'scouts': ['edb4d4be-8b22-4818-894e-3da6317087f4'],
         'id': PROJECT_ID_01,
         'title': 'Project 01',
+        'can_view': [
+            'customer_managers', 'customer_pms', 'customer_qas', 'pms', 'qas', 'scouts',
+        ]
     },
     {
         'parent_id': CUSTOMER_ID_02,
@@ -56,6 +61,9 @@ project_data = [
         'scouts': ['edb4d4be-8b22-4818-894e-3da6317087f4'],
         'id': PROJECT_ID_02,
         'title': 'Project 02',
+        'can_view': [
+            'customer_managers', 'customer_pms', 'customer_qas', 'pms', 'qas', 'scouts',
+        ]
     }
 ]
 
@@ -65,12 +73,20 @@ order_data = [
         'customer_qa': ['5c78b972-e942-4bf8-a3d8-29b2417f1db2'],
         'id': ORDER_ID_01,
         'title': 'Order 01',
+        'can_view': [
+            'customer_managers', 'customer_pms', 'customer_qas', 'customer_qa',
+            'pms', 'qas', 'scouts',
+        ]
     },
     {
         'parent_id': PROJECT_ID_02,
         'customer_qa': ['425c19f8-0f59-4fb6-b345-491c243ff417'],
         'id': ORDER_ID_02,
         'title': 'Order 02',
+        'can_view': [
+            'customer_managers', 'customer_pms', 'customer_qas', 'customer_qa',
+            'pms', 'qas', 'scouts',
+        ]
     }
 
 ]
@@ -83,6 +99,9 @@ assignment_data = [
         'scout_manager': ['edb4d4be-8b22-4818-894e-3da6317087f4'],
         'id': uuid.uuid4(),
         'title': 'Assignment 01',
+        'can_view': [
+            'qa_manager', 'scout_manager', 'professional_user',
+        ]
     },
     {
         'parent_id': ORDER_ID_02,
@@ -91,6 +110,9 @@ assignment_data = [
         'scout_manager': ['edb4d4be-8b22-4818-894e-3da6317087f4'],
         'id': uuid.uuid4(),
         'title': 'Assignment 02',
+        'can_view': [
+            'qa_manager', 'scout_manager', 'professional_user',
+        ]
     },
 
 ]
@@ -162,7 +184,7 @@ class TestLocalRoles:
 
     @pytest.mark.parametrize('model', model_tuples)
     def test_create_items(self, session, model):
-        """Create new model items"""
+        """Create new model items."""
         attr_name, model, model_data, roles = model
         assert issubclass(model, Item)
 
@@ -189,3 +211,14 @@ class TestLocalRoles:
                 ).all()
 
                 assert obj.id == items[0].id
+
+    @pytest.mark.parametrize('model', model_tuples)
+    def test_query_items(self, session, model):
+        """Query model items."""
+        attr_name, model, model_data, roles = model
+        for data in model_data:
+            obj = model.get(data['id'])
+            for role_name in roles:
+                principal_id = getattr(obj, role_name)[0]
+                items = model.query(principal_id=principal_id)
+                assert obj in items.all()
