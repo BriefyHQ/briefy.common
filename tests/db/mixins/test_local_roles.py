@@ -3,7 +3,6 @@ from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from conftest import DBSession
-from sqlalchemy.ext.hybrid import hybrid_property
 
 import pytest
 import uuid
@@ -107,21 +106,6 @@ class Customer(SubItemMixin, BaseMetadata, Item):
         'customer_managers',
     )
 
-    @hybrid_property
-    def customer_managers(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('customer_managers')
-
-    @customer_managers.setter
-    def customer_managers(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='customer_managers')
-
-    @customer_managers.expression
-    def customer_managers(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('customer_managers')
-
 
 class Project(SubItemMixin, BaseMetadata, Item):
     """Project model."""
@@ -137,81 +121,6 @@ class Project(SubItemMixin, BaseMetadata, Item):
         'scouts',
     )
 
-    @hybrid_property
-    def customer_pms(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('customer_pms')
-
-    @customer_pms.setter
-    def customer_pms(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='customer_pms')
-
-    @customer_pms.expression
-    def customer_pms(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('customer_pms')
-
-    @hybrid_property
-    def customer_qas(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('customer_qas')
-
-    @customer_qas.setter
-    def customer_qas(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='customer_qas')
-
-    @customer_qas.expression
-    def customer_qas(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('customer_qas')
-
-    @hybrid_property
-    def scouts(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('scouts')
-
-    @scouts.setter
-    def scouts(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='scouts')
-
-    @scouts.expression
-    def scouts(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('scouts')
-
-    @hybrid_property
-    def pms(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('pms')
-
-    @pms.setter
-    def pms(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='pms')
-
-    @pms.expression
-    def pms(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('pms')
-
-    @hybrid_property
-    def qas(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('qas')
-
-    @qas.setter
-    def qas(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='qas')
-
-    @qas.expression
-    def qas(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('qas')
-
 
 class Order(SubItemMixin, BaseMetadata, Item):
     """Order model."""
@@ -220,23 +129,8 @@ class Order(SubItemMixin, BaseMetadata, Item):
     __session__ = DBSession
 
     __actors__ = (
-        'customer_qas',
+        'customer_qa',
     )
-
-    @hybrid_property
-    def customer_qa(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('customer_qa')
-
-    @customer_qa.setter
-    def customer_qa(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='customer_qa')
-
-    @customer_qa.expression
-    def customer_qa(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('customer_qa')
 
 
 class Assignment(SubItemMixin, BaseMetadata, Item):
@@ -250,51 +144,6 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
         'scout_manager',
         'professional_user'
     )
-
-    @hybrid_property
-    def qa_manager(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('qa_manager')
-
-    @qa_manager.setter
-    def qa_manager(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='qa_manager')
-
-    @qa_manager.expression
-    def qa_manager(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('qa_manager')
-
-    @hybrid_property
-    def scout_manager(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('scout_manager')
-
-    @scout_manager.setter
-    def scout_manager(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='scout_manager')
-
-    @scout_manager.expression
-    def scout_manager(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('scout_manager')
-
-    @hybrid_property
-    def professional_user(self) -> list:
-        """Return the list of user_ids with local role of customer_manager."""
-        return self.principals_by_role('professional_user')
-
-    @professional_user.setter
-    def professional_user(self, values: list):
-        """Update local role collection"""
-        self.set_local_role(values, role_name='professional_user')
-
-    @professional_user.expression
-    def professional_user(cls):
-        """Expression that return principal ids from database."""
-        return cls.get_lr_expression('professional_user')
 
 
 model_tuples = (

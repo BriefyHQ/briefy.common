@@ -2,16 +2,42 @@
 from briefy.common.log import logger
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import object_session
 
 import sqlalchemy as sa
 
 
+def make_lr_attr(actor):
+    """Create local role hybrid_property attributes."""
+    def getter(self):
+        """Return the list of user_ids with a local role."""
+        return self.principals_by_role(actor)
+
+    def setter(self, values):
+        """Update local role collection."""
+        self.set_local_role(values, role_name=actor)
+
+    def expression(cls):
+        """Expression that return principal ids from database."""
+        return cls.get_lr_expression(actor)
+
+    lr_attr = hybrid_property(getter)
+    lr_attr.setter(setter)
+    lr_attr.expression(expression)
+    return lr_attr
+
+
 class LocalRolesMixin:
     """A mixin providing Local role support for an object."""
 
     __actors__ = ()
+
+    def __init_subclass__(cls):
+        """Initialize local roles in the cls."""
+        for actor in cls.__actors__:
+            setattr(cls, actor, make_lr_attr(actor))
 
     can_view = sa.Column(ARRAY(sa.String()), default=[], nullable=False)
     """List of local roles that can view an item."""
