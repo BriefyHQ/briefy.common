@@ -1,5 +1,5 @@
 """Briefy LocalRole support for database objects."""
-from briefy.common.db.mixins import GUID
+from briefy.common.db.mixins import Identifiable
 from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
 from briefy.common.vocabularies.roles import LocalRolesChoices
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 import sqlalchemy_utils as sautils
 
 
-class LocalRoleDeprecated(GUID, Timestamp, Base):
+class LocalRoleDeprecated(Identifiable, Timestamp, Base):
     """Local role support for Briefy."""
 
     __tablename__ = 'localroles_deprecated'

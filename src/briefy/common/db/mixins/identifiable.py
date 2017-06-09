@@ -7,7 +7,7 @@ import colander
 import sqlalchemy as sa
 
 
-class GUID:
+class Identifiable:
     """A Mixin providing a id as primary key.
 
     The id field is an UUID-4 object.
@@ -32,7 +32,7 @@ class GUID:
     """
 
 
-class GUIDFK:
+class IdentifiableFK:
     """A Mixin providing a id as primary key with FK to base items table.
 
     The id field is an UUID-4 object.

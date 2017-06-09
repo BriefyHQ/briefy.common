@@ -1,5 +1,5 @@
 """LocalRole base model."""
-from briefy.common.db.mixins import GUID
+from briefy.common.db.mixins import Identifiable
 from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
 from sqlalchemy.dialects.postgresql import UUID
@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import sqlalchemy as sa
 
 
-class LocalRole(Timestamp, GUID, Base):
+class LocalRole(Timestamp, Identifiable, Base):
     """LocalRole model to store roles in context."""
 
     __tablename__ = 'localroles'
