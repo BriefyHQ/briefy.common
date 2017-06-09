@@ -2,6 +2,7 @@
 from briefy.common.db import Base
 from briefy.common.db.mixins import LocalRolesMixin
 from briefy.common.db.mixins import Mixin
+from copy import deepcopy
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
@@ -39,6 +40,7 @@ class Item(LocalRolesMixin, Mixin, Base):
         :param payload: Dictionary containing attributes and values
         :type payload: dict
         """
+        payload = deepcopy(payload)
         actors_data = {
             actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
         }

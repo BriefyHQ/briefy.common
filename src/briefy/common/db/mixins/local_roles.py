@@ -32,21 +32,22 @@ def set_local_role(obj, values: list, role_name: str):
     """Set local role collection."""
     from briefy.common.db.models.local_role import LocalRole
 
-    current_users = set(getattr(obj, role_name))
+    current_users_list = getattr(obj, role_name)
+    current_users = set(current_users_list)
     updated_users = set(values)
     to_add = updated_users - current_users
     to_remove = current_users - updated_users
-    session = object_session(obj)
+    session = object_session(obj) or obj.__class__.__session__
 
     if session and to_remove:
         # delete
-        remove_roles = session.query(LocalRole).filter(
-            LocalRole.role_name == role_name,
-            LocalRole.principal_id.in_(to_remove),
-            LocalRole.item_id == obj.id
-        )
-        for lr in remove_roles:
+        to_remove_lr = [
+            lr for lr in obj.local_roles
+            if lr.principal_id in to_remove and lr.role_name == role_name
+        ]
+        for lr in to_remove_lr:
             logger.debug('Deleted: {0}'.format(lr))
+            obj.local_roles.remove(lr)
             session.delete(lr)
 
         session.flush()
@@ -98,7 +99,7 @@ class LocalRolesMixin:
             setattr(cls, actor, make_lr_attr(actor))
 
     @classmethod
-    def query(cls, principal_id=None) -> Query:
+    def query(cls, principal_id=None, permission='can_view') -> Query:
         """Return query object.
 
         :returns: A query object
@@ -106,14 +107,16 @@ class LocalRolesMixin:
         from briefy.common.db.models.local_role import LocalRole
 
         query = cls.__session__.query(cls)
+        permission_attr = getattr(cls, permission)
         if principal_id:
-            query.join(
-                LocalRole,
+            query = query.join(
+                LocalRole, LocalRole.item_id == sa.any_(cls.path)
+            ).filter(
                 sa.and_(
-                    LocalRole.item_id == sa.any_(cls.path),
-                    LocalRole.role_name == sa.any_(cls.can_view)
+                    LocalRole.principal_id == principal_id,
+                    LocalRole.role_name == sa.any_(permission_attr),
                 )
-            ).filter(LocalRole.principal_id == principal_id)
+            )
         return query
 
     can_view = sa.Column(ARRAY(sa.String()), default=[], nullable=False)
@@ -126,4 +129,6 @@ class LocalRolesMixin:
             'LocalRole',
             order_by='asc(LocalRole.created_at)',
             backref=sa.orm.backref('item'),
+            cascade='all, delete-orphan',
+            passive_deletes=True,
         )
