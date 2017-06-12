@@ -1,0 +1,8 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+    <!-- UserProfileQuery Utility -->
+    <utility factory="briefy.common.utilities.userprofile.get_user_profile_service"
+    provides="briefy.common.utilities.interfaces.IUserProfileQuery" />
+
+
+</configure>

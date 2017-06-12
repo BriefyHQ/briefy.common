@@ -2,6 +2,13 @@
 History
 =======
 
+2.1.0 (Unreleased)
+------------------
+    * New LocalRoleMixin implementation (rudaporto).
+    * New base Item model concrete implementation (and table) to be used as base class for all models with local roles (rudaporto).
+    * All models now have a 'create' method to be the factory inteface when creating new instances (rudaporto).
+    * New utility to resolve UserProfile info based on the user ID (rudaporto).
+
 2.0.2 (2017-05-18)
 ------------------
     * Allows our Enum items to be pickled (fix caching issues) (jsbueno).
