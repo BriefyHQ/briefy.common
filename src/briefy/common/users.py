@@ -11,6 +11,7 @@ SystemUser = BaseUser(
         'last_name': '',
         'email': 'app@briefy.co',
         'groups': ['g:system', ],
+        'title': 'Briefy'
     }
 )
 """A Hard-coded System User to be used by other Briefy systems."""

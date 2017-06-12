@@ -4,7 +4,9 @@
 class BaseUser:
     """User object with basic fields."""
 
-    _fields = ('locale', 'fullname', 'first_name', 'last_name', 'email', 'groups')
+    _fields = (
+        'locale', 'fullname', 'first_name', 'last_name', 'email', 'groups', 'title', 'internal'
+    )
 
     def __init__(self, user_id, data):
         """Initialize object from JWT token using pyramid jwt claims."""

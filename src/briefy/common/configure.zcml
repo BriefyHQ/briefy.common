@@ -6,5 +6,6 @@
     <include package=".queue" />
     <include package=".worker" />
     <include package=".workflow" />
+    <include package=".utilities" />
 
 </configure>
