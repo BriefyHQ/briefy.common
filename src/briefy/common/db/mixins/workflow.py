@@ -98,7 +98,7 @@ class Workflow(WorkflowBase):
         """Return a dictionary with fields and values used by this Class."""
         data = {}
         includes = kwargs.get('includes', [])
-        if 'state_history' in includes:
+        if includes and 'state_history' in includes:
             kwargs['includes'] = kwargs['includes'][:]
             kwargs['includes'].remove('state_history')
             data['state_history'] = self.state_history
