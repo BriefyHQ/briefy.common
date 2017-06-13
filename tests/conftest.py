@@ -1,7 +1,9 @@
 """Rests for briefy.common.queue.message."""
 from briefy.common.config import SQS_REGION
 from briefy.common.db import Base
-from briefy.common.db.models.roles import LocalRole
+from briefy.common.db.models import Item
+from briefy.common.db.models.local_role import LocalRole
+from briefy.common.db.models.roles import LocalRoleDeprecated
 from briefy.common.queue import IQueue
 from prettyconf import config
 from sqlalchemy import create_engine
@@ -34,6 +36,8 @@ def sql_engine(request):
                           default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
     engine = create_engine(database_url, echo=False)
     DBSession.configure(bind=engine)
+    LocalRoleDeprecated.__session__ = DBSession
+    Item.__session__ = DBSession
     LocalRole.__session__ = DBSession
     Base.metadata.create_all(engine)
 

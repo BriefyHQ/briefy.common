@@ -291,6 +291,15 @@ class Base(Security):
         for k, v in values.items():
             setattr(self, k, v)
 
+    @classmethod
+    def create(cls, payload) -> object:
+        """Factory that creates a new instance of this object.
+
+        :param payload: Dictionary containing attributes and values
+        :type payload: dict
+        """
+        return cls(**payload)
+
 
 Base = declarative_base(cls=Base)
 
