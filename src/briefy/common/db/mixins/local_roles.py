@@ -123,12 +123,13 @@ class LocalRolesMixin:
     """List of local roles that can view an item."""
 
     @declared_attr
-    def local_roles(self):
+    def local_roles(cls):
         """Local roles relationship."""
         return relationship(
             'LocalRole',
+            foreign_keys='LocalRole.item_id',
+            primaryjoin=f'LocalRole.item_id=={cls.__name__}.id',
             order_by='asc(LocalRole.created_at)',
-            backref=sa.orm.backref('item'),
             cascade='all, delete-orphan',
             passive_deletes=True,
         )
