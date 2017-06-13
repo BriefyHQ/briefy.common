@@ -47,7 +47,7 @@ class Item(LocalRolesMixin, Mixin, Base):
 
         parent_id = payload.pop('parent_id', None)
         obj_id = payload.setdefault('id', uuid.uuid4())
-        if issubclass(obj_id, str):
+        if isinstance(obj_id, str):
             obj_id = uuid.UUID(obj_id)
 
         if parent_id:
