@@ -96,6 +96,11 @@ class Workflow(WorkflowBase):
 
     def to_dict(self, *args, **kwargs) -> dict:
         """Return a dictionary with fields and values used by this Class."""
-        data = super().to_dict(*args, **kwargs)
-        data['state_history'] = self.state_history
+        data = {}
+        includes = kwargs.get('includes', [])
+        if 'state_history' in includes:
+            kwargs['includes'] = kwargs['includes'][:]
+            kwargs['includes'].remove('state_history')
+            data['state_history'] = self.state_history
+        data.update(super().to_dict(*args, **kwargs))
         return data
