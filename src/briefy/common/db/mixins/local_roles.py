@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.session import object_session
 
+import colander
 import sqlalchemy as sa
 
 
@@ -119,7 +120,18 @@ class LocalRolesMixin:
             )
         return query
 
-    can_view = sa.Column(ARRAY(sa.String()), default=[], nullable=False)
+    can_view = sa.Column(
+        ARRAY(sa.String()),
+        default=[],
+        nullable=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Can view list',
+                'missing': colander.drop,
+                'typ': colander.List
+            }
+        }
+    )
     """List of local roles that can view an item."""
 
     @declared_attr

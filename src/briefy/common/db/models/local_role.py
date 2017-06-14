@@ -4,6 +4,7 @@ from briefy.common.db.mixins import Timestamp
 from briefy.common.db.model import Base
 from sqlalchemy.dialects.postgresql import UUID
 
+import colander
 import sqlalchemy as sa
 
 
@@ -12,10 +13,31 @@ class LocalRole(Timestamp, Identifiable, Base):
 
     __tablename__ = 'localroles'
 
-    item_id = sa.Column(UUID(as_uuid=True), sa.ForeignKey('items.id'), nullable=False)
+    item_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('items.id'),
+        nullable=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Item UUID',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
     """ID of the item object (context)"""
 
-    principal_id = sa.Column(UUID(as_uuid=True), nullable=False)
+    principal_id = sa.Column(
+        UUID(as_uuid=True),
+        nullable=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Principal UUID',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
     """ID of the principal (user or group) which have the role in this context."""
 
     role_name = sa.Column(sa.String(255), nullable=False)

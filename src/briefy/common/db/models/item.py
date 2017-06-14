@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 
+import colander
 import sqlalchemy as sa
 import uuid
 
@@ -16,7 +17,17 @@ class Item(LocalRolesMixin, Mixin, Base):
 
     __tablename__ = 'items'
 
-    path = sa.Column(ARRAY(UUID(as_uuid=True)), nullable=False)
+    path = sa.Column(
+        ARRAY(UUID(as_uuid=True)),
+        nullable=False,
+        info={
+            'colanderalchemy': {
+                'title': 'Path',
+                'missing': colander.drop,
+                'typ': colander.List
+            }
+        }
+    )
     """List of all parent objects including itself."""
 
     type = sa.Column(sa.String(50))
