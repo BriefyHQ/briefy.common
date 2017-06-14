@@ -352,8 +352,6 @@ class TestLocalRoles:
         for payload in model_data:
             obj = model.create(payload)
             obj_id = obj.id
-            session.add(obj)
-            session.flush()
 
             assert isinstance(obj, Item)
 

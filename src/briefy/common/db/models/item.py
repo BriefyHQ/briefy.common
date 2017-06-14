@@ -60,6 +60,10 @@ class Item(LocalRolesMixin, Mixin, Base):
         payload['path'] = path
 
         obj = cls(**payload)
+        session = obj.__session__
+        session.add(obj)
+        session.flush()
+
         if actors_data:
             obj.update(actors_data)
 
