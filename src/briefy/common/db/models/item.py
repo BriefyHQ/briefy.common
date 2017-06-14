@@ -30,7 +30,16 @@ class Item(LocalRolesMixin, Mixin, Base):
     )
     """List of all parent objects including itself."""
 
-    type = sa.Column(sa.String(50))
+    type = sa.Column(
+        sa.String(50),
+        info={
+            'colanderalchemy': {
+                'title': 'type',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
     """Polymorphic type."""
 
     @declared_attr

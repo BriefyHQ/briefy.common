@@ -50,7 +50,7 @@ class Base(Security):
 
     __session__ = None
     __exclude_attributes__ = [
-        '_sa_instance_state', 'request', 'versions',
+        '_sa_instance_state', 'request', 'versions', 'path', 'can_view', 'type', 'local_roles'
     ]
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
