@@ -1,13 +1,13 @@
 """Test Workflow mix."""
 from briefy.common.db import Base
-from briefy.common.db.mixins import GUID
+from briefy.common.db.mixins import Identifiable
 from briefy.common.db.mixins import Workflow
 from conftest import DBSession
 
 import pytest
 
 
-class WorkflowExample(Workflow, GUID, Base):
+class WorkflowExample(Workflow, Identifiable, Base):
     """A Workflow example."""
 
     __tablename__ = 'wf_examples'
