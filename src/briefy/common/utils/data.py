@@ -257,6 +257,15 @@ class Objectify:
             return Objectify(dct, self._sentinel)
         return dct
 
+    def __eq__(self, other):
+        """Compare equivalence of embedded data structures.
+
+        Comparison also works against non-objectified Mapping or Sequences
+        """
+        if isinstance(other, Objectify):
+            other = other._dct
+        return self._dct == other
+
     def _traverse(self,
                   roots: list,
                   branch: str,

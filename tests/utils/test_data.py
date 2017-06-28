@@ -1,5 +1,6 @@
 """Tests for `briefy.common.utils.data` module."""
 from briefy.common.utils import data
+from copy import deepcopy
 
 import pytest
 
@@ -195,6 +196,7 @@ def test_objectify_containement_test_works_deep_index():
     assert 'a.b' in obj
     assert 'a.c' not in obj
 
+
 def test_objectify_iterate_over_values_by_default():
     obj = data.Objectify({'a': {'b': 42}})
     iterated=  list(obj)
@@ -217,3 +219,16 @@ def test_objectify__items():
     key, value = next(iter(obj._items()))
     assert key == 'a'
     assert value._dct == {'b': 42}
+
+
+def test_objectify_content_equals_other_objectify():
+    fixture = {'a': {'b': 42}}
+    obj1 = data.Objectify(fixture)
+    obj2 = data.Objectify(deepcopy(fixture))
+    assert obj1 == obj2
+
+
+def test_objectify_content_equals_equivalent_mapping():
+    fixture = {'a': {'b': 42}}
+    obj = data.Objectify(fixture)
+    assert obj == deepcopy(fixture)
