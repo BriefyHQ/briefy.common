@@ -2,11 +2,9 @@
 History
 =======
 
-2.1.0 (Unreleased)
+2.0.3 (2017-06-28)
 ------------------
-    * New LocalRoleMixin implementation (rudaporto).
-    * New base Item model concrete implementation (and table) to be used as base class for all models with local roles (rudaporto).
-    * All models now have a 'create' method to be the factory inteface when creating new instances (rudaporto).
+
     * New utility to resolve UserProfile info based on the user ID (rudaporto).
     * Serialize state_history only if explicitly set on to_dict includes parameter (ericof).
     * Enhancements to Objectify: "contains", equality, dottet attr retrieval and mapping interface (jsbueno).
