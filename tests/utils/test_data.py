@@ -194,3 +194,26 @@ def test_objectify_containement_test_works_deep_index():
     obj = data.Objectify({'a': {'b': 42}})
     assert 'a.b' in obj
     assert 'a.c' not in obj
+
+def test_objectify_iterate_over_values_by_default():
+    obj = data.Objectify({'a': {'b': 42}})
+    iterated=  list(obj)
+    assert len(iterated) == 1
+    assert iterated[0]._dct == {'b': 42}
+
+
+def test_objectify__keys():
+    obj = data.Objectify({'a': {'b': 42}})
+    assert list(obj._keys()) == ['a']
+
+
+def test_objectify__values():
+    obj = data.Objectify({'a': {'b': 42}})
+    assert next(iter(obj._values()))._dct == {'b': 42}
+
+
+def test_objectify__items():
+    obj = data.Objectify({'a': {'b': 42}})
+    key, value = next(iter(obj._items()))
+    assert key == 'a'
+    assert value._dct == {'b': 42}

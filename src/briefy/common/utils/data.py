@@ -178,25 +178,25 @@ class Objectify:
             return True
         return attr in self._dct
 
-    #def _keys(self):
-        #"""Iterate over the keys of underlying mapping.
+    def _keys(self):
+        """Iterate over the keys of underlying mapping.
 
-        #This is a public method, akim to Mapping.keys()
-        #Will throw an attribute error is underlying structure is a sequence.
-        #"""
-        #yield from self._dct.keys()
+        This is a public method, akim to Mapping.keys()
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        yield from self._dct.keys()
 
-    #_values = __iter__
-    #"""Mimic mapping .values call."""
+    _values = __iter__
+    """Mimic mapping .values call."""
 
-    #def _items(self):
-        #"""Yield all items in 'key, value' format.
+    def _items(self):
+        """Yield all items in 'key, value' format.
 
-        #Public function,
-        #Will throw an attribute error is underlying structure is a sequence.
-        #"""
-        #for item in zip(self._keys(), iter(self)):
-            #yield item
+        Public function,
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        for item in zip(self._keys(), iter(self)):
+            yield item
 
     def __dir__(self):
         """Dir: enables autocomplete."""
