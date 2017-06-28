@@ -175,9 +175,22 @@ def test_objectify_deep_path_index_get():
     obj = data.Objectify({'a': {'b': 42}})
     assert obj['a.b'] == 42
 
+
 def test_item_retrieval_works_with_default_value():
     obj = data.Objectify({'a': {'b': 42}})
     with pytest.raises(KeyError):
         assert obj['a.non_existent']
     obj._sentinel = 'fourty two'
     assert obj['a.non_existent'] == 'fourty two'
+
+
+def test_objectify_containement_test_works_shallow_index():
+    obj = data.Objectify({'a': {'b': 42}})
+    assert 'a' in obj
+    assert 'b' not in obj
+
+
+def test_objectify_containement_test_works_deep_index():
+    obj = data.Objectify({'a': {'b': 42}})
+    assert 'a.b' in obj
+    assert 'a.c' not in obj

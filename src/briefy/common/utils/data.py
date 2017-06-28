@@ -157,6 +157,10 @@ class Objectify:
     def __iter__(self):
         """Allow one to iterate over the members of this object.
 
+        Default iteration is by _values_ not keys - this is the feature
+        that allows recursive iteration of deep data structures. To iterate
+        over keys of an undelying mapping, use the `_keys()` method.
+
         Note that this by itself makes these objects  better than Javascript
         objects due to iterating over data members, and no need to check "hasOwnProperty".
 
@@ -164,6 +168,35 @@ class Objectify:
         items = self._dct if isinstance(self._dct, list) else self._dct.values()
         for item in items:
             yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
+
+    def __contains__(self, attr):
+        if isinstance (attr,str) and '.' in attr:
+            try:
+                self._get(attr, default=objectify_sentinel)
+            except AttributeError:
+                return False
+            return True
+        return attr in self._dct
+
+    #def _keys(self):
+        #"""Iterate over the keys of underlying mapping.
+
+        #This is a public method, akim to Mapping.keys()
+        #Will throw an attribute error is underlying structure is a sequence.
+        #"""
+        #yield from self._dct.keys()
+
+    #_values = __iter__
+    #"""Mimic mapping .values call."""
+
+    #def _items(self):
+        #"""Yield all items in 'key, value' format.
+
+        #Public function,
+        #Will throw an attribute error is underlying structure is a sequence.
+        #"""
+        #for item in zip(self._keys(), iter(self)):
+            #yield item
 
     def __dir__(self):
         """Dir: enables autocomplete."""
