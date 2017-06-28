@@ -3,6 +3,7 @@ from slugify import slugify
 from uuid import uuid4
 
 import inspect
+import typing as T
 
 
 def generate_uuid() -> str:
@@ -46,7 +47,6 @@ def generate_contextual_slug(context: dict) -> str:
         slug = slug_id if slug_id else slug_title
     return slug
 
-
 objectify_sentinel = object()
 
 
@@ -80,7 +80,7 @@ class Objectify:
 
     """
 
-    def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
+    def __init__(self, dct: T.Union[T.Mapping, T.Sequence], sentinel: T.Any=objectify_sentinel):
         """Initalizer.
 
         :param dct: Container JSON-Like object to be used.
@@ -112,7 +112,20 @@ class Objectify:
         If the retrieved value is itself a container, wrap it
         into an "Objectify" instance.
         """
-        result = self._dct.__getitem__(attr)
+        # Allow retrieving deep subcomponents if '.' is given on
+        # the attribute path:
+        if isinstance(attr, str) and '.' in attr:
+            try:
+                return self._get(attr, default=self._sentinel)
+            except AttributeError as error:
+                raise KeyError from error
+        try:
+            result = self._dct.__getitem__(attr)
+        # Allow default value behavior for index retrieval.
+        except (IndexError, KeyError):
+            result = self._sentinel
+            if result is objectify_sentinel:
+                raise
         if isinstance(result, (dict, list)):
             return Objectify(result, self._sentinel)
         return result
@@ -182,7 +195,7 @@ class Objectify:
         a "_".
 
         If "path" is omitted or 'None' the wrapped data strucure is returned
-        in "raw" form (i.e. as dict or list). Unless "objectify" is set,
+        in "raw" form (i.e. as the original Mapping or Sequence). Unless "objectify" is set,
         in that case, an empty path just returns the same object (self).
 
         :param path: path

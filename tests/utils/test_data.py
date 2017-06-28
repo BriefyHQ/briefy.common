@@ -169,3 +169,15 @@ def test_objectify_traversal():
     assert t.height == 480
     assert t.duration == '10s'
     assert t.exposure == '1s'
+
+
+def test_objectify_deep_path_index_get():
+    obj = data.Objectify({'a': {'b': 42}})
+    assert obj['a.b'] == 42
+
+def test_item_retrieval_works_with_default_value():
+    obj = data.Objectify({'a': {'b': 42}})
+    with pytest.raises(KeyError):
+        assert obj['a.non_existent']
+    obj._sentinel = 'fourty two'
+    assert obj['a.non_existent'] == 'fourty two'
