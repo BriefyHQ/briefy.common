@@ -47,6 +47,7 @@ def generate_contextual_slug(context: dict) -> str:
         slug = slug_id if slug_id else slug_title
     return slug
 
+
 objectify_sentinel = object()
 
 
@@ -170,7 +171,15 @@ class Objectify:
             yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
 
     def __contains__(self, attr):
-        if isinstance (attr,str) and '.' in attr:
+        """Verify if name exists in data structure.
+
+        Containment is tested agains underlying data structure -
+        meaning it cheks against keys for Mappigns and value for
+        sequences.
+
+        For dotted attributes, a full "_get" is attempted.
+        """
+        if isinstance(attr, str) and '.' in attr:
             try:
                 self._get(attr, default=objectify_sentinel)
             except AttributeError:
