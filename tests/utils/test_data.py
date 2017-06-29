@@ -220,7 +220,7 @@ def test_objectify_containement_test_works_deep_index():
 def test_objectify_iterate_over_values_by_default():
     """Test objectify iterate over values by default."""
     obj = data.Objectify({'a': {'b': 42}})
-    iterated=  list(obj)
+    iterated = list(obj)
     assert len(iterated) == 1
     assert iterated[0]._dct == {'b': 42}
 
