@@ -3,6 +3,7 @@ from slugify import slugify
 from uuid import uuid4
 
 import inspect
+import typing as T
 
 
 def generate_uuid() -> str:
@@ -80,7 +81,7 @@ class Objectify:
 
     """
 
-    def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
+    def __init__(self, dct: T.Union[T.Mapping, T.Sequence], sentinel: T.Any=objectify_sentinel):
         """Initalizer.
 
         :param dct: Container JSON-Like object to be used.
@@ -112,7 +113,20 @@ class Objectify:
         If the retrieved value is itself a container, wrap it
         into an "Objectify" instance.
         """
-        result = self._dct.__getitem__(attr)
+        # Allow retrieving deep subcomponents if '.' is given on
+        # the attribute path:
+        if isinstance(attr, str) and '.' in attr:
+            try:
+                return self._get(attr, default=self._sentinel)
+            except AttributeError as error:
+                raise KeyError from error
+        try:
+            result = self._dct.__getitem__(attr)
+        # Allow default value behavior for index retrieval.
+        except (IndexError, KeyError):
+            result = self._sentinel
+            if result is objectify_sentinel:
+                raise
         if isinstance(result, (dict, list)):
             return Objectify(result, self._sentinel)
         return result
@@ -144,6 +158,10 @@ class Objectify:
     def __iter__(self):
         """Allow one to iterate over the members of this object.
 
+        Default iteration is by _values_ not keys - this is the feature
+        that allows recursive iteration of deep data structures. To iterate
+        over keys of an undelying mapping, use the `_keys()` method.
+
         Note that this by itself makes these objects  better than Javascript
         objects due to iterating over data members, and no need to check "hasOwnProperty".
 
@@ -151,6 +169,43 @@ class Objectify:
         items = self._dct if isinstance(self._dct, list) else self._dct.values()
         for item in items:
             yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
+
+    def __contains__(self, attr):
+        """Verify if name exists in data structure.
+
+        Containment is tested agains underlying data structure -
+        meaning it cheks against keys for Mappigns and value for
+        sequences.
+
+        For dotted attributes, a full "_get" is attempted.
+        """
+        if isinstance(attr, str) and '.' in attr:
+            try:
+                self._get(attr, default=objectify_sentinel)
+            except AttributeError:
+                return False
+            return True
+        return attr in self._dct
+
+    def _keys(self):
+        """Iterate over the keys of underlying mapping.
+
+        This is a public method, akim to Mapping.keys()
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        yield from self._dct.keys()
+
+    _values = __iter__
+    """Mimic mapping .values call."""
+
+    def _items(self):
+        """Yield all items in 'key, value' format.
+
+        Public function,
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        for item in zip(self._keys(), iter(self)):
+            yield item
 
     def __dir__(self):
         """Dir: enables autocomplete."""
@@ -182,7 +237,7 @@ class Objectify:
         a "_".
 
         If "path" is omitted or 'None' the wrapped data strucure is returned
-        in "raw" form (i.e. as dict or list). Unless "objectify" is set,
+        in "raw" form (i.e. as the original Mapping or Sequence). Unless "objectify" is set,
         in that case, an empty path just returns the same object (self).
 
         :param path: path
@@ -210,6 +265,15 @@ class Objectify:
         if objectify and isinstance(dct, (dict, list)):
             return Objectify(dct, self._sentinel)
         return dct
+
+    def __eq__(self, other):
+        """Compare equivalence of embedded data structures.
+
+        Comparison also works against non-objectified Mapping or Sequences
+        """
+        if isinstance(other, Objectify):
+            other = other._dct
+        return self._dct == other
 
     def _traverse(self,
                   roots: list,

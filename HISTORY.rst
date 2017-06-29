@@ -7,6 +7,7 @@ History
 
     * New utility to resolve UserProfile info based on the user ID (rudaporto).
     * Serialize state_history only if explicitly set on to_dict includes parameter (ericof).
+    * Enhancements to Objectify: "contains", equality, dottet attr retrieval and mapping interface (jsbueno).
 
 2.0.2 (2017-05-18)
 ------------------

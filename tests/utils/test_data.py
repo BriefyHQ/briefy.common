@@ -1,5 +1,6 @@
 """Tests for `briefy.common.utils.data` module."""
 from briefy.common.utils import data
+from copy import deepcopy
 
 import pytest
 
@@ -41,17 +42,20 @@ def test_generate_contextual_slug(value, expected):
 
 
 def test_objectify_works_single_dict():
+    """Test objectify works single dict."""
     fixture = {'image': True}
     assert data.Objectify(fixture).image == fixture['image']
 
 
 def test_objectify_works_single_list():
+    """Test objectify works single list."""
     fixture = ['image']
     assert data.Objectify(fixture)._0 == 'image'
     assert data.Objectify(fixture)._dct == fixture
 
 
 def test_objectify_works_chainned_dict():
+    """Test objectify works chainned dict."""
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
     assert isinstance(obj.image, data.Objectify)
@@ -62,6 +66,7 @@ def test_objectify_works_chainned_dict():
 
 
 def test_objectify_iteration_works():
+    """Test objectify iteration works."""
     for fixture in ({'image0': 0, 'image1': 1, 'image2': 2}, [0, 1, 2]):
         contents = {0, 1, 2}
         for content in data.Objectify(fixture):
@@ -70,6 +75,7 @@ def test_objectify_iteration_works():
 
 
 def test_objectify_raise_attribute_error():
+    """Test objectify raise attribute error."""
     fixture = {'image': True}
     obj = data.Objectify(fixture)
     with pytest.raises(AttributeError):
@@ -77,6 +83,7 @@ def test_objectify_raise_attribute_error():
 
 
 def test_objectify_customize_missing_attribute_shallow():
+    """Test objectify customize missing attribute shallow."""
     fixture = {'image': True}
     obj = data.Objectify(fixture)
     obj._sentinel = None
@@ -84,6 +91,7 @@ def test_objectify_customize_missing_attribute_shallow():
 
 
 def test_objectify_customize_missing_attribute_deep():
+    """Test objectify customize missing attribute deep."""
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
     obj._sentinel = None
@@ -91,12 +99,14 @@ def test_objectify_customize_missing_attribute_deep():
 
 
 def test_objectify_dont_double_wrap():
+    """Test objectify dont double wrap."""
     fixture = {'image': True}
     obj1 = data.Objectify(fixture)
     assert data.Objectify(obj1)._dct == fixture
 
 
 def test_objectify_dir_works():
+    """Test objectify dir works."""
     fixture = {'image': True}
     obj1 = data.Objectify(fixture)
     assert dir(obj1) == sorted(['_dct', '_sentinel', 'image'])
@@ -105,17 +115,20 @@ def test_objectify_dir_works():
 
 
 def test_objectify_bool_works():
+    """Test objectify bool works."""
     fixture = {'image': True}
     assert data.Objectify(fixture)
     assert not data.Objectify({})
 
 
 def test_objectify_get_works():
+    """Test objectify get works."""
     fixture = {'image': True}
     assert data.Objectify(fixture)._get('image')
 
 
 def test_objectify_get_empty_returns_raw():
+    """Test objectify get empty returns raw."""
     fixture = {'image': True}
     # Empty get should return data structure by default, but allow
     # objectify parameter to be passed as True
@@ -125,12 +138,14 @@ def test_objectify_get_empty_returns_raw():
 
 
 def test_objectify_get_works_deep():
+    """Test objectify get works deep."""
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
     assert obj._get('image.dimensions._0') == 640
 
 
 def test_objectify_get_raises_attribute_error():
+    """Test objectify get raises attribute error."""
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
     with pytest.raises(AttributeError):
@@ -138,6 +153,7 @@ def test_objectify_get_raises_attribute_error():
 
 
 def test_objectify_get_works_with_default():
+    """Test objectify get works with default."""
     fixture = {'image': {'type': 'pictorial', 'dimensions': [640, 480]}}
     obj = data.Objectify(fixture)
     # Deep path failure
@@ -154,6 +170,7 @@ def test_objectify_get_works_with_default():
 
 
 def test_objectify_traversal():
+    """Test objectify traversal."""
     fixture = {
         'assignment': {
             'order': {'requirements': {'height': 480, 'exposure': '0.2s'}},
@@ -169,3 +186,75 @@ def test_objectify_traversal():
     assert t.height == 480
     assert t.duration == '10s'
     assert t.exposure == '1s'
+
+
+def test_objectify_deep_path_index_get():
+    """Test objectify deep path index get."""
+    obj = data.Objectify({'a': {'b': 42}})
+    assert obj['a.b'] == 42
+
+
+def test_item_retrieval_works_with_default_value():
+    """Test item retrieval works with default value."""
+    obj = data.Objectify({'a': {'b': 42}})
+    with pytest.raises(KeyError):
+        assert obj['a.non_existent']
+    obj._sentinel = 'fourty two'
+    assert obj['a.non_existent'] == 'fourty two'
+
+
+def test_objectify_containement_test_works_shallow_index():
+    """Test objectify containement test works shallow index."""
+    obj = data.Objectify({'a': {'b': 42}})
+    assert 'a' in obj
+    assert 'b' not in obj
+
+
+def test_objectify_containement_test_works_deep_index():
+    """Test objectify containement test works deep index."""
+    obj = data.Objectify({'a': {'b': 42}})
+    assert 'a.b' in obj
+    assert 'a.c' not in obj
+
+
+def test_objectify_iterate_over_values_by_default():
+    """Test objectify iterate over values by default."""
+    obj = data.Objectify({'a': {'b': 42}})
+    iterated = list(obj)
+    assert len(iterated) == 1
+    assert iterated[0]._dct == {'b': 42}
+
+
+def test_objectify__keys():
+    """Test objectify  keys."""
+    obj = data.Objectify({'a': {'b': 42}})
+    assert list(obj._keys()) == ['a']
+
+
+def test_objectify__values():
+    """Test objectify  values."""
+    obj = data.Objectify({'a': {'b': 42}})
+    assert next(iter(obj._values()))._dct == {'b': 42}
+
+
+def test_objectify__items():
+    """Test objectify  items."""
+    obj = data.Objectify({'a': {'b': 42}})
+    key, value = next(iter(obj._items()))
+    assert key == 'a'
+    assert value._dct == {'b': 42}
+
+
+def test_objectify_content_equals_other_objectify():
+    """Test objectify content equals other objectify."""
+    fixture = {'a': {'b': 42}}
+    obj1 = data.Objectify(fixture)
+    obj2 = data.Objectify(deepcopy(fixture))
+    assert obj1 == obj2
+
+
+def test_objectify_content_equals_equivalent_mapping():
+    """Test objectify content equals equivalent mapping."""
+    fixture = {'a': {'b': 42}}
+    obj = data.Objectify(fixture)
+    assert obj == deepcopy(fixture)
