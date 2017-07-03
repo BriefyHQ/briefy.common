@@ -19,4 +19,4 @@ def test_json_can_serialize_objectify():
     from briefy.common.utils.data import Objectify
     a = [Objectify({'b': 1})]
     b = json.dumps(a)
-    assert json.loads(b) == {'b': 1}
+    assert json.loads(b) == [{'b': 1}]
