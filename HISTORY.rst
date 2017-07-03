@@ -6,6 +6,7 @@ History
 ------------------
 
     * Enhancements to Objectify: "contains", equality, dottet attr retrieval and mapping interface (jsbueno).
+    * Adds monkey-patch override for JSON serialization (jsbueno).
 
 2.0.3 (2017-06-28)
 ------------------
