@@ -1,6 +1,6 @@
 """Tests if JSON serialization overriding is applied."""
+import briefy.common  # noQA
 import json
-import briefy.common
 
 
 def test_json_can_serialize_uuid():

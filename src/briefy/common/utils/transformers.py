@@ -66,7 +66,7 @@ def ts_labeled_enum(val: Enum) -> str:
 
 
 @to_serializable.register(Objectify)
-def ts_labeled_enum(val: Objectify) -> str:
+def ts_objectify(val: Objectify) -> str:
     """Serialize LabeledEnum instance to string."""
     return val._get()
 
