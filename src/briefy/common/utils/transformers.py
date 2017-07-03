@@ -1,4 +1,5 @@
 """Helpers to transform data."""
+from briefy.common.utils.data import Objectify
 from enum import Enum
 from functools import singledispatch
 from typing import Any
@@ -62,6 +63,12 @@ if HAS_SQLALCHEMY_UTILS:
 def ts_labeled_enum(val: Enum) -> str:
     """Serialize LabeledEnum instance to string."""
     return str(val.value)
+
+
+@to_serializable.register(Objectify)
+def ts_objectify(val: Objectify) -> str:
+    """Serialize LabeledEnum instance to string."""
+    return val._get()
 
 
 def json_dumps(obj: Any) -> str:
