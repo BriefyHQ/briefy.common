@@ -7,6 +7,9 @@ History
     * Change LocalRole model and LocalRoleMixin implementation (rudaporto).
     * Created Item model and table to be used as base class for all models that will have local role (rudaporto).
     * Make sure sqlalchemy_continuum is a dependency and that make_versioned function will be called before loading any model (rudaporto).
+    * New mixin VersionMixin moved from briefy.leica to common (rudaporto).
+    * Change Item model to use VersionMixin and BaseMetadata as base classes (rudaporto).
+
 
 2.0.4 (unreleased)
 ------------------

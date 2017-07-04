@@ -11,7 +11,9 @@ def init():
     from sqlalchemy_continuum import make_versioned
 
     json_override.init()
-    make_versioned()
+    # As our users are not in here, it is not easy to keep track
+    # of changes using this
+    make_versioned(user_cls=None)
 
 
 init()

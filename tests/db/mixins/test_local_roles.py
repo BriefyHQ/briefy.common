@@ -1,5 +1,4 @@
 """Test Item model and local roles attributes."""
-from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from conftest import DBSession
@@ -171,7 +170,7 @@ asset_data = [
 ]
 
 
-class Customer(SubItemMixin, BaseMetadata, Item):
+class Customer(SubItemMixin, Item):
     """Customer model."""
 
     __tablename__ = 'customers'
@@ -182,7 +181,7 @@ class Customer(SubItemMixin, BaseMetadata, Item):
     )
 
 
-class Project(SubItemMixin, BaseMetadata, Item):
+class Project(SubItemMixin, Item):
     """Project model."""
 
     __tablename__ = 'projects'
@@ -197,7 +196,7 @@ class Project(SubItemMixin, BaseMetadata, Item):
     )
 
 
-class Order(SubItemMixin, BaseMetadata, Item):
+class Order(SubItemMixin, Item):
     """Order model."""
 
     __tablename__ = 'orders'
@@ -208,7 +207,7 @@ class Order(SubItemMixin, BaseMetadata, Item):
     )
 
 
-class Assignment(SubItemMixin, BaseMetadata, Item):
+class Assignment(SubItemMixin, Item):
     """Assignment model."""
 
     __tablename__ = 'assignments'
@@ -221,7 +220,7 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
     )
 
 
-class Asset(SubItemMixin, BaseMetadata, Item):
+class Asset(SubItemMixin, Item):
     """Asset model."""
 
     __tablename__ = 'assets'

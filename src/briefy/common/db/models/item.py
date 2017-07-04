@@ -1,7 +1,9 @@
 """Item base model."""
 from briefy.common.db import Base
+from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import LocalRolesMixin
 from briefy.common.db.mixins import Mixin
+from briefy.common.db.mixins import VersionMixin
 from copy import deepcopy
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
@@ -12,16 +14,8 @@ import sqlalchemy as sa
 import uuid
 
 
-class Item(LocalRolesMixin, Mixin, Base):
+class Item(VersionMixin, BaseMetadata, LocalRolesMixin, Mixin, Base):
     """Model class to be used as base for all first level class models."""
-
-    __versioned__ = {
-        'exclude': ['state_history', '_state_history', ]
-    }
-    """SQLAlchemy Continuum settings.
-
-    By default we do not keep track of state_history.
-    """
 
     __tablename__ = 'items'
 

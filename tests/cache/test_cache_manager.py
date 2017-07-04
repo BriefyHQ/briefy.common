@@ -1,5 +1,4 @@
 """Test CacheManager utility."""
-from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from conftest import DBSession
@@ -25,7 +24,7 @@ CACHE_BACKENDS = {
 }
 
 
-class DummyCache(BaseMetadata, SubItemMixin, Item):
+class DummyCache(SubItemMixin, Item):
     """A content containing title, description and a slug."""
 
     __tablename__ = 'dummycaches'
