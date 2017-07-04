@@ -298,7 +298,10 @@ class Base(Security):
         :param payload: Dictionary containing attributes and values
         :type payload: dict
         """
-        return cls(**payload)
+        obj = cls(**payload)
+        session = obj.__session__
+        session.add(obj)
+        session.flush()
 
 
 Base = declarative_base(cls=Base)
