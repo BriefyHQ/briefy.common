@@ -302,6 +302,7 @@ class Base(Security):
         session = obj.__session__
         session.add(obj)
         session.flush()
+        return obj
 
 
 Base = declarative_base(cls=Base)
