@@ -15,6 +15,14 @@ import uuid
 class Item(LocalRolesMixin, Mixin, Base):
     """Model class to be used as base for all first level class models."""
 
+    __versioned__ = {
+        'exclude': ['state_history', '_state_history', ]
+    }
+    """SQLAlchemy Continuum settings.
+
+    By default we do not keep track of state_history.
+    """
+
     __tablename__ = 'items'
 
     path = sa.Column(

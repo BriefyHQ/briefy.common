@@ -42,6 +42,7 @@ requires_db = [
     'psycopg2',
     'redis',
     'sqlalchemy',
+    'sqlalchemy_continuum',
     'sqlalchemy-utils',
     'zope.sqlalchemy',
 ]
@@ -53,7 +54,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='2.0.3',
+    version='2.1.0',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
