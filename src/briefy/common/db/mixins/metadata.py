@@ -12,7 +12,7 @@ class BaseMetadata:
     These fields are used by most, if not all, content objects.
     """
 
-    title = sa.Column('title', sa.String(), index=True, nullable=False)
+    title = sa.Column('title', sa.String(), index=True, nullable=True)
     """Title for the object.
 
     This is the main display information for the object and it can have UI aliases for each usage

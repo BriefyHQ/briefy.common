@@ -9,6 +9,7 @@ History
     * Make sure sqlalchemy_continuum is a dependency and that make_versioned function will be called before loading any model (rudaporto).
     * New mixin VersionMixin moved from briefy.leica to common (rudaporto).
     * Change Item model to use VersionMixin and BaseMetadata as base classes (rudaporto).
+    * Allow BaseMetadata.title field to be null (rudaporto).
 
 
 2.0.4 (unreleased)
