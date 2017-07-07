@@ -143,5 +143,10 @@ class LocalRolesMixin:
             primaryjoin=f'LocalRole.item_id=={cls.__name__}.id',
             order_by='asc(LocalRole.created_at)',
             cascade='all, delete-orphan',
-            passive_deletes=True,
+            info={
+                'colanderalchemy': {
+                    'title': 'Local Roles',
+                    'missing': colander.drop,
+                }
+            }
         )

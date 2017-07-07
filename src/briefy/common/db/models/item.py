@@ -14,7 +14,7 @@ import sqlalchemy as sa
 import uuid
 
 
-class Item(VersionMixin, BaseMetadata, LocalRolesMixin, Mixin, Base):
+class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
     """Model class to be used as base for all first level class models."""
 
     __tablename__ = 'items'
@@ -80,7 +80,6 @@ class Item(VersionMixin, BaseMetadata, LocalRolesMixin, Mixin, Base):
 
         path.append(obj_id)
         payload['path'] = path
-
         obj = cls(**payload)
         session = obj.__session__
         session.add(obj)

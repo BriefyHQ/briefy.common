@@ -52,6 +52,7 @@ class BriefyWorkflow(Workflow):
         if hasattr(obj, 'request'):
             request = obj.request
         user = self.context
+
         # Fire event
         wf_transition_event = WorkflowTransitionEvent(
             self.document, request, transition, user
