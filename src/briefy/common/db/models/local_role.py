@@ -13,6 +13,16 @@ class LocalRole(Timestamp, Identifiable, Base):
 
     __tablename__ = 'localroles'
 
+    item_type = sa.Column(
+        sa.String(255),
+        index=True,
+        nullable=False
+    )
+    """Item type.
+
+    Name of the entity -- as in its class name.
+    """
+
     item_id = sa.Column(
         UUID(as_uuid=True),
         sa.ForeignKey('items.id'),

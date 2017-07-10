@@ -57,6 +57,7 @@ def set_local_role(obj, values: list, role_name: str):
         # add
         for principal_id in to_add:
             lr = LocalRole(
+                item_type=obj.__class__.__name__,
                 item_id=obj.id,
                 role_name=role_name,
                 principal_id=principal_id

@@ -11,6 +11,7 @@ History
     * Change Item model to use VersionMixin and BaseMetadata as base classes (rudaporto).
     * Allow BaseMetadata field to be null: title (rudaporto).
     * Change BaseMetadata to use use getter and setter to read and write attributes (rudaporto).
+    * Added new item_type string column to the new local roles table (rudaporto).
 
 
 2.0.4 (unreleased)
