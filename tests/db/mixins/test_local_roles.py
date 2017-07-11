@@ -2,8 +2,10 @@
 from briefy.common.db.mixins import SubItemMixin
 from briefy.common.db.models import Item
 from conftest import DBSession
+from sqlalchemy.dialects.postgresql import UUID
 
 import pytest
+import sqlalchemy as sa
 import uuid
 
 
@@ -67,7 +69,7 @@ customer_data = [
 
 project_data = [
     {
-        'parent_id': CUSTOMER_ID_01,
+        'customer_id': CUSTOMER_ID_01,
         'customer_pms': [CUSTOMER_PMS_01],
         'customer_qas': [CUSTOMER_QAS_01],
         'pms': [PMS_01],
@@ -80,7 +82,7 @@ project_data = [
         ]
     },
     {
-        'parent_id': CUSTOMER_ID_02,
+        'customer_id': CUSTOMER_ID_02,
         'customer_pms': [CUSTOMER_PMS_02],
         'customer_qas': [CUSTOMER_QAS_02],
         'pms': [PMS_02],
@@ -96,7 +98,7 @@ project_data = [
 
 order_data = [
     {
-        'parent_id': PROJECT_ID_01,
+        'project_id': PROJECT_ID_01,
         'customer_qa': [CUSTOMER_QA_01],
         'id': ORDER_ID_01,
         'title': 'Order 01',
@@ -106,7 +108,7 @@ order_data = [
         ]
     },
     {
-        'parent_id': PROJECT_ID_02,
+        'project_id': PROJECT_ID_02,
         'customer_qa': [CUSTOMER_QA_02],
         'id': ORDER_ID_02,
         'title': 'Order 02',
@@ -120,7 +122,7 @@ order_data = [
 
 assignment_data = [
     {
-        'parent_id': ORDER_ID_01,
+        'order_id': ORDER_ID_01,
         'professional_user': [PROFESSIONAL_USER_01],
         'qa_manager': [QA_MANAGER_01],
         'scout_manager': [SCOUT_MANAGER_01],
@@ -131,7 +133,7 @@ assignment_data = [
         ]
     },
     {
-        'parent_id': ORDER_ID_02,
+        'order_id': ORDER_ID_02,
         'professional_user': [PROFESSIONAL_USER_02],
         'qa_manager': [QA_MANAGER_02],
         'scout_manager': [SCOUT_MANAGER_02],
@@ -147,7 +149,7 @@ assignment_data = [
 
 asset_data = [
     {
-        'parent_id': ASSIGNMENT_ID_01,
+        'assignment_id': ASSIGNMENT_ID_01,
         'id': uuid.uuid4(),
         'title': 'Asset 01',
         'can_view': [
@@ -157,7 +159,7 @@ asset_data = [
         ]
     },
     {
-        'parent_id': ASSIGNMENT_ID_02,
+        'assignment_id': ASSIGNMENT_ID_02,
         'id': uuid.uuid4(),
         'title': 'Asset 02',
         'can_view': [
@@ -186,6 +188,7 @@ class Project(SubItemMixin, Item):
 
     __tablename__ = 'projects'
     __session__ = DBSession
+    __parent_attr__ = 'customer_id'
 
     __actors__ = (
         'customer_pms',
@@ -195,15 +198,28 @@ class Project(SubItemMixin, Item):
         'scouts',
     )
 
+    customer_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('customers.id'),
+        unique=True,
+    )
+
 
 class Order(SubItemMixin, Item):
     """Order model."""
 
     __tablename__ = 'orders'
     __session__ = DBSession
+    __parent_attr__ = 'project_id'
 
     __actors__ = (
         'customer_qa',
+    )
+
+    project_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('projects.id'),
+        unique=True,
     )
 
 
@@ -212,11 +228,18 @@ class Assignment(SubItemMixin, Item):
 
     __tablename__ = 'assignments'
     __session__ = DBSession
+    __parent_attr__ = 'order_id'
 
     __actors__ = (
         'qa_manager',
         'scout_manager',
         'professional_user'
+    )
+
+    order_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('orders.id'),
+        unique=True,
     )
 
 
@@ -225,6 +248,13 @@ class Asset(SubItemMixin, Item):
 
     __tablename__ = 'assets'
     __session__ = DBSession
+    __parent_attr__ = 'assignment_id'
+
+    assignment_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('assignments.id'),
+        unique=True,
+    )
 
 
 MODELS = {

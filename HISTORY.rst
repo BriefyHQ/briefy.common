@@ -12,6 +12,7 @@ History
     * Allow BaseMetadata field to be null: title (rudaporto).
     * Change BaseMetadata to use use getter and setter to read and write attributes (rudaporto).
     * Added new item_type string column to the new local roles table (rudaporto).
+    * Change create method of Base model class to look into the __parent_attr__ attribute to find the parent instance (rudaporto).
 
 
 2.0.4 (unreleased)

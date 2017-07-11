@@ -1,4 +1,5 @@
 """Rests for briefy.common.queue.message."""
+import briefy.common  # noQA make sure sqlalchemy_continuum is initialized first
 from briefy.common.config import SQS_REGION
 from briefy.common.db import Base
 from briefy.common.db.models import Item
@@ -16,7 +17,6 @@ from zope.configuration.xmlconfig import XMLConfig
 
 import boto3
 import botocore.endpoint
-import briefy.common
 import httmock
 import os
 import pytest

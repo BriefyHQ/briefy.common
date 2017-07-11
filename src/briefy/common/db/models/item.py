@@ -62,29 +62,34 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         :param payload: Dictionary containing attributes and values
         :type payload: dict
         """
+        # we are going to change the payload so we need to avoid side effects
         payload = deepcopy(payload)
         actors_data = {
             actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
         }
 
-        parent_id = payload.pop('parent_id', None)
         obj_id = payload.setdefault('id', uuid.uuid4())
         if isinstance(obj_id, str):
             obj_id = uuid.UUID(obj_id)
 
+        # look for a parent id get the parent instance
+        parent_attr = getattr(cls, '__parent_attr__', None)
+        parent_id = payload.get(parent_attr, None) if parent_attr else None
         if parent_id:
             parent = Item.get(parent_id)
             path = parent.path
         else:
             path = []
-
         path.append(obj_id)
         payload['path'] = path
+
+        # create and add to the session the new instance
         obj = cls(**payload)
         session = obj.__session__
         session.add(obj)
         session.flush()
 
+        # add local roles
         if actors_data:
             obj.update(actors_data)
 
