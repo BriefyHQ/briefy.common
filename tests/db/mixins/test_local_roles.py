@@ -405,6 +405,33 @@ class TestLocalRoles:
                 assert role_attr_value == old_roles
 
     @pytest.mark.parametrize('model_name', tuple(MODELS))
+    def test_set_local_roles_by_principal(self, model_name):
+        """Test update local roles by principal."""
+        from briefy.common.db.mixins.local_roles import set_local_roles_by_principal
+
+        data = MODELS[model_name]
+        model = data['model']
+        model_data = data['data']
+        roles = data['local_roles']
+
+        for payload in model_data:
+            obj = model.get(payload['id'])
+            for role_name in roles:
+                new_principal_id = uuid.uuid4()
+                current_principal_id = getattr(obj, role_name)[0]
+                assert new_principal_id not in getattr(obj, role_name)
+
+                # add role_name to the new_principal
+                set_local_roles_by_principal(obj, new_principal_id, [role_name])
+                assert new_principal_id in getattr(obj, role_name)
+                assert current_principal_id in getattr(obj, role_name)
+
+                # remove all roles from the new principal
+                set_local_roles_by_principal(obj, new_principal_id, [])
+                assert current_principal_id in getattr(obj, role_name)
+                assert new_principal_id not in getattr(obj, role_name)
+
+    @pytest.mark.parametrize('model_name', tuple(MODELS))
     def test_query_items_no_inheritance(self, model_name):
         """Query model items."""
         data = MODELS[model_name]
