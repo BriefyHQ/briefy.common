@@ -1,5 +1,6 @@
 """Test Item model and local roles attributes."""
 from briefy.common.db.mixins import SubItemMixin
+from briefy.common.db.mixins.local_roles import set_local_roles_by_role_name
 from briefy.common.db.models import Item
 from conftest import DBSession
 from sqlalchemy.dialects.postgresql import UUID
@@ -387,20 +388,12 @@ class TestLocalRoles:
             for role_name in roles:
                 old_roles = getattr(obj, role_name)
                 new_principal = uuid.uuid4()
-                setattr(obj, role_name, [new_principal])
-                session.flush()
-
+                set_local_roles_by_role_name(obj, role_name, [new_principal])
                 obj = model.get(obj_id)
                 role_attr_value = getattr(obj, role_name)
                 assert role_attr_value == [new_principal]
 
-                role_attr = getattr(model, role_name)
-                items = session.query(model).filter(
-                    role_attr.in_([new_principal])
-                ).all()
-                assert obj.id == items[0].id
-
-                setattr(obj, role_name, old_roles)
+                set_local_roles_by_role_name(obj, role_name, old_roles)
                 role_attr_value = getattr(obj, role_name)
                 assert role_attr_value == old_roles
 

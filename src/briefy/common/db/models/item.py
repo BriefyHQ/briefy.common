@@ -4,6 +4,7 @@ from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import LocalRolesMixin
 from briefy.common.db.mixins import Mixin
 from briefy.common.db.mixins import VersionMixin
+from briefy.common.db.mixins.local_roles import set_local_roles_by_role_name
 from copy import deepcopy
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID
@@ -92,11 +93,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         # add local roles
         if actors_data:
             for actor_name, actor_value in actors_data.items():
-                actor_attr = getattr(obj, actor_name)
-                actor_attr.extend(actor_value)
-            # obj.update(actors_data)
-
-        session.flush()
+                set_local_roles_by_role_name(obj, actor_name, actor_value)
 
         # TODO: fire object created event here?
         return obj
