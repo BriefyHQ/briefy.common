@@ -91,7 +91,12 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
 
         # add local roles
         if actors_data:
-            obj.update(actors_data)
+            for actor_name, actor_value in actors_data.items():
+                actor_attr = getattr(obj, actor_name)
+                actor_attr.extend(actor_value)
+            # obj.update(actors_data)
+
+        session.flush()
 
         # TODO: fire object created event here?
         return obj
