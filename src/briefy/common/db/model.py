@@ -49,6 +49,7 @@ class Base(Security):
     """Base Declarative model."""
 
     __parent_attr__ = None
+    __additional_can_view_lr__ = []
     __session__ = None
     __exclude_attributes__ = [
         '_sa_instance_state', 'request', 'versions', 'path', 'can_view', 'type', 'local_roles'

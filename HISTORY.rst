@@ -15,6 +15,9 @@ History
     * Change create method of Base model class to look into the __parent_attr__ attribute to find the parent instance (rudaporto).
     * Create new function to manage a list local roles by obj and principal_id (rudaporto).
     * Use correct InstrumentedList api do update local roles attrs when creating new instances (rudaporto).
+    * Added customized update method to Item class to deal with update of local role attributes (rudaporto).
+    * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
+    * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
 
 2.0.4 (unreleased)
 ------------------

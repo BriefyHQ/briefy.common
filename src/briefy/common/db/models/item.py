@@ -65,6 +65,11 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         """
         # we are going to change the payload so we need to avoid side effects
         payload = deepcopy(payload)
+        # add local roles can_view using payload, actors and special attribute from the class
+        can_view = payload.get('can_view', [])
+        payload['can_view'] = list(
+            set(can_view).union(set(cls.__actors__)).union(set(cls.__additional_can_view_lr__))
+        )
         actors_data = {
             actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
         }
@@ -90,13 +95,27 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         session.add(obj)
         session.flush()
 
-        # add local roles
+        # add local roles using update method
         if actors_data:
-            for actor_name, actor_value in actors_data.items():
-                set_local_roles_by_role_name(obj, actor_name, actor_value)
+            obj.update(actors_data)
 
         # TODO: fire object created event here?
         return obj
+
+    def update(self, values):
+        """Update the object with given values.
+
+        This implementation take care of update local role attributes.
+
+        :param values: Dictionary containing attributes and values
+        :type values: dict
+        """
+        actors = self.__class__.__actors__
+        for key, value in values.items():
+            if key not in actors:
+                setattr(self, key, value)
+            else:
+                set_local_roles_by_role_name(self, key, value)
 
     def __repr__(self) -> str:
         """Representation model Item."""

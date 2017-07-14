@@ -130,7 +130,7 @@ assignment_data = [
         'id': ASSIGNMENT_ID_01,
         'title': 'Assignment 01',
         'can_view': [
-            'qa_manager', 'scout_manager', 'professional_user',
+            'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts'
         ]
     },
     {
@@ -141,7 +141,7 @@ assignment_data = [
         'id': ASSIGNMENT_ID_02,
         'title': 'Assignment 02',
         'can_view': [
-            'qa_manager', 'scout_manager', 'professional_user',
+            'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts'
         ]
     },
 
@@ -178,6 +178,7 @@ class Customer(SubItemMixin, Item):
 
     __tablename__ = 'customers'
     __session__ = DBSession
+    __additional_can_view_lr__ = []
 
     __actors__ = (
         'customer_managers',
@@ -190,6 +191,7 @@ class Project(SubItemMixin, Item):
     __tablename__ = 'projects'
     __session__ = DBSession
     __parent_attr__ = 'customer_id'
+    __additional_can_view_lr__ = ['customer_managers']
 
     __actors__ = (
         'customer_pms',
@@ -212,6 +214,9 @@ class Order(SubItemMixin, Item):
     __tablename__ = 'orders'
     __session__ = DBSession
     __parent_attr__ = 'project_id'
+    __additional_can_view_lr__ = [
+        'customer_managers', 'customer_pms', 'customer_qas', 'pms', 'qas', 'scouts'
+    ]
 
     __actors__ = (
         'customer_qa',
@@ -230,6 +235,9 @@ class Assignment(SubItemMixin, Item):
     __tablename__ = 'assignments'
     __session__ = DBSession
     __parent_attr__ = 'order_id'
+    __additional_can_view_lr__ = [
+        'pms', 'qas', 'scouts',
+    ]
 
     __actors__ = (
         'qa_manager',
@@ -250,6 +258,10 @@ class Asset(SubItemMixin, Item):
     __tablename__ = 'assets'
     __session__ = DBSession
     __parent_attr__ = 'assignment_id'
+    __additional_can_view_lr__ = [
+        'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts',
+        'customer_qa', 'customer_managers', 'customer_qas', 'customer_pms'
+    ]
 
     assignment_id = sa.Column(
         UUID(as_uuid=True),
@@ -318,21 +330,21 @@ PERMISSIONS = {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'pms': {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'scouts': {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'customer_qa': {
