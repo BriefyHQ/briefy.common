@@ -67,9 +67,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         payload = deepcopy(payload)
         # add local roles can_view using payload, actors and special attribute from the class
         can_view = payload.get('can_view', [])
-        payload['can_view'] = list(
-            set(can_view).union(set(cls.__actors__)).union(set(cls.__additional_can_view_lr__))
-        )
+        payload['can_view'] = list(set(can_view).union(cls._default_can_view()))
         actors_data = {
             actor: payload.pop(actor) for actor in cls.__actors__ if actor in payload
         }

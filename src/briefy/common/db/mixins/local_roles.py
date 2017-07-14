@@ -139,6 +139,14 @@ class LocalRolesMixin:
             setattr(cls, actor, make_lr_attr(actor))
 
     @classmethod
+    def _default_can_view(cls) -> set:
+        """Generate the default can_view value.
+
+        :returns: A query object
+        """
+        return set(cls.__actors__).union(cls.__additional_can_view_lr__)
+
+    @classmethod
     def query(cls, principal_id=None, permission='can_view') -> Query:
         """Return query object.
 
