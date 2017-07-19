@@ -2,6 +2,23 @@
 History
 =======
 
+2.1.0 (unreleased)
+------------------
+    * Change LocalRole model and LocalRoleMixin implementation (rudaporto).
+    * Created Item model and table to be used as base class for all models that will have local role (rudaporto).
+    * Make sure sqlalchemy_continuum is a dependency and that make_versioned function will be called before loading any model (rudaporto).
+    * New mixin VersionMixin moved from briefy.leica to common (rudaporto).
+    * Change Item model to use VersionMixin and BaseMetadata as base classes (rudaporto).
+    * Allow BaseMetadata field to be null: title (rudaporto).
+    * Change BaseMetadata to use use getter and setter to read and write attributes (rudaporto).
+    * Added new item_type string column to the new local roles table (rudaporto).
+    * Change create method of Base model class to look into the __parent_attr__ attribute to find the parent instance (rudaporto).
+    * Create new function to manage a list local roles by obj and principal_id (rudaporto).
+    * Use correct InstrumentedList api do update local roles attrs when creating new instances (rudaporto).
+    * Added customized update method to Item class to deal with update of local role attributes (rudaporto).
+    * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
+    * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
+
 2.0.4 (unreleased)
 ------------------
 

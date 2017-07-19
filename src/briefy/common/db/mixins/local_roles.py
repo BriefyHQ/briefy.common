@@ -29,19 +29,18 @@ def principals_by_role(obj, role_name):
             if role.role_name == role_name]
 
 
-def set_local_role(obj, values: list, role_name: str):
-    """Set local role collection."""
+def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: list):
+    """Set local role collection: for one role set all users."""
     from briefy.common.db.models.local_role import LocalRole
 
     current_users_list = getattr(obj, role_name)
     current_users = set(current_users_list)
-    updated_users = set(values)
+    updated_users = set(principal_ids)
     to_add = updated_users - current_users
     to_remove = current_users - updated_users
     session = object_session(obj) or obj.__class__.__session__
 
     if session and to_remove:
-        # delete
         to_remove_lr = [
             lr for lr in obj.local_roles
             if lr.principal_id in to_remove and lr.role_name == role_name
@@ -54,9 +53,45 @@ def set_local_role(obj, values: list, role_name: str):
         session.flush()
 
     if session and to_add:
-        # add
         for principal_id in to_add:
             lr = LocalRole(
+                item_type=obj.__class__.__name__,
+                item_id=obj.id,
+                role_name=role_name,
+                principal_id=principal_id
+            )
+            session.add(lr)
+            obj.local_roles.append(lr)
+            logger.debug('Added: {0}'.format(lr))
+
+        session.flush()
+
+
+def set_local_roles_by_principal(obj: object, principal_id: str, role_names: list):
+    """Set local role collection: for one role set all users."""
+    from briefy.common.db.models.local_role import LocalRole
+    current_roles = {r.role_name for r in obj.local_roles if r.principal_id == principal_id}
+    new_roles = set(role_names)
+    to_add = new_roles - current_roles
+    to_remove = current_roles - new_roles
+    session = object_session(obj) or obj.__class__.__session__
+
+    if session and to_remove:
+        to_remove_lr = [
+            lr for lr in obj.local_roles
+            if lr.principal_id == principal_id and lr.role_name in to_remove
+        ]
+        for lr in to_remove_lr:
+            logger.debug('Deleted: {0}'.format(lr))
+            obj.local_roles.remove(lr)
+            session.delete(lr)
+
+        session.flush()
+
+    if session and to_add:
+        for role_name in to_add:
+            lr = LocalRole(
+                item_type=obj.__class__.__name__,
                 item_id=obj.id,
                 role_name=role_name,
                 principal_id=principal_id
@@ -76,7 +111,7 @@ def make_lr_attr(actor):
 
     def setter(self, values):
         """Update local role collection."""
-        set_local_role(self, values, role_name=actor)
+        set_local_roles_by_role_name(self, actor, values)
 
     def expression(cls):
         """Expression that return principal ids from database."""
@@ -98,6 +133,14 @@ class LocalRolesMixin:
         super().__init_subclass__(*args, **kwargs)
         for actor in cls.__actors__:
             setattr(cls, actor, make_lr_attr(actor))
+
+    @classmethod
+    def _default_can_view(cls) -> set:
+        """Generate the default can_view value.
+
+        :returns: set with a list of local role names
+        """
+        return set(cls.__actors__).union(cls.__additional_can_view_lr__)
 
     @classmethod
     def query(cls, principal_id=None, permission='can_view') -> Query:
@@ -143,5 +186,10 @@ class LocalRolesMixin:
             primaryjoin=f'LocalRole.item_id=={cls.__name__}.id',
             order_by='asc(LocalRole.created_at)',
             cascade='all, delete-orphan',
-            passive_deletes=True,
+            info={
+                'colanderalchemy': {
+                    'title': 'Local Roles',
+                    'missing': colander.drop,
+                }
+            }
         )

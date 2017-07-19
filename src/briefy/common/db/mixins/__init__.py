@@ -17,6 +17,7 @@ from briefy.common.db.mixins.person import NameMixin  # noQA
 from briefy.common.db.mixins.person import PersonalInfoMixin  # noQA
 from briefy.common.db.mixins.optin import OptIn  # noQA
 from briefy.common.db.mixins.timestamp import Timestamp
+from briefy.common.db.mixins.version import VersionMixin  # noQA
 from briefy.common.db.mixins.workflow import Workflow
 
 

@@ -1,10 +1,12 @@
 """Test Item model and local roles attributes."""
-from briefy.common.db.mixins import BaseMetadata
 from briefy.common.db.mixins import SubItemMixin
+from briefy.common.db.mixins.local_roles import set_local_roles_by_role_name
 from briefy.common.db.models import Item
 from conftest import DBSession
+from sqlalchemy.dialects.postgresql import UUID
 
 import pytest
+import sqlalchemy as sa
 import uuid
 
 
@@ -68,7 +70,7 @@ customer_data = [
 
 project_data = [
     {
-        'parent_id': CUSTOMER_ID_01,
+        'customer_id': CUSTOMER_ID_01,
         'customer_pms': [CUSTOMER_PMS_01],
         'customer_qas': [CUSTOMER_QAS_01],
         'pms': [PMS_01],
@@ -81,7 +83,7 @@ project_data = [
         ]
     },
     {
-        'parent_id': CUSTOMER_ID_02,
+        'customer_id': CUSTOMER_ID_02,
         'customer_pms': [CUSTOMER_PMS_02],
         'customer_qas': [CUSTOMER_QAS_02],
         'pms': [PMS_02],
@@ -97,7 +99,7 @@ project_data = [
 
 order_data = [
     {
-        'parent_id': PROJECT_ID_01,
+        'project_id': PROJECT_ID_01,
         'customer_qa': [CUSTOMER_QA_01],
         'id': ORDER_ID_01,
         'title': 'Order 01',
@@ -107,7 +109,7 @@ order_data = [
         ]
     },
     {
-        'parent_id': PROJECT_ID_02,
+        'project_id': PROJECT_ID_02,
         'customer_qa': [CUSTOMER_QA_02],
         'id': ORDER_ID_02,
         'title': 'Order 02',
@@ -121,25 +123,25 @@ order_data = [
 
 assignment_data = [
     {
-        'parent_id': ORDER_ID_01,
+        'order_id': ORDER_ID_01,
         'professional_user': [PROFESSIONAL_USER_01],
         'qa_manager': [QA_MANAGER_01],
         'scout_manager': [SCOUT_MANAGER_01],
         'id': ASSIGNMENT_ID_01,
         'title': 'Assignment 01',
         'can_view': [
-            'qa_manager', 'scout_manager', 'professional_user',
+            'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts'
         ]
     },
     {
-        'parent_id': ORDER_ID_02,
+        'order_id': ORDER_ID_02,
         'professional_user': [PROFESSIONAL_USER_02],
         'qa_manager': [QA_MANAGER_02],
         'scout_manager': [SCOUT_MANAGER_02],
         'id': ASSIGNMENT_ID_02,
         'title': 'Assignment 02',
         'can_view': [
-            'qa_manager', 'scout_manager', 'professional_user',
+            'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts'
         ]
     },
 
@@ -148,7 +150,7 @@ assignment_data = [
 
 asset_data = [
     {
-        'parent_id': ASSIGNMENT_ID_01,
+        'assignment_id': ASSIGNMENT_ID_01,
         'id': uuid.uuid4(),
         'title': 'Asset 01',
         'can_view': [
@@ -158,7 +160,7 @@ asset_data = [
         ]
     },
     {
-        'parent_id': ASSIGNMENT_ID_02,
+        'assignment_id': ASSIGNMENT_ID_02,
         'id': uuid.uuid4(),
         'title': 'Asset 02',
         'can_view': [
@@ -171,22 +173,25 @@ asset_data = [
 ]
 
 
-class Customer(SubItemMixin, BaseMetadata, Item):
+class Customer(SubItemMixin, Item):
     """Customer model."""
 
     __tablename__ = 'customers'
     __session__ = DBSession
+    __additional_can_view_lr__ = []
 
     __actors__ = (
         'customer_managers',
     )
 
 
-class Project(SubItemMixin, BaseMetadata, Item):
+class Project(SubItemMixin, Item):
     """Project model."""
 
     __tablename__ = 'projects'
     __session__ = DBSession
+    __parent_attr__ = 'customer_id'
+    __additional_can_view_lr__ = ['customer_managers']
 
     __actors__ = (
         'customer_pms',
@@ -196,23 +201,43 @@ class Project(SubItemMixin, BaseMetadata, Item):
         'scouts',
     )
 
+    customer_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('customers.id'),
+        unique=True,
+    )
 
-class Order(SubItemMixin, BaseMetadata, Item):
+
+class Order(SubItemMixin, Item):
     """Order model."""
 
     __tablename__ = 'orders'
     __session__ = DBSession
+    __parent_attr__ = 'project_id'
+    __additional_can_view_lr__ = [
+        'customer_managers', 'customer_pms', 'customer_qas', 'pms', 'qas', 'scouts'
+    ]
 
     __actors__ = (
         'customer_qa',
     )
 
+    project_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('projects.id'),
+        unique=True,
+    )
 
-class Assignment(SubItemMixin, BaseMetadata, Item):
+
+class Assignment(SubItemMixin, Item):
     """Assignment model."""
 
     __tablename__ = 'assignments'
     __session__ = DBSession
+    __parent_attr__ = 'order_id'
+    __additional_can_view_lr__ = [
+        'pms', 'qas', 'scouts',
+    ]
 
     __actors__ = (
         'qa_manager',
@@ -220,12 +245,29 @@ class Assignment(SubItemMixin, BaseMetadata, Item):
         'professional_user'
     )
 
+    order_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('orders.id'),
+        unique=True,
+    )
 
-class Asset(SubItemMixin, BaseMetadata, Item):
+
+class Asset(SubItemMixin, Item):
     """Asset model."""
 
     __tablename__ = 'assets'
     __session__ = DBSession
+    __parent_attr__ = 'assignment_id'
+    __additional_can_view_lr__ = [
+        'qa_manager', 'scout_manager', 'professional_user', 'pms', 'qas', 'scouts',
+        'customer_qa', 'customer_managers', 'customer_qas', 'customer_pms'
+    ]
+
+    assignment_id = sa.Column(
+        UUID(as_uuid=True),
+        sa.ForeignKey('assignments.id'),
+        unique=True,
+    )
 
 
 MODELS = {
@@ -288,21 +330,21 @@ PERMISSIONS = {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'pms': {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'scouts': {
         'customer': (Customer, customer_data, False, False),
         'project': (Project, project_data, True, False),
         'order': (Order, order_data, True, False),
-        'assignment': (Assignment, assignment_data, False, False),
+        'assignment': (Assignment, assignment_data, True, False),
         'asset': (Asset, asset_data, True, False)
     },
     'customer_qa': {
@@ -358,22 +400,41 @@ class TestLocalRoles:
             for role_name in roles:
                 old_roles = getattr(obj, role_name)
                 new_principal = uuid.uuid4()
-                setattr(obj, role_name, [new_principal])
-                session.flush()
-
+                set_local_roles_by_role_name(obj, role_name, [new_principal])
                 obj = model.get(obj_id)
                 role_attr_value = getattr(obj, role_name)
                 assert role_attr_value == [new_principal]
 
-                role_attr = getattr(model, role_name)
-                items = session.query(model).filter(
-                    role_attr.in_([new_principal])
-                ).all()
-                assert obj.id == items[0].id
-
-                setattr(obj, role_name, old_roles)
+                set_local_roles_by_role_name(obj, role_name, old_roles)
                 role_attr_value = getattr(obj, role_name)
                 assert role_attr_value == old_roles
+
+    @pytest.mark.parametrize('model_name', tuple(MODELS))
+    def test_set_local_roles_by_principal(self, model_name):
+        """Test update local roles by principal."""
+        from briefy.common.db.mixins.local_roles import set_local_roles_by_principal
+
+        data = MODELS[model_name]
+        model = data['model']
+        model_data = data['data']
+        roles = data['local_roles']
+
+        for payload in model_data:
+            obj = model.get(payload['id'])
+            for role_name in roles:
+                new_principal_id = uuid.uuid4()
+                current_principal_id = getattr(obj, role_name)[0]
+                assert new_principal_id not in getattr(obj, role_name)
+
+                # add role_name to the new_principal
+                set_local_roles_by_principal(obj, new_principal_id, [role_name])
+                assert new_principal_id in getattr(obj, role_name)
+                assert current_principal_id in getattr(obj, role_name)
+
+                # remove all roles from the new principal
+                set_local_roles_by_principal(obj, new_principal_id, [])
+                assert current_principal_id in getattr(obj, role_name)
+                assert new_principal_id not in getattr(obj, role_name)
 
     @pytest.mark.parametrize('model_name', tuple(MODELS))
     def test_query_items_no_inheritance(self, model_name):
