@@ -41,7 +41,6 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
     session = object_session(obj) or obj.__class__.__session__
 
     if session and to_remove:
-        # delete
         to_remove_lr = [
             lr for lr in obj.local_roles
             if lr.principal_id in to_remove and lr.role_name == role_name
@@ -54,7 +53,6 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
         session.flush()
 
     if session and to_add:
-        # add
         for principal_id in to_add:
             lr = LocalRole(
                 item_type=obj.__class__.__name__,
@@ -79,7 +77,6 @@ def set_local_roles_by_principal(obj: object, principal_id: str, role_names: lis
     session = object_session(obj) or obj.__class__.__session__
 
     if session and to_remove:
-        # delete
         to_remove_lr = [
             lr for lr in obj.local_roles
             if lr.principal_id == principal_id and lr.role_name in to_remove
@@ -92,7 +89,6 @@ def set_local_roles_by_principal(obj: object, principal_id: str, role_names: lis
         session.flush()
 
     if session and to_add:
-        # add
         for role_name in to_add:
             lr = LocalRole(
                 item_type=obj.__class__.__name__,
@@ -142,7 +138,7 @@ class LocalRolesMixin:
     def _default_can_view(cls) -> set:
         """Generate the default can_view value.
 
-        :returns: A query object
+        :returns: set with a list of local role names
         """
         return set(cls.__actors__).union(cls.__additional_can_view_lr__)
 
