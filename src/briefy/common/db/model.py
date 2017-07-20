@@ -2,6 +2,7 @@
 from briefy.common.log import logger
 from briefy.common.utils.transformers import json_dumps
 from briefy.common.utils.transformers import to_serializable
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.collections import InstrumentedList
@@ -117,8 +118,9 @@ class Base(Security):
         """
         excludes = excludes if excludes else []
         includes = includes if includes else []
-
-        all_attrs = list(self.__dict__.keys())
+        # use special inspect wrapper to list all attributes from the mapper class
+        mapper_wrapper = inspect(self)
+        all_attrs = [column.key for column in mapper_wrapper.attrs]
         for attr in includes:
             if attr not in all_attrs:
                 all_attrs.append(attr)
