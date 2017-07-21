@@ -2,6 +2,7 @@
 from briefy.common.log import logger
 from briefy.common.utils.transformers import json_dumps
 from briefy.common.utils.transformers import to_serializable
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.collections import InstrumentedList
@@ -52,9 +53,13 @@ class Base(Security):
     __additional_can_view_lr__ = []
     __raw_acl__ = ()
     __session__ = None
-    __exclude_attributes__ = [
-        '_sa_instance_state', 'request', 'versions', 'path', 'can_view', 'type', 'local_roles'
+    __default_exclude_attributes__ = [
+        '_sa_instance_state', 'request', 'versions', 'can_view_roles', 'can_list_roles',
+        'can_edit_roles', 'can_create_roles', 'can_delete_roles', 'local_roles',
+        'path', 'can_view', 'type'
+
     ]
+    __exclude_attributes__ = []
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
     __listing_attributes__ = []
@@ -88,6 +93,16 @@ class Base(Security):
         """
         return cls.__session__.query(cls).get(key)
 
+    @classmethod
+    def _exclude_attributes(cls) -> list:
+        """Compute the list of attributes to be exclude from any serialization.
+
+        :return: list of attributes to be excluded from serialization
+        """
+        default_set = set(cls.__default_exclude_attributes__)
+        subclass_set = set(cls.__exclude_attributes__)
+        return list(subclass_set.union(default_set))
+
     def _get_data(self, attrs) -> dict:
         """Ger a map of obj with all data from attrs.
 
@@ -120,8 +135,9 @@ class Base(Security):
         """
         excludes = excludes if excludes else []
         includes = includes if includes else []
-
-        all_attrs = list(self.__dict__.keys())
+        # use special inspect wrapper to list all attributes from the mapper class
+        mapper_wrapper = inspect(self)
+        all_attrs = [column.key for column in mapper_wrapper.attrs]
         for attr in includes:
             if attr not in all_attrs:
                 all_attrs.append(attr)
@@ -146,10 +162,8 @@ class Base(Security):
         # Add private attributes to exclusion list
         excludes.extend([key for key in attrs if key.startswith('_')])
 
-        # Add class level excluded attributes
-        excludes.extend(
-            list(self.__exclude_attributes__)
-        )
+        # use a method to compute the list of attributes to exclude
+        excludes.extend(self._exclude_attributes())
         return excludes
 
     def _to_dict(self, data: dict, attrs: list, excludes: list, required: list) -> dict:
