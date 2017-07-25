@@ -2,6 +2,11 @@
 History
 =======
 
+2.0.5 (2017-07-25)
+------------------
+
+    * Add a LoggingProxy class to make_region.configure to debug cache setting operations (rudaporto).
+
 2.0.4 (2017-07-20)
 ------------------
 
