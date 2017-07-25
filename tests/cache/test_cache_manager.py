@@ -59,7 +59,7 @@ class TestCacheManager:
         backend_klass = CACHE_BACKENDS.get(cache_manager._backend)
         cache_manager._create_region()
         region = cache_manager.region()
-        assert isinstance(region.backend, backend_klass) is True
+        assert isinstance(region.backend.proxied, backend_klass) is True
 
         content = dummy_cache_obj
         data = content.to_dict()

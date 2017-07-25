@@ -21,6 +21,14 @@ History
     * Change LocalRole.item_type to be class name lowercase (rudaporto).
     * Change workflow to user document.update method when updating valid_fields (rudaporto).
 
+2.0.6 (2017-07-25)
+------------------
+    * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
+
+2.0.5 (2017-07-25)
+------------------
+
+    * Add a LoggingProxy class to make_region.configure to debug cache setting operations (rudaporto).
 
 2.0.4 (2017-07-20)
 ------------------
