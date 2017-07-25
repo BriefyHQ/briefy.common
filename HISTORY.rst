@@ -2,6 +2,12 @@
 History
 =======
 
+distributed_lock
+
+2.0.6 (2017-07-25)
+------------------
+    * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
+
 2.0.5 (2017-07-25)
 ------------------
 
