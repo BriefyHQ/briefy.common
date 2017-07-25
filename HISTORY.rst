@@ -19,6 +19,10 @@ History
     * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
     * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
 
+2.0.6 (2017-07-25)
+------------------
+    * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
+
 2.0.5 (2017-07-25)
 ------------------
 

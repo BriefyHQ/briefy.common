@@ -17,7 +17,9 @@ BACKENDS_CONFIG = {
             'port': config.CACHE_PORT,
             'db': 0,
             'redis_expiration_time': config.CACHE_EXPIRATION_TIME,
-            'distributed_lock': True
+            'distributed_lock': False,
+            'socket_timeout': 30,
+
         },
     },
     'dogpile.cache.pylibmc': {
