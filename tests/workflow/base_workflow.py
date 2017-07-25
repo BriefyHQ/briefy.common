@@ -1,11 +1,15 @@
 """Base tests for briefy.common.workflow."""
-from briefy.common.db.mixins import Workflow as WorkflowMixin
+from briefy.common.db import Base
+from briefy.common.db.mixins import Mixin
 from briefy.common.workflow import permission as permission
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import Permission
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
 from datetime import datetime
+
+import sqlalchemy as sa
+import sqlalchemy_utils as sautils
 
 
 class LegacyCustomerWorkflow(BriefyWorkflow):
@@ -111,14 +115,14 @@ class CustomerWorkflow(BriefyWorkflow):
         self._retracted_ok = True
 
 
-class Customer(WorkflowMixin):
+class Customer(Mixin, Base):
     """A Customer for Briefy."""
+
+    __tablename__ = 'wfcustomer'
 
     state = ''
     state_history = None
     creator = None
-    created_at = None
-    updated_at = None
 
     _workflow = CustomerWorkflow
 
@@ -158,7 +162,17 @@ class Customer(WorkflowMixin):
 
 
 class LegacyCustomer(Customer):
+
+    __tablename__ = 'wflegacycustomer'
+
     _workflow_klass = LegacyCustomerWorkflow
+
+    parent_id = sa.Column(
+        sautils.UUIDType(),
+        sa.ForeignKey('wfcustomer.id'),
+        unique=True,
+        primary_key=True,
+    )
 
 
 class User:
