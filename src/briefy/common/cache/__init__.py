@@ -2,6 +2,7 @@
 from briefy.common import config
 from briefy.common.log import logger
 from dogpile.cache import make_region
+from dogpile.cache.proxy import ProxyBackend
 from threading import Thread
 from zope.component import getUtility
 from zope.interface import Attribute
@@ -70,6 +71,16 @@ def refresher(obj, *args, **kwargs):
     ))
 
 
+class LoggingProxy(ProxyBackend):
+    """Proxy to logging cache operations."""
+
+    def set(self, key, value):
+        """Proxy to debug when setting a cache value."""
+        logger.debug('Starting setting cache key: %s' % key)
+        self.proxied.set(key, value)
+        logger.debug('Finish setting cache key: %s' % key)
+
+
 @implementer(ICacheManager)
 class BaseCacheManager:
     """Base implementation of a cache manager Utility."""
@@ -106,6 +117,7 @@ class BaseCacheManager:
         """Create a new region instance."""
         backend = self._backend
         config = self._config = BACKENDS_CONFIG.get(backend)
+        config['wrap'] = [LoggingProxy]
         region = make_region(
             function_key_generator=self.key_generator
         ).configure(
