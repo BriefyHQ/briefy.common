@@ -14,7 +14,7 @@ BACKENDS_CONFIG = {
     'dogpile.cache.redis': {
         'arguments': {
             'host': config.CACHE_HOST,
-            'port': config.CACHE_PORT,
+            'port': config.CACHE_REDIS_PORT,
             'db': 0,
             'redis_expiration_time': config.CACHE_EXPIRATION_TIME,
             'distributed_lock': False,
@@ -24,7 +24,7 @@ BACKENDS_CONFIG = {
     },
     'dogpile.cache.pylibmc': {
         'arguments': {
-            'url': ['{0}:{1}'.format(config.CACHE_HOST, config.CACHE_PORT)],
+            'url': ['{0}:{1}'.format(config.CACHE_HOST, config.CACHE_MEMCACHED_PORT)],
             'binary': True,
             'behaviors': {'tcp_nodelay': True, 'ketama': True}
         },
@@ -32,6 +32,12 @@ BACKENDS_CONFIG = {
     },
     'dogpile.cache.memory': {
         'expiration_time': config.CACHE_EXPIRATION_TIME
+    },
+    'dogpile.cache.memcached': {
+        'expiration_time': config.CACHE_EXPIRATION_TIME,
+        'arguments': {
+            'url': ['{0}:{1}'.format(config.CACHE_HOST, config.CACHE_MEMCACHED_PORT)],
+        },
     }
 }
 
@@ -126,7 +132,7 @@ class BaseCacheManager:
             backend,
             **config
         )
-        logger.info('New dogpile.cache region created')
+        logger.info(f'New dogpile.cache region created. {backend}')
         self._region = region
 
     def region(self):

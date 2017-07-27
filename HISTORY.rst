@@ -2,7 +2,10 @@
 History
 =======
 
-distributed_lock
+2.0.7 (2017-07-27)
+------------------
+    * Added in setupy.py pylibmc and python-memcached as dependency (rudaporto).
+    * Improve configuration to distinguish REDIS and MEMCACHED port numbers (rudaporto).
 
 2.0.6 (2017-07-25)
 ------------------

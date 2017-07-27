@@ -3,6 +3,8 @@ from briefy.common.db import Base
 from briefy.common.db.mixins import BriefyRoles
 from briefy.common.db.mixins import Mixin
 from conftest import DBSession
+from dogpile.cache.backends.memcached import MemcachedBackend
+from dogpile.cache.backends.memcached import PylibmcBackend
 from dogpile.cache.backends.memory import MemoryBackend
 from dogpile.cache.backends.redis import RedisBackend
 
@@ -21,7 +23,9 @@ dummy_cache_data = {
 
 CACHE_BACKENDS = {
     'dogpile.cache.memory': MemoryBackend,
-    'dogpile.cache.redis': RedisBackend
+    'dogpile.cache.redis': RedisBackend,
+    'dogpile.cache.memcached': MemcachedBackend,
+    'dogpile.cache.pylibmc': PylibmcBackend
 }
 
 
@@ -56,7 +60,7 @@ class TestCacheManager:
     """Test CacheManager."""
 
     @pytest.mark.parametrize('enable_refresh', [True, False])
-    @pytest.mark.parametrize('backend', ['dogpile.cache.memory', 'dogpile.cache.redis'])
+    @pytest.mark.parametrize('backend', CACHE_BACKENDS.keys())
     def test_cache_backends_refresh(self, cache_manager, dummy_cache_obj):
         """Test cache manager memory backend configuration."""
         backend_klass = CACHE_BACKENDS.get(cache_manager._backend)
