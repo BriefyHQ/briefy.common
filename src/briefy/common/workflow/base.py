@@ -43,6 +43,7 @@ class WorkflowTransition:
         extra_states=(),
         require_message=False,
         required_fields=(),
+        optional_fields=(),
         **kw
     ):
         """Initialize this workflow transition."""
@@ -67,6 +68,7 @@ class WorkflowTransition:
         # without a message being provided
         self.require_message = require_message
         self.required_fields = required_fields
+        self.optional_fields = optional_fields
         if extra_states:
             self._previous_transition = WorkflowTransition(
                 extra_states[0],
@@ -79,6 +81,7 @@ class WorkflowTransition:
                 extra_states[1:],
                 require_message=require_message,
                 required_fields=required_fields,
+                optional_fields=optional_fields,
             )
 
     @property

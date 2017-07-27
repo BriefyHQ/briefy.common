@@ -2,11 +2,12 @@
 History
 =======
 
-distributed_lock
 
-2.0.6 (2017-07-25)
+2.0.6 (2017-07-27)
 ------------------
+
     * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
+    * Add optional_fields to workflow transitions (ericof).
 
 2.0.5 (2017-07-25)
 ------------------
