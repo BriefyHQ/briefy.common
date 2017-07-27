@@ -40,6 +40,8 @@ requires_db = [
     'dogpile.cache',
     'geoalchemy2',
     'psycopg2',
+    'pylibmc',
+    'python-memcached',
     'redis',
     'sqlalchemy',
     'sqlalchemy-utils',
@@ -53,7 +55,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='2.0.6',
+    version='2.0.8',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

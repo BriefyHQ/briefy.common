@@ -99,11 +99,13 @@ docs_server: docs
 
 stop_dockers: ## stop and remove docker containers
 	docker stop redis
+	docker stop memcached
 	docker stop sqs
 	docker stop briefy-common-test
 
 clean_dockers: stop_dockers ## remove docker containers
 	docker rm redis
+	docker rm memcached
 	docker rm sqs
 	docker rm briefy-common-test
 
@@ -113,12 +115,14 @@ export_db_env:
 
 start_dockers: export_db_env ## start docker containers
 	docker start redis
+	docker start memcached
 	docker start sqs
 	docker start briefy-common-test
 	sleep 5
 
 create_dockers: export_db_env ## create docker containers
 	docker run -d -p 127.0.0.1:6379:6379 --name redis redis
+	docker run -p 127.0.0.1:11211:11211 --name memcached -d memcached memcached -m 128
 	docker run -d -p 127.0.0.1:5000:5000 --name sqs briefy/aws-test:latest sqs
 	docker run -d -p 127.0.0.1:9999:5432 -e POSTGRES_PASSWORD=briefy -e POSTGRES_USER=briefy -e POSTGRES_DB=briefy-common --name briefy-common-test mdillon/postgis:9.5
 	sleep 5

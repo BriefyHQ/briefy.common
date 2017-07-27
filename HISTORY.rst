@@ -2,12 +2,21 @@
 History
 =======
 
+2.0.8 (2017-07-27)
+------------------
+
+    * Add optional_fields to workflow transitions (ericof).
+
+2.0.7 (2017-07-27)
+------------------
+
+    * Added in setupy.py pylibmc and python-memcached as dependency (rudaporto).
+    * Improve configuration to distinguish REDIS and MEMCACHED port numbers (rudaporto).
 
 2.0.6 (2017-07-27)
 ------------------
 
     * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
-    * Add optional_fields to workflow transitions (ericof).
 
 2.0.5 (2017-07-25)
 ------------------
