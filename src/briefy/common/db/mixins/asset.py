@@ -2,7 +2,7 @@
 from briefy.common.utils import imaging
 from collections.abc import Sequence
 from decimal import Decimal
-from sqlalchemy_utils import JSONType
+from sqlalchemy.dialects.postgresql import JSONB
 
 import logging
 import sqlalchemy as sa
@@ -53,7 +53,7 @@ class Asset:
     i.e.: 2048
     """
 
-    raw_metadata = sa.Column(JSONType)
+    raw_metadata = sa.Column(JSONB)
     """Raw metadata from the source file.
 
     Dictionary containing information extracted from file's metadata.

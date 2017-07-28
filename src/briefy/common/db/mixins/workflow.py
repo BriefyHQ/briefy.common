@@ -1,6 +1,6 @@
 """Workflow support for Briefy objects."""
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
-from sqlalchemy_utils import JSONType
 
 import colander
 import sqlalchemy as sa
@@ -69,7 +69,7 @@ class Workflow(WorkflowBase):
 
     _state_history = sa.Column(
         'state_history',
-        JSONType,
+        JSONB,
         info={
             'colanderalchemy': {
                 'title': 'State history',
