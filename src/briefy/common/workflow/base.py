@@ -3,6 +3,7 @@ from .exceptions import WorkflowPermissionException
 from .exceptions import WorkflowStateException
 from .exceptions import WorkflowTransitionException
 from briefy.common.db import datetime_utcnow
+from briefy.common.log import logger
 from briefy.common.utils.data import inject_call
 from collections import OrderedDict
 
@@ -137,12 +138,12 @@ class WorkflowTransition:
         """
         valid_fields = valid_fields if valid_fields else {}
         document = workflow.document
-        for key in valid_fields:
-            value = valid_fields[key]
-            try:
-                setattr(document, key, value)
-            except Exception as exc:
-                raise WorkflowTransitionException(str(exc))
+        try:
+            document.update(valid_fields)
+        except Exception as exc:
+            msg = f'Failure when trying to update {document}. Fields {valid_fields}'
+            logger.error(msg)
+            raise WorkflowTransitionException(str(exc))
         workflow._set_state(self.state_to().value)
         workflow._update_history(self.name,
                                  self.state_from().value,

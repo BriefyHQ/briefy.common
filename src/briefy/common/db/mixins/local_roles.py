@@ -55,7 +55,7 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
     if session and to_add:
         for principal_id in to_add:
             lr = LocalRole(
-                item_type=obj.__class__.__name__,
+                item_type=obj.__class__.__name__.lower(),
                 item_id=obj.id,
                 role_name=role_name,
                 principal_id=principal_id
@@ -89,10 +89,12 @@ def set_local_roles_by_principal(obj: object, principal_id: str, role_names: lis
         session.flush()
 
     if session and to_add:
+        item_id = obj.id
+        item_type = obj.__class__.__name__.lower()
         for role_name in to_add:
             lr = LocalRole(
-                item_type=obj.__class__.__name__,
-                item_id=obj.id,
+                item_type=item_type,
+                item_id=item_id,
                 role_name=role_name,
                 principal_id=principal_id
             )

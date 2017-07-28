@@ -18,6 +18,8 @@ History
     * Added customized update method to Item class to deal with update of local role attributes (rudaporto).
     * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
     * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
+    * Change LocalRole.item_type to be class name lowercase (rudaporto).
+    * Change workflow to user document.update method when updating valid_fields (rudaporto).
 
 2.0.9 (2017-07-28)
 ------------------
