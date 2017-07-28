@@ -19,8 +19,25 @@ History
     * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
     * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
 
-2.0.6 (2017-07-25)
+2.0.9 (2017-07-28)
 ------------------
+
+    * Pin package iso8601 to version 0.1.11 (rudaporto).
+
+2.0.8 (2017-07-27)
+------------------
+
+    * Add optional_fields to workflow transitions (ericof).
+
+2.0.7 (2017-07-27)
+------------------
+
+    * Added in setupy.py pylibmc and python-memcached as dependency (rudaporto).
+    * Improve configuration to distinguish REDIS and MEMCACHED port numbers (rudaporto).
+
+2.0.6 (2017-07-27)
+------------------
+
     * Redis cache settings: socket_timeout=15, distributed_lock=False (rudaporto).
 
 2.0.5 (2017-07-25)
