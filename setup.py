@@ -40,6 +40,8 @@ requires_db = [
     'dogpile.cache',
     'geoalchemy2',
     'psycopg2',
+    'pylibmc',
+    'python-memcached',
     'redis',
     'sqlalchemy',
     'sqlalchemy_continuum',
