@@ -23,7 +23,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
     path = sa.Column(
         ARRAY(UUID(as_uuid=True)),
         nullable=False,
-        index=True
+        index=True,
         info={
             'colanderalchemy': {
                 'title': 'Path',
