@@ -162,7 +162,7 @@ class LocalRolesMixin:
                     LocalRole.principal_id == principal_id,
                     LocalRole.role_name == sa.any_(permission_attr),
                 )
-            )
+            ).distinct()
         return query
 
     can_view = sa.Column(

@@ -1,6 +1,7 @@
 """Address mixin."""
 from briefy.common.db.types.geo import POINT
 from briefy.common.utils import schema
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
@@ -46,8 +47,12 @@ class Address:
     """
 
     info = sa.Column(
-        sautils.JSONType,
-        info={'colanderalchemy': {'typ': schema.JSONType}}
+        JSONB,
+        info={
+            'colanderalchemy': {
+                'typ': schema.JSONType
+            }
+        }
     )
     """Structure containing address information.
 
