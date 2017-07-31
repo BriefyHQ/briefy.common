@@ -64,7 +64,10 @@ class WorkflowBase:
 class Workflow(WorkflowBase):
     """A mixin providing workflow information, SQLAlchemy aware."""
 
-    state = sa.Column(sa.String(100))
+    state = sa.Column(
+        sa.String(100),
+        index=True,
+    )
     """Workflow state id."""
 
     _state_history = sa.Column(
