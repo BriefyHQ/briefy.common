@@ -1,13 +1,14 @@
 """Common database classes and helpers for Briefy."""
 from datetime import datetime
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from .model import Base  # noqa
 
 import pytz
 import sqlalchemy
 
 
-def get_db(request):
+def get_db(request) -> Session:
     """Return a valid DB session for the request."""
     return request.registry['db_session_factory']()
 

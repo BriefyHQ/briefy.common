@@ -48,7 +48,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
     """Polymorphic type."""
 
     @declared_attr
-    def __mapper_args__(cls):
+    def __mapper_args__(cls) -> dict:
         """Return polymorphic identity."""
         cls_name = cls.__name__.lower()
         args = {
@@ -59,7 +59,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         return args
 
     @classmethod
-    def create(cls, payload) -> object:
+    def create(cls, payload: dict) -> 'Item':
         """Factory that creates a new instance of this object.
 
         :param payload: Dictionary containing attributes and values
@@ -80,12 +80,11 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
 
         # look for a parent id get the parent instance
         parent_attr = getattr(cls, '__parent_attr__', None)
+        path = []
         parent_id = payload.get(parent_attr, None) if parent_attr else None
         if parent_id:
             parent = Item.get(parent_id)
             path = parent.path
-        else:
-            path = []
         path.append(obj_id)
         payload['path'] = path
 
@@ -102,7 +101,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         # TODO: fire object created event here?
         return obj
 
-    def update(self, values):
+    def update(self, values: dict):
         """Update the object with given values.
 
         This implementation take care of update local role attributes.
