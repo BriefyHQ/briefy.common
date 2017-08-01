@@ -1,5 +1,5 @@
-briefy.common.queue package
-===========================
+briefy\.common\.queue package
+=============================
 
 Subpackages
 -----------
@@ -11,8 +11,8 @@ Subpackages
 Submodules
 ----------
 
-briefy.common.queue.event module
---------------------------------
+briefy\.common\.queue\.event module
+-----------------------------------
 
 .. automodule:: briefy.common.queue.event
     :members:

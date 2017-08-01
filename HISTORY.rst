@@ -21,6 +21,7 @@ History
     * Change LocalRole.item_type to be class name lowercase (rudaporto).
     * Change workflow to user document.update method when updating valid_fields (rudaporto).
     * Added indexes to wokflow mixin (state) and items model (type and path) (rudaporto).
+    * Upgrade depencie packages (rudaporto).
 
 2.0.9 (2017-07-28)
 ------------------
