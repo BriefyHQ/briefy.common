@@ -22,6 +22,7 @@ History
     * Change workflow to user document.update method when updating valid_fields (rudaporto).
     * Added indexes to wokflow mixin (state) and items model (type and path) (rudaporto).
     * Upgrade depencie packages (rudaporto).
+    * Increase usage of type hints (ericof).
 
 2.0.9 (2017-07-28)
 ------------------

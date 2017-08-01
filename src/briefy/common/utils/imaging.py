@@ -68,7 +68,7 @@ def _generate_thumbor_url(
         unsafe=unsafe,
         fit_in=fit_in
     )
-    return '{base_url}{url}'.format(base_url=prefix, url=url)
+    return f'{prefix}{url}'
 
 
 def generate_metadata_url(
@@ -143,7 +143,7 @@ def get_metadata_from_thumbor(source_path: str) -> dict:
     try:
         response = requests.get(url, timeout=timeout)
     except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-        logger.info('Connection issues updating metadata from {url}'.format(url=url))
+        logger.info(f'Connection issues updating metadata from {url}')
         return metadata
 
     if response.status_code == 200:
@@ -169,7 +169,7 @@ def process_metadata(raw_metadata: dict, width: int, height: int, size: int) -> 
     if width and height:
         ratio = str(Fraction(width, height))
     metadata = {
-        'dimensions': '{w} x {h}'.format(w=width, h=height),
+        'dimensions': f'{width} x {height}',
         'ratio': ratio,
         'size': size,
         'dpi': _get_dpi(raw_metadata),
@@ -207,9 +207,9 @@ def _get_dpi(raw_metadata: dict) -> str:
         resolution_x = resolution_y = default
 
     if resolution_x == resolution_y:
-        value = '{res}'.format(res=resolution_x)
+        value = f'{resolution_x}'
     else:
-        value = '{x} / {y}'.format(x=resolution_x, y=resolution_y)
+        value = f'{resolution_x} / {resolution_y}'
     return value
 
 

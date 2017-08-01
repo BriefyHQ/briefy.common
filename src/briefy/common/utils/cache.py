@@ -4,6 +4,7 @@ from functools import wraps
 
 import logging
 import time
+import typing as t
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def _make_cache_key(*args, **kw):
     return key
 
 
-def timeout_cache(timeout: float, renew: bool=False):
+def timeout_cache(timeout: float, renew: bool=False) -> t.Callable:
     """Decorate a function so that it is naively cached when called with the same parameters again.
 
     Similar to functools.lru_cache, but cache contents expire
@@ -41,7 +42,7 @@ def timeout_cache(timeout: float, renew: bool=False):
                   timeout count for that parameter set
     :rtype: decorated callable
     """
-    def decorator(func):
+    def decorator(func: t.Callable):
         cache = {}
 
         @wraps(func)
