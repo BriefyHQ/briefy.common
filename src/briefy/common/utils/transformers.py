@@ -2,11 +2,11 @@
 from briefy.common.utils.data import Objectify
 from enum import Enum
 from functools import singledispatch
-from typing import Any
 
 import colander
 import datetime
 import json
+import typing as t
 
 
 HAS_SQLALCHEMY_UTILS = True
@@ -18,7 +18,7 @@ except ImportError:
 
 
 @singledispatch
-def to_serializable(val) -> str:
+def to_serializable(val: t.Any) -> str:
     """Used by default."""
     return str(val)
 
@@ -71,6 +71,6 @@ def ts_objectify(val: Objectify) -> str:
     return val._get()
 
 
-def json_dumps(obj: Any) -> str:
+def json_dumps(obj: t.Any) -> str:
     """Transform an obj to a JSON representation."""
     return json.dumps(obj, default=to_serializable)

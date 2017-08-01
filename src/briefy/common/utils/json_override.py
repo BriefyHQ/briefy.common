@@ -9,16 +9,17 @@ to be used in SQLAlchemy, or used by default
 in other parts of the code.
 
 """
-
 from briefy.common.utils.transformers import to_serializable
 from functools import wraps
 from json.encoder import JSONEncoder
 
+import typing as t
 
-def new_default(func):
+
+def new_default(func: t.Callable):
     """Decorator to explicitly override json.encoder.JSONEncoder.default method."""
     @wraps(func)
-    def wrapper(self, value):
+    def wrapper(self, value: t.Any):
         try:
             return to_serializable(value)
         except TypeError:

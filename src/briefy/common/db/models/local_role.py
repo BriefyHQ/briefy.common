@@ -55,7 +55,7 @@ class LocalRole(Timestamp, Identifiable, Base):
     role_name = sa.Column(sa.String(255), nullable=False, index=True)
     """Name of the role the permission granted."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation of a LocalRole."""
         return 'LocalRole(item_id={0}, principal_id={1}, role_name={2})'.format(
             self.item_id,
