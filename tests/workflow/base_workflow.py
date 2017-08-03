@@ -18,6 +18,7 @@ class LegacyCustomerWorkflow(BriefyWorkflow):
     # Optional name for this workflow
     entity = 'customer'
     initial_state = 'created'
+    initial_transition = 'create'
 
     created = WorkflowState('created', title='Created', description='Customer created')
     pending = WorkflowState('pending', title='Pending', description='Customer waiting for approval')
@@ -78,7 +79,7 @@ class CustomerWorkflow(BriefyWorkflow):
     def can_submit(self):
         if not self.context or not self.document:
             return False
-        return self.document.creator == self.context.user_id
+        return self.document.creator == self.context.id
 
     @permission
     def review(self):

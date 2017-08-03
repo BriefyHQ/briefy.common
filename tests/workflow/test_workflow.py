@@ -44,7 +44,7 @@ class TestWorkflow:
         assert len(history) == 1
         assert history[0]['from'] == ''
         assert history[0]['to'] == 'created'
-        assert history[0]['transition'] == ''
+        assert history[0]['transition'] == 'create'
         assert datetime.strptime(history[0]['date'][:19], '%Y-%m-%dT%H:%M:%S')
 
     def test_workflow_state_repr_works(self):
@@ -57,8 +57,7 @@ class TestWorkflow:
         customer = Customer('12345')
         customer.state = 'foobar'
         with pytest.raises(workflow.WorkflowStateException) as excinfo:
-            wf = customer.workflow
-            wf.state
+            _ = customer.workflow.state  # noQA
         assert 'Unknown state' in str(excinfo.value)
 
     def test_state_key_not_found(self):

@@ -8,6 +8,8 @@ class BaseUser:
         'locale', 'fullname', 'first_name', 'last_name', 'email', 'groups', 'title', 'internal'
     )
 
+    groups = ()
+
     def __init__(self, user_id, data):
         """Initialize object from JWT token using pyramid jwt claims."""
         if not user_id:
