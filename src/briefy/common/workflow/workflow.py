@@ -258,6 +258,25 @@ class Workflow(metaclass=WorkflowMeta):
         key = self.state_key
         self._safe_set(document, key, value, False)
 
+    def _process_history(self, history: t.List[dict]) -> t.List[dict]:
+        """Process workflow history.
+
+        This method exists to clean up workflow history before it is persisted on the
+        document attribute.
+        """
+        cleansed = []
+        for entry in history:
+            actor = entry['actor']
+            if isinstance(actor, dict):
+                actor = actor.get('id', '')
+            if isinstance(actor, BaseUser) or hasattr(actor, 'id'):
+                actor = actor.id
+            if isinstance(actor, uuid.UUID):
+                actor = str(actor)
+            entry['actor'] = actor
+            cleansed.append(entry)
+        return cleansed
+
     def _update_history(
             self,
             transition: str,
@@ -282,6 +301,7 @@ class Workflow(metaclass=WorkflowMeta):
             'message': message
         }
         history.append(entry)
+        history = self._process_history(history)
         self._safe_set(document, key, history, False)
 
     @property
