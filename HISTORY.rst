@@ -25,6 +25,8 @@ History
     * Upgrade depencie packages (rudaporto).
     * Increase usage of type hints (ericof).
     * Card #514: Refactor workflow package and make sure history is valid before persisting it (ericof).
+    * Move ValidationError from briefy.ws to briefy.common.exceptions (ericof).
+    * Card #504: Add Phone number validation to mobile and additional_phone attributes on ContactInfoMixin (ericof).
 
 
 2.0.9 (2017-07-28)
