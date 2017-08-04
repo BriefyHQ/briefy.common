@@ -1,9 +1,36 @@
 """Workflow support for Briefy objects."""
+from sqlalchemy import orm
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
 import colander
 import sqlalchemy as sa
+import typing as t
+
+
+def rename_from(node, kw):
+    """Rename from_ node attribute to from."""
+    if 'from_' in node:
+        from_ = node['from_']
+        node['from'] = from_
+        del node['from_']
+
+
+class HistoryEntry(colander.MappingSchema):
+    """A transition in the workflow history."""
+
+    from_ = colander.SchemaNode(colander.String(), missing='')
+    to = colander.SchemaNode(colander.String())
+    date = colander.SchemaNode(colander.DateTime(), missing='')
+    transition = colander.SchemaNode(colander.String())
+    actor = colander.SchemaNode(colander.String(), validator=colander.uuid, missing='')
+    message = colander.SchemaNode(colander.String(), missing='')
+
+
+class HistorySchema(colander.SequenceSchema):
+    """Collection of charges for an Order."""
+
+    history = HistoryEntry(after_bind=rename_from)
 
 
 class WorkflowBase:
@@ -96,6 +123,23 @@ class Workflow(WorkflowBase):
         """State history property setter."""
         self._state_history = value
         flag_modified(self, '_state_history')
+
+    @orm.validates('_state_history')
+    def validate_state_history(self, key: str, value: t.Sequence[dict]) -> t.Sequence[dict]:
+        """Validate if state_history payload is in the correct format.
+
+        :param key: Attribute name.
+        :param value: Additional charges payload.
+        :return: Validated payload
+        """
+        if value:
+            schema = HistorySchema()
+            try:
+                schema.deserialize(value)
+            except colander.Invalid as e:
+                raise ValueError('Invalid value for state_history')
+
+        return value
 
     def to_dict(self, *args, **kwargs) -> dict:
         """Return a dictionary with fields and values used by this Class."""

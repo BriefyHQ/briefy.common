@@ -4,6 +4,7 @@ History
 
 2.1.0 (unreleased)
 ------------------
+
     * Change LocalRole model and LocalRoleMixin implementation (rudaporto).
     * Created Item model and table to be used as base class for all models that will have local role (rudaporto).
     * Make sure sqlalchemy_continuum is a dependency and that make_versioned function will be called before loading any model (rudaporto).
@@ -23,6 +24,8 @@ History
     * Added indexes to wokflow mixin (state) and items model (type and path) (rudaporto).
     * Upgrade depencie packages (rudaporto).
     * Increase usage of type hints (ericof).
+    * Card #514: Refactor workflow package and make sure history is valid before persisting it (ericof).
+
 
 2.0.9 (2017-07-28)
 ------------------
