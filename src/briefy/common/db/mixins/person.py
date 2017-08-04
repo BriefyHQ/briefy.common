@@ -1,4 +1,6 @@
 """Personal information mixin."""
+from briefy.common.exceptions import ValidationError
+from briefy.common.utils.phone import validate_phone
 from briefy.common.vocabularies.person import GenderCategories
 from datetime import date
 from sqlalchemy import orm
@@ -9,6 +11,18 @@ from sqlalchemy_utils import ChoiceType
 import colander
 import sqlalchemy as sa
 import sqlalchemy_utils as sautils
+import typing as t
+
+
+def _validate_phone(key: str, value: str) -> str:
+    """Validate a phone field, raise an exception if it is not valid."""
+    if value:
+        valid = validate_phone(value)
+        if valid:
+            value = value
+        else:
+            raise ValidationError(f'Invalid value for {key}', name=key)
+    return value
 
 
 class NameMixin:
@@ -79,7 +93,7 @@ class PersonalInfoMixin(NameMixin):
     """Birth date of a person."""
 
     @property
-    def age(self) -> int:
+    def age(self) -> t.Optional[int]:
         """Age of this person, in years.
 
         :returns: If birth_date is set, calculates the age of the person, in years.
@@ -156,3 +170,13 @@ class ContactInfoMixin(NameMixin):
         }
     )
     """Additional phone number of the contact person."""
+
+    @orm.validates('mobile', 'additional_phone')
+    def validate_phone_attribute(self, key: str, value: str) -> str:
+        """Validate if phone attribute is in the correct format.
+
+        :param key: Attribute name.
+        :param value: Phone number
+        :return: Cleansed phone number
+        """
+        return _validate_phone(key, value)
