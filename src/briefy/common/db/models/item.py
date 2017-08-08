@@ -88,7 +88,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         parent_id = payload.get(parent_attr, None) if parent_attr else None
         if parent_id:
             parent = Item.get(parent_id)
-            path = parent.path.copy()
+            path = list(parent.path)
         path.append(obj_id)
         payload['path'] = path
 
