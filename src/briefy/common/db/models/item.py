@@ -12,7 +12,11 @@ from sqlalchemy.ext.declarative import declared_attr
 
 import colander
 import sqlalchemy as sa
+import typing as t
 import uuid
+
+
+Attributes = t.List[str]
 
 
 class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
@@ -84,7 +88,7 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
         parent_id = payload.get(parent_attr, None) if parent_attr else None
         if parent_id:
             parent = Item.get(parent_id)
-            path = parent.path
+            path = list(parent.path)
         path.append(obj_id)
         payload['path'] = path
 
@@ -115,6 +119,46 @@ class Item(BaseMetadata, LocalRolesMixin, Mixin, VersionMixin, Base):
                 setattr(self, key, value)
             else:
                 set_local_roles_by_role_name(self, key, value)
+
+    def to_dict(
+            self,
+            excludes: Attributes=None,
+            includes: Attributes=None
+    ) -> dict:
+        """Return a dictionary with fields and values used by this Class.
+
+        :param excludes: attributes to exclude from dict representation.
+        :param includes: attributes to include from dict representation.
+        :returns: Dictionary with fields and values used by this Class
+        """
+        data = super().to_dict(excludes=excludes, includes=includes)
+        roles = {}
+        for lr in self._all_local_roles.all():
+            principal_id = lr.principal_id
+            if lr.role_name not in roles:
+                roles[lr.role_name] = [principal_id]
+            else:
+                roles[lr.role_name].append(principal_id)
+        data['_roles'] = roles
+        return data
+
+    @declared_attr
+    def _all_local_roles(cls):
+        """All local roles for this Item using all parent objects in path."""
+        return sa.orm.relationship(
+            'LocalRole',
+            foreign_keys='LocalRole.item_id',
+            primaryjoin='LocalRole.item_id==any_(Item.path)',
+            order_by='asc(LocalRole.role_name)',
+            cascade='all, delete-orphan',
+            lazy='dynamic',
+            info={
+                'colanderalchemy': {
+                    'title': 'All local roles: including from parent objects.',
+                    'missing': colander.drop,
+                }
+            }
+        )
 
     def __repr__(self) -> str:
         """Representation model Item."""

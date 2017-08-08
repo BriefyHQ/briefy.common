@@ -68,6 +68,7 @@ class Base(Security):
     __summary_attributes__ = []
     __summary_attributes_relations__ = []
     __listing_attributes__ = []
+    __to_dict_additional_attributes__ = []
 
     @classmethod
     def __acl__(cls) -> t.Sequence[t.Tuple[str, str]]:
@@ -220,14 +221,15 @@ class Base(Security):
             summary_relations = [item for item in summary_relations if item in listing_attributes]
         data = {}
         for key in summary_relations:
+            serialized = None
             obj = getattr(self, key, None)
-            if obj is None:
-                serialized = None
-            elif isinstance(obj, Base):
+            if obj and isinstance(obj, Base):
                 serialized = obj.to_summary_dict()
-            else:
+            elif isinstance(obj, list):
                 serialized = [item.to_summary_dict() for item in obj if item]
-            data[key] = serialized
+            elif isinstance(obj, dict):
+                serialized = obj
+            data[key] = serialized if serialized else obj
         return data
 
     def to_dict(
@@ -244,6 +246,10 @@ class Base(Security):
         data = dict()
         excludes = excludes if excludes else []
         includes = includes if includes else []
+
+        # add additional default to_dict attributes
+        if self.__to_dict_additional_attributes__:
+            includes.extend(self.__to_dict_additional_attributes__)
 
         if isinstance(excludes, str):
             excludes = [excludes]

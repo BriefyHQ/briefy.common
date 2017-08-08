@@ -437,6 +437,32 @@ class TestLocalRoles:
                 assert new_principal_id not in getattr(obj, role_name)
 
     @pytest.mark.parametrize('model_name', tuple(MODELS))
+    def test_local_roles_in_to_dict_result(self, model_name):
+        """Test the result of model.to_dict for the local role information."""
+        data = MODELS[model_name]
+        model = data['model']
+        model_data = data['data']
+        roles = data['local_roles']
+
+        for i, payload in enumerate(model_data):
+            obj = model.get(payload['id'])
+            to_dict_roles = obj.to_dict()['_roles']
+
+            # make sure obj.__actors__ are present in to_dict and with the same users
+            for role_name in roles:
+                assert role_name in to_dict_roles.keys()
+                assert model_data[i].get(role_name) == to_dict_roles.get(role_name)
+
+            # make sure all users in _all_local_roles are in the _roles
+            all_local_roles = obj._all_local_roles.all()
+            for lr in all_local_roles:
+                assert lr.principal_id in to_dict_roles.get(lr.role_name)
+
+            # make sure the number of users is the same (nothing more)
+            for role_name, values in to_dict_roles.items():
+                assert len(values) == len(obj._all_local_roles.filter_by(role_name=role_name).all())
+
+    @pytest.mark.parametrize('model_name', tuple(MODELS))
     def test_query_items_no_inheritance(self, model_name):
         """Query model items."""
         data = MODELS[model_name]
