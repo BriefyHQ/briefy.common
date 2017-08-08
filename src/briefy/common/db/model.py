@@ -6,6 +6,7 @@ from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.orm.query import Query
 
 import typing as t
@@ -184,30 +185,6 @@ class Base(Security):
         excludes.extend(self._exclude_attributes())
         return excludes
 
-    def _to_dict(
-            self,
-            data: dict,
-            attrs: Attributes,
-            excludes: Attributes,
-            required: Attributes
-    ) -> dict:
-        """Return a dictionary with fields and values used by this Class.
-
-        :param data: A copy of object __dict__.
-        :param attrs: List of object attributes.
-        :param excludes: attributes to exclude from dict representation.
-        :param required: List of explicitly required attributes.
-        :returns: Dictionary with fields and values used by this Class
-        """
-        for attr in excludes:
-            if attr in data:
-                del(data[attr])
-
-        for attr in required:
-            if attr not in data:
-                data[attr] = getattr(self, attr)
-        return data
-
     def _summarize_relationships(
             self,
             listing_attributes: Attributes=()
@@ -223,6 +200,8 @@ class Base(Security):
         for key in summary_relations:
             serialized = None
             obj = getattr(self, key, None)
+            if isinstance(obj, AppenderQuery):
+                obj = obj.all()
             if obj and isinstance(obj, Base):
                 serialized = obj.to_summary_dict()
             elif isinstance(obj, list):
