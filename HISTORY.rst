@@ -28,6 +28,8 @@ History
     * Move ValidationError from briefy.ws to briefy.common.exceptions (ericof).
     * Card #504: Add Phone number validation to mobile and additional_phone attributes on ContactInfoMixin (ericof).
     * Added new Base model attribute to easy include property or association proxy fields in the to_dict payload (rudaporto).
+    * Added new dynamic relationship on Item to return all local roles for one instance including from all parents (rudaporto).
+    * Fix: obj.path instance shadowing from parent on LocalRole.create classmethod, now the attribute is copied (rudaporto).
 
 
 2.0.9 (2017-07-28)
