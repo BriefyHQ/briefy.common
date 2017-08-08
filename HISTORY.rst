@@ -29,6 +29,7 @@ History
     * Card #504: Add Phone number validation to mobile and additional_phone attributes on ContactInfoMixin (ericof).
     * Added new Base model attribute to easy include property or association proxy fields in the to_dict payload (rudaporto).
     * Added new dynamic relationship on Item to return all local roles for one instance including from all parents (rudaporto).
+    * Added Item.to_dict to append _roles key with all local roles and user ids (rudaporto).
     * Fix: obj.path instance shadowing from parent on LocalRole.create classmethod, now the attribute is copied (rudaporto).
 
 
