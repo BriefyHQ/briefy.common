@@ -58,7 +58,7 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
     updated_users = set(principal_ids)
     to_add = updated_users - current_users
     to_remove = current_users - updated_users
-    session = object_session(obj) or obj.__class__.__session__
+    session = object_session(obj) or obj.__session__
 
     if session and to_remove:
         to_remove_lr = [
@@ -77,11 +77,12 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
 
 def set_local_roles_by_principal(obj: object, principal_id: str, role_names: list):
     """Set local role collection: for one role set all users."""
-    current_roles = {r.role_name for r in obj.local_roles if r.principal_id == principal_id}
+    current_roles = {r.role_name for r in obj.local_roles
+                     if str(r.principal_id) == str(principal_id)}
     new_roles = set(role_names)
     to_add = new_roles - current_roles
     to_remove = current_roles - new_roles
-    session = object_session(obj) or obj.__class__.__session__
+    session = object_session(obj) or obj.__session__
 
     if session and to_remove:
         to_remove_lr = [
