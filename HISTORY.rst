@@ -31,6 +31,8 @@ History
     * Added new dynamic relationship on Item to return all local roles for one instance including from all parents (rudaporto).
     * Added Item.to_dict to append _roles key with all local roles and user ids (rudaporto).
     * Fix: obj.path instance shadowing from parent on LocalRole.create classmethod, now the attribute is copied (rudaporto).
+    * Refactor local role mixin functions to avoid repetition and allow code reuse (rudaporto).
+    * Fix a bug set_local_roles_by_principal function of model local roles mixin (rudaporto).
 
 
 2.0.9 (2017-07-28)

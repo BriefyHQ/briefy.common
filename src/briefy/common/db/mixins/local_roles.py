@@ -29,16 +29,36 @@ def principals_by_role(obj, role_name):
             if role.role_name == role_name]
 
 
+def add_local_role(session, obj: object, role_name: str, principal_id: str):
+    """Add new local role."""
+    from briefy.common.db.models.local_role import LocalRole
+    payload = dict(
+        item_type=obj.__class__.__name__.lower(),
+        item_id=obj.id,
+        role_name=role_name,
+        principal_id=principal_id
+    )
+    lr = LocalRole.create(payload)
+    session.add(lr)
+    obj.local_roles.append(lr)
+    logger.debug('Added: {0}'.format(lr))
+
+
+def del_local_role(session, obj: object, lr: object):
+    """Delete existing local role."""
+    obj.local_roles.remove(lr)
+    session.delete(lr)
+    logger.debug('Deleted: {0}'.format(lr))
+
+
 def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: list):
     """Set local role collection: for one role set all users."""
-    from briefy.common.db.models.local_role import LocalRole
-
     current_users_list = getattr(obj, role_name)
     current_users = set(current_users_list)
     updated_users = set(principal_ids)
     to_add = updated_users - current_users
     to_remove = current_users - updated_users
-    session = object_session(obj) or obj.__class__.__session__
+    session = object_session(obj) or obj.__session__
 
     if session and to_remove:
         to_remove_lr = [
@@ -46,35 +66,23 @@ def set_local_roles_by_role_name(obj: object, role_name: str, principal_ids: lis
             if lr.principal_id in to_remove and lr.role_name == role_name
         ]
         for lr in to_remove_lr:
-            logger.debug('Deleted: {0}'.format(lr))
-            obj.local_roles.remove(lr)
-            session.delete(lr)
-
+            del_local_role(session, obj, lr)
         session.flush()
 
     if session and to_add:
         for principal_id in to_add:
-            lr = LocalRole(
-                item_type=obj.__class__.__name__.lower(),
-                item_id=obj.id,
-                role_name=role_name,
-                principal_id=principal_id
-            )
-            session.add(lr)
-            obj.local_roles.append(lr)
-            logger.debug('Added: {0}'.format(lr))
-
+            add_local_role(session, obj, role_name, principal_id)
         session.flush()
 
 
 def set_local_roles_by_principal(obj: object, principal_id: str, role_names: list):
     """Set local role collection: for one role set all users."""
-    from briefy.common.db.models.local_role import LocalRole
-    current_roles = {r.role_name for r in obj.local_roles if r.principal_id == principal_id}
+    current_roles = {r.role_name for r in obj.local_roles
+                     if str(r.principal_id) == str(principal_id)}
     new_roles = set(role_names)
     to_add = new_roles - current_roles
     to_remove = current_roles - new_roles
-    session = object_session(obj) or obj.__class__.__session__
+    session = object_session(obj) or obj.__session__
 
     if session and to_remove:
         to_remove_lr = [
@@ -82,26 +90,12 @@ def set_local_roles_by_principal(obj: object, principal_id: str, role_names: lis
             if lr.principal_id == principal_id and lr.role_name in to_remove
         ]
         for lr in to_remove_lr:
-            logger.debug('Deleted: {0}'.format(lr))
-            obj.local_roles.remove(lr)
-            session.delete(lr)
-
+            del_local_role(session, obj, lr)
         session.flush()
 
     if session and to_add:
-        item_id = obj.id
-        item_type = obj.__class__.__name__.lower()
         for role_name in to_add:
-            lr = LocalRole(
-                item_type=item_type,
-                item_id=item_id,
-                role_name=role_name,
-                principal_id=principal_id
-            )
-            session.add(lr)
-            obj.local_roles.append(lr)
-            logger.debug('Added: {0}'.format(lr))
-
+            add_local_role(session, obj, role_name, principal_id)
         session.flush()
 
 
