@@ -1,4 +1,4 @@
-"""Base class to create custom column comparators"""
+"""Base class to create custom column comparators."""
 from sqlalchemy.ext.hybrid import Comparator
 
 
