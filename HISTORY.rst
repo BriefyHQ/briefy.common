@@ -33,6 +33,7 @@ History
     * Fix: obj.path instance shadowing from parent on LocalRole.create classmethod, now the attribute is copied (rudaporto).
     * Refactor local role mixin functions to avoid repetition and allow code reuse (rudaporto).
     * Fix a bug set_local_roles_by_principal function of model local roles mixin (rudaporto).
+    * New base class to create custom comparators to change the query for some hybrid property columns (rudaporto).
 
 
 2.0.9 (2017-07-28)
@@ -109,7 +110,7 @@ History
     * Changing local role for professional to use professional_user attribute (rudaporto).
     * Fix entity_id value in the add_local_role method from LocalRolesMixin (rudaporto).
     * Update db person.NameMixin fullname attribute to be orm.column_property based on first and last name (rudaporto).
-    * Move new method _summarize_relationships to base Model class and add new attribute  __summary_attributes_relations__ (rudaporto).
+    * Move new method _summarize_relationships to base Model class and add new attribute __summary_attributes_relations__ (rudaporto).
     * Add formatted_address attribute to Address Mixin. (ericof).
     * Fix briefy.common.utils.data.generate_contextual_slug to be used as default in the BaseMetadata._slug column argument (rudaporto).
     * Change briefy.common.db.mixins.identifiable.GUID.id column to be binary (default and less alocation space) (rudaporto).
