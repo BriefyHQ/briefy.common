@@ -34,6 +34,7 @@ History
     * Refactor local role mixin functions to avoid repetition and allow code reuse (rudaporto).
     * Fix a bug set_local_roles_by_principal function of model local roles mixin (rudaporto).
     * New base class to create custom comparators to change the query for some hybrid property columns (rudaporto).
+    * Created a new comparator for local roles fields to filter items with principal_id the role_name of the local role atttribute (rudaporto).
 
 
 2.0.9 (2017-07-28)

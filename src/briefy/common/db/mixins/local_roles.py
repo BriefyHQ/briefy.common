@@ -1,5 +1,7 @@
 """Local Roles mixin."""
+from briefy.common.db.comparator import BaseComparator
 from briefy.common.log import logger
+from sqlalchemy import and_
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -99,6 +101,29 @@ def set_local_roles_by_principal(obj: object, principal_id: str, role_names: lis
         session.flush()
 
 
+class LocalRolesComparator(BaseComparator):
+    """Comparator to filter by role_name and principal_id."""
+
+    def __init__(self, cls, role_name):
+        """Initialize local roles comparator."""
+        self.cls = cls
+        self.role_name = role_name
+
+    def operate(self, op, other, escape=None):
+        """Operate method return the transformation function."""
+        def transform(q):
+            """Add a join condition with local_roles and add a filter by role_name in the query."""
+            cls = self.cls.local_roles.mapper.class_
+            q = q.join(cls).filter(
+                and_(
+                    op(cls.principal_id, other),
+                    cls.role_name == self.role_name
+                )
+            )
+            return q
+        return transform
+
+
 def make_lr_attr(actor):
     """Create local role hybrid_property attributes."""
     def getter(self):
@@ -113,9 +138,16 @@ def make_lr_attr(actor):
         """Expression that return principal ids from database."""
         return get_lr_expression(cls, actor)
 
-    lr_attr = hybrid_property(getter)
-    lr_attr.setter(setter)
-    lr_attr.expression(expression)
+    def comparator(cls):
+        """Return the custom local roles comparator."""
+        return LocalRolesComparator(cls, actor)
+
+    lr_attr = hybrid_property(
+        fget=getter,
+        fset=setter,
+        expr=expression,
+        custom_comparator=comparator
+    )
     return lr_attr
 
 
