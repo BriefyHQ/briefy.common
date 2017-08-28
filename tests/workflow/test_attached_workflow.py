@@ -29,12 +29,12 @@ class Content(Mixin, Base):
         self.updated_at = now
         self.update(kwargs)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, excludes=None, includes=None) -> dict:
         """Return a dictionary with fields and values used by this Class.
 
         :returns: Dictionary with fields and values used by this Class
         """
-        data = self.__dict__.copy()
+        data = super().to_dict(includes=includes, excludes=excludes)
         data['state_history'] = self.state_history
         return data
 

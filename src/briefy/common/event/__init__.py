@@ -9,9 +9,12 @@ from zope.component import getUtility
 from zope.interface import Interface
 
 import logging
+import typing as t
 
 
 logger = logging.getLogger(__name__)
+
+Attributes = t.Optional[t.List[str]]
 
 
 class IEvent(Interface):
@@ -125,8 +128,17 @@ class BaseEvent(Event):
             raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
         guid = getattr(obj, 'id')
         self.obj = obj
-        data = obj.to_dict()
+        data = self.to_dict()
         super().__init__(guid, data=data, actor=actor, request_id=request_id)
+
+    def to_dict(self, excludes: Attributes=None, includes: Attributes=None) -> dict:
+        """Return a serializable dictionary from the object that generated this event.
+
+        :param excludes: attributes to exclude from dict representation.
+        :param includes: attributes to include from dict representation.
+        :returns: Dictionary with fields and values used by this Class
+        """
+        return self.obj.to_dict(excludes=excludes, includes=includes)
 
 
 class TaskEvent(Event):
