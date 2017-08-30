@@ -226,9 +226,9 @@ class Base(Security):
         excludes = excludes if excludes else []
         includes = includes if includes else []
 
-        # add additional default to_dict attributes
-        if self.__to_dict_additional_attributes__:
-            includes.extend(self.__to_dict_additional_attributes__)
+        # add additional default to_dict attributes and listing attributes
+        includes.extend(self.__to_dict_additional_attributes__ + self.__listing_attributes__)
+        all_attrs = self._get_attrs(includes=includes, excludes=excludes)
 
         if isinstance(excludes, str):
             excludes = [excludes]
@@ -236,7 +236,7 @@ class Base(Security):
             includes = [includes]
 
         # first get summary fields
-        data.update(self._summarize_relationships())
+        data.update(self._summarize_relationships(all_attrs))
         # now get all the other fields but excluding summary fields
         excludes.extend(list(data.keys()))
         # get data and attrs

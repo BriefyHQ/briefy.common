@@ -37,6 +37,7 @@ History
     * Created a new comparator for local roles fields to filter items with principal_id the role_name of the local role atttribute (rudaporto).
     * Improve local roles attributes creation using hybrid_property init method (rudaporto).
     * Added a new to_dict method in the BaseEvent class to allow payload customization by subclasses (rudaporto).
+    * Add "all" attributes to the list of possible attributes that can be summarized (rudaporto).
 
 2.0.9 (2017-07-28)
 ------------------
