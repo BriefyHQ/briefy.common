@@ -3,6 +3,7 @@ from slugify import slugify
 from uuid import uuid4
 
 import inspect
+import typing as t
 
 
 def generate_uuid() -> str:
@@ -80,7 +81,7 @@ class Objectify:
 
     """
 
-    def __init__(self, dct: (dict, list), sentinel=objectify_sentinel):
+    def __init__(self, dct: t.Union[t.Mapping, t.Sequence], sentinel: t.Any=objectify_sentinel):
         """Initalizer.
 
         :param dct: Container JSON-Like object to be used.
@@ -92,13 +93,13 @@ class Objectify:
         self._dct = self.dct = dct
         self._sentinel = sentinel
 
-    def _acceptable_attr(self, attr):
+    def _acceptable_attr(self, attr: str) -> bool:
         # DEPRECATED: Remove 'dct' from next verification soon.
         if attr == 'dct' or (attr.startswith('_') and not attr.strip('_').isdigit()):
             return False
         return True
 
-    def _normalize_attr(self, attr):
+    def _normalize_attr(self, attr: str) -> t.Union[str, int]:
         """Allow use of numbers prefixed by underscores as attributes when the object is a list."""
         if attr.isdigit():
             return int(attr)
@@ -106,18 +107,31 @@ class Objectify:
             attr = int(attr[1:].replace('_', '-'))
         return attr
 
-    def __getitem__(self, attr):
+    def __getitem__(self, attr: str) -> t.Any:
         """Retrieve attribute from data container.
 
         If the retrieved value is itself a container, wrap it
         into an "Objectify" instance.
         """
-        result = self._dct.__getitem__(attr)
+        # Allow retrieving deep subcomponents if '.' is given on
+        # the attribute path:
+        if isinstance(attr, str) and '.' in attr:
+            try:
+                return self._get(attr, default=self._sentinel)
+            except AttributeError as error:
+                raise KeyError from error
+        try:
+            result = self._dct.__getitem__(attr)
+        # Allow default value behavior for index retrieval.
+        except (IndexError, KeyError):
+            result = self._sentinel
+            if result is objectify_sentinel:
+                raise
         if isinstance(result, (dict, list)):
             return Objectify(result, self._sentinel)
         return result
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> t.Any:
         """Retrieve attribute from underliying object."""
         attr = self._normalize_attr(attr)
         try:
@@ -127,7 +141,7 @@ class Objectify:
                 return self._sentinel
             raise AttributeError from error
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: t.Any):
         """Set apropriate attribute on underlying object."""
         if not self._acceptable_attr(attr):
             return super().__setattr__(attr, value)
@@ -137,12 +151,16 @@ class Objectify:
         except IndexError as error:
             raise AttributeError from error
 
-    def __setitem__(self, attr, value):
+    def __setitem__(self, attr: str, value: t.Any):
         """Set apropriate attribute on data container."""
         self._dct.__setitem__(attr, value)
 
-    def __iter__(self):
+    def __iter__(self) -> t.Generator['Objectify', None, None]:
         """Allow one to iterate over the members of this object.
+
+        Default iteration is by _values_ not keys - this is the feature
+        that allows recursive iteration of deep data structures. To iterate
+        over keys of an undelying mapping, use the `_keys()` method.
 
         Note that this by itself makes these objects  better than Javascript
         objects due to iterating over data members, and no need to check "hasOwnProperty".
@@ -152,27 +170,63 @@ class Objectify:
         for item in items:
             yield Objectify(item, self._sentinel) if isinstance(item, (dict, list)) else item
 
-    def __dir__(self):
+    def __contains__(self, attr: str) -> bool:
+        """Verify if name exists in data structure.
+
+        Containment is tested agains underlying data structure -
+        meaning it cheks against keys for Mappigns and value for
+        sequences.
+
+        For dotted attributes, a full "_get" is attempted.
+        """
+        if isinstance(attr, str) and '.' in attr:
+            try:
+                self._get(attr, default=objectify_sentinel)
+            except AttributeError:
+                return False
+            return True
+        return attr in self._dct
+
+    def _keys(self) -> t.Generator[str, None, None]:
+        """Iterate over the keys of underlying mapping.
+
+        This is a public method, akim to Mapping.keys()
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        yield from self._dct.keys()
+
+    _values = __iter__
+    """Mimic mapping .values call."""
+
+    def _items(self) -> t.Generator[t.Tuple[str, t.Any], None, None]:
+        """Yield all items in 'key, value' format.
+
+        Public function,
+        Will throw an attribute error is underlying structure is a sequence.
+        """
+        for item in zip(self._keys(), iter(self)):
+            yield item
+
+    def __dir__(self) -> t.List[str]:
         """Dir: enables autocomplete."""
         keys = (
             list(self._dct.keys())
-            if isinstance(self._dct, dict) else
-            ['_{0}'.format(index) for index in range(len(self._dct))]
+            if isinstance(self._dct, dict) else [f'_{index}' for index in range(len(self._dct))]
         )
         return ['_dct', '_sentinel'] + keys
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation."""
         return('Objectify({0})'.format(self.dct))
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """Assure truthy value is False when appropriate."""
         return bool(self.dct)
 
     def _get(self,
              path: str=None,
-             default: 'any'=objectify_sentinel,
-             objectify: bool=objectify_sentinel)-> 'any':
+             default: t.Any=objectify_sentinel,
+             objectify: bool=objectify_sentinel)-> t.Any:
         """Retrieve an attribute at an arbitrarily deep path.
 
         This is a public method. "_" is used to avoid clash with data keys.
@@ -182,7 +236,7 @@ class Objectify:
         a "_".
 
         If "path" is omitted or 'None' the wrapped data strucure is returned
-        in "raw" form (i.e. as dict or list). Unless "objectify" is set,
+        in "raw" form (i.e. as the original Mapping or Sequence). Unless "objectify" is set,
         in that case, an empty path just returns the same object (self).
 
         :param path: path
@@ -211,11 +265,20 @@ class Objectify:
             return Objectify(dct, self._sentinel)
         return dct
 
+    def __eq__(self, other: t.Any) -> bool:
+        """Compare equivalence of embedded data structures.
+
+        Comparison also works against non-objectified Mapping or Sequences
+        """
+        if isinstance(other, Objectify):
+            other = other._dct
+        return self._dct == other
+
     def _traverse(self,
                   roots: list,
                   branch: str,
-                  default: 'any'=objectify_sentinel,
-                  objectify: bool=True)-> 'any':
+                  default: t.Any=objectify_sentinel,
+                  objectify: bool=True)-> t.Any:
         """Retrieve attribute from one of various sub-structures withn main struct.
 
         Prefer to use ._get_traverser instead.
@@ -242,7 +305,7 @@ class Objectify:
     def _get_traverser(
             self,
             roots: list,
-            default: 'any' = objectify_sentinel) -> 'any':
+            default: t.Any=objectify_sentinel) -> t.Any:
         """Return a "traverser" able to retrieve relative attributes starting from multiple paths.
 
         Prefer this to ._traverse above.
@@ -285,14 +348,14 @@ class _Traverser:
     Should not be instantiated directly - use Objectify(...)._get_traverser(...)
     """
 
-    def __init__(self, obj: Objectify, roots: list, default, branch=None):
+    def __init__(self, obj: Objectify, roots: list, default: t.Any, branch: t.Any=None):
         """Keep configuration attributes."""
         self._obj = obj
         self._roots = roots
         self._default = default
         self._branch = branch if branch else []
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> t.Any:
         """Perform a search in the configured root paths on the parent object.
 
         Returns a new instance of _Traverser if the retrieved attribute is
@@ -304,7 +367,7 @@ class _Traverser:
             return _Traverser(self._obj, self._roots, self._default, self._branch + [attr])
         return result
 
-    def __call__(self, path: str, objectify=True):
+    def __call__(self, path: str, objectify: bool=True) -> t.Any:
         """Perform a single search on given path under all configured roots.
 
         Path can be a dotted path to an attribute. The resulting object
@@ -319,7 +382,7 @@ class _Traverser:
         )
 
 
-def _accepts_pos_kw(func=None, signature=None):
+def _accepts_pos_kw(func: t.Callable=None, signature=None) -> t.Tuple[bool, bool]:
     """Return a boolean 2-tuple on whether a function accepts *args or **kw."""
     signature = signature or inspect.signature(func)
     parameter_types = {p.kind for p in signature.parameters.values()}
@@ -327,8 +390,8 @@ def _accepts_pos_kw(func=None, signature=None):
             inspect.Parameter.VAR_KEYWORD in parameter_types)
 
 
-def inject_call(func: 'callable', *args: ['any'], **kwargs: {str: 'any'}) -> 'any':
-    """Perform a function call, injecting apropriate parameters from kwargs.
+def inject_call(func: t.Callable, *args: [t.Any], **kwargs: {str: t.Any}) -> t.Any:
+    """Perform a function call, injecting appropriate parameters from kwargs.
 
     Other parameters are ignored.  (If you want errors on nonexisting parameters
     just call the function directly)

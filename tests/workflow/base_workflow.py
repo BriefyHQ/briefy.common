@@ -1,11 +1,15 @@
 """Base tests for briefy.common.workflow."""
-from briefy.common.db.mixins import Workflow as WorkflowMixin
+from briefy.common.db import Base
+from briefy.common.db.mixins import Mixin
 from briefy.common.workflow import permission as permission
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import Permission
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
 from datetime import datetime
+
+import sqlalchemy as sa
+import sqlalchemy_utils as sautils
 
 
 class LegacyCustomerWorkflow(BriefyWorkflow):
@@ -14,6 +18,7 @@ class LegacyCustomerWorkflow(BriefyWorkflow):
     # Optional name for this workflow
     entity = 'customer'
     initial_state = 'created'
+    initial_transition = 'create'
 
     created = WorkflowState('created', title='Created', description='Customer created')
     pending = WorkflowState('pending', title='Pending', description='Customer waiting for approval')
@@ -74,7 +79,7 @@ class CustomerWorkflow(BriefyWorkflow):
     def can_submit(self):
         if not self.context or not self.document:
             return False
-        return self.document.creator == self.context.user_id
+        return self.document.creator == self.context.id
 
     @permission
     def review(self):
@@ -111,14 +116,14 @@ class CustomerWorkflow(BriefyWorkflow):
         self._retracted_ok = True
 
 
-class Customer(WorkflowMixin):
+class Customer(Mixin, Base):
     """A Customer for Briefy."""
+
+    __tablename__ = 'wfcustomer'
 
     state = ''
     state_history = None
     creator = None
-    created_at = None
-    updated_at = None
 
     _workflow = CustomerWorkflow
 
@@ -147,18 +152,28 @@ class Customer(WorkflowMixin):
             raise ValueError('The value not bar is not acceptable here')
         self._bar = value
 
-    def to_dict(self) -> dict:
+    def to_dict(self, excludes=None, includes=None) -> dict:
         """Return a dictionary with fields and values used by this Class.
 
         :returns: Dictionary with fields and values used by this Class
         """
-        data = self.__dict__.copy()
+        data = super().to_dict(includes=includes, excludes=excludes)
         data['state_history'] = self.state_history
         return data
 
 
 class LegacyCustomer(Customer):
+
+    __tablename__ = 'wflegacycustomer'
+
     _workflow_klass = LegacyCustomerWorkflow
+
+    parent_id = sa.Column(
+        sautils.UUIDType(),
+        sa.ForeignKey('wfcustomer.id'),
+        unique=True,
+        primary_key=True,
+    )
 
 
 class User:

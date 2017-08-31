@@ -1,7 +1,10 @@
 """Rests for briefy.common.queue.message."""
+import briefy.common  # noQA make sure sqlalchemy_continuum is initialized first
 from briefy.common.config import SQS_REGION
 from briefy.common.db import Base
-from briefy.common.db.models.roles import LocalRole
+from briefy.common.db.models import Item
+from briefy.common.db.models.local_role import LocalRole
+from briefy.common.db.models.roles import LocalRoleDeprecated
 from briefy.common.queue import IQueue
 from prettyconf import config
 from sqlalchemy import create_engine
@@ -14,7 +17,6 @@ from zope.configuration.xmlconfig import XMLConfig
 
 import boto3
 import botocore.endpoint
-import briefy.common
 import httmock
 import os
 import pytest
@@ -34,6 +36,8 @@ def sql_engine(request):
                           default='postgresql://briefy:briefy@127.0.0.1:9999/briefy-common')
     engine = create_engine(database_url, echo=False)
     DBSession.configure(bind=engine)
+    LocalRoleDeprecated.__session__ = DBSession
+    Item.__session__ = DBSession
     LocalRole.__session__ = DBSession
     Base.metadata.create_all(engine)
 
@@ -64,13 +68,19 @@ def db_transaction(request, sql_engine):
     return connection
 
 
-@pytest.fixture(scope='module')
-def session():
+@pytest.fixture(scope='class')
+def session(request):
     """Return session from database.
     :returns: A SQLAlchemy scoped session
     :rtype: sqlalchemy.orm.scoped_session
     """
-    return DBSession()
+    db_session = DBSession()
+
+    def teardown():
+        DBSession.remove()
+
+    request.addfinalizer(teardown)
+    return db_session
 
 
 # Python's unittest.mock assertions requires the exact parameters to the method

@@ -1,13 +1,13 @@
 """Test Workflow mix."""
 from briefy.common.db import Base
-from briefy.common.db.mixins import GUID
+from briefy.common.db.mixins import Identifiable
 from briefy.common.db.mixins import Workflow
 from conftest import DBSession
 
 import pytest
 
 
-class WorkflowExample(Workflow, GUID, Base):
+class WorkflowExample(Workflow, Identifiable, Base):
     """A Workflow example."""
 
     __tablename__ = 'wf_examples'
@@ -30,7 +30,7 @@ class TestWorkflow:
                     'date': '2017-01-30T15:25:00+00:00',
                     'to': 'created',
                     'actor': 'be319e15-d256-4587-a871-c3476affa309',
-                    'transition': ''
+                    'transition': 'create'
                 },
             ]
         }
@@ -43,3 +43,24 @@ class TestWorkflow:
         assert isinstance(example, WorkflowExample)
         assert 'state_history' not in example.to_dict()
         assert 'state_history' in example.to_dict(includes=['state_history'])
+
+    def test_state_history_error(self, session):
+        """Test state_history validation."""
+        example_data = {
+            'id': '8b6f0b2a-25ed-401c-8c65-3d4009e398ea',
+            'state': 'created',
+            'state_history': [
+                {
+                    'message': '',
+                    'from': '',
+                    'date': '2017-01-30T15:25:00+00:00',
+                    'to': '',
+                    'actor': 'be319e15-d256-4587-a871-c3476affa309',
+                    'transition': 'create'
+                },
+            ]
+        }
+        with pytest.raises(ValueError) as exc:
+            example = WorkflowExample(**example_data)
+            session.add(example)
+        assert 'Invalid value for state_history' in str(exc)

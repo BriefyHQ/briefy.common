@@ -9,9 +9,12 @@ from zope.component import getUtility
 from zope.interface import Interface
 
 import logging
+import typing as t
 
 
 logger = logging.getLogger(__name__)
+
+Attributes = t.Optional[t.List[str]]
 
 
 class IEvent(Interface):
@@ -95,20 +98,13 @@ class Event:
         message_id = ''
         try:
             message_id = queue.write_message(payload)
-        except Exception as e:
+        except Exception as exc:
             logger.error(
-                'Event {name} not fired. Exception: {exc}'.format(
-                    name=self.event_name,
-                    exc=e
-                ),
-                extra={'payload': payload})
-        else:
-            logger.debug(
-                'Event {name} fired with message {id_}'.format(
-                    name=self.event_name,
-                    id_=message_id
-                )
+                f'Event {self.event_name} not fired. Exception: {exc}',
+                extra={'payload': payload}
             )
+        else:
+            logger.debug(f'Event {self.event_name} fired with message {message_id}')
 
         return message_id
 
@@ -132,8 +128,17 @@ class BaseEvent(Event):
             raise ValueError('Attempt to create event without a timestamp. Has it been persisted?')
         guid = getattr(obj, 'id')
         self.obj = obj
-        data = obj.to_dict()
+        data = self.to_dict()
         super().__init__(guid, data=data, actor=actor, request_id=request_id)
+
+    def to_dict(self, excludes: Attributes=None, includes: Attributes=None) -> dict:
+        """Return a serializable dictionary from the object that generated this event.
+
+        :param excludes: attributes to exclude from dict representation.
+        :param includes: attributes to include from dict representation.
+        :returns: Dictionary with fields and values used by this Class
+        """
+        return self.obj.to_dict(excludes=excludes, includes=includes)
 
 
 class TaskEvent(Event):
@@ -156,16 +161,11 @@ class TaskEvent(Event):
         elif data:
             guid = data.get('id', '')
         else:
-            msg = 'Task {task_name} event not fired. Exception: {exc}'.format(
-                task_name=self.event_name,
-                exc='Need data or obj'
-            )
+            msg = f'Task {self.event_name} event not fired. Exception: Need data or obj'
             logger.error(msg)
             raise ValueError(msg)
         actor = str(SystemUser.id)
         request_id = ''
-        self.event_name = '{task_name}.{status}'.format(
-            task_name=task_name,
-            status='success' if success else 'failure'
-        )
+        status = 'success' if success else 'failure'
+        self.event_name = f'{task_name}.{status}'
         super().__init__(guid, data=data, actor=actor, request_id=request_id)

@@ -2,6 +2,43 @@
 History
 =======
 
+2.1.0 (2017-08-31)
+------------------
+
+    * Change LocalRole model and LocalRoleMixin implementation (rudaporto).
+    * Created Item model and table to be used as base class for all models that will have local role (rudaporto).
+    * Make sure sqlalchemy_continuum is a dependency and that make_versioned function will be called before loading any model (rudaporto).
+    * New mixin VersionMixin moved from briefy.leica to common (rudaporto).
+    * Change Item model to use VersionMixin and BaseMetadata as base classes (rudaporto).
+    * Allow BaseMetadata field to be null: title (rudaporto).
+    * Change BaseMetadata to use use getter and setter to read and write attributes (rudaporto).
+    * Added new item_type string column to the new local roles table (rudaporto).
+    * Change create method of Base model class to look into the __parent_attr__ attribute to find the parent instance (rudaporto).
+    * Create new function to manage a list local roles by obj and principal_id (rudaporto).
+    * Use correct InstrumentedList api do update local roles attrs when creating new instances (rudaporto).
+    * Added customized update method to Item class to deal with update of local role attributes (rudaporto).
+    * Define new Model attribute to list all additional local roles to receive can_view permission when create a new instance (rudaporto).
+    * Change create method of Item class to use new update method and compute can_view using payload, actors and additional local roles class attribute (rudaporto).
+    * Change LocalRole.item_type to be class name lowercase (rudaporto).
+    * Change workflow to user document.update method when updating valid_fields (rudaporto).
+    * Added indexes to wokflow mixin (state) and items model (type and path) (rudaporto).
+    * Upgrade depencie packages (rudaporto).
+    * Increase usage of type hints (ericof).
+    * Card #514: Refactor workflow package and make sure history is valid before persisting it (ericof).
+    * Move ValidationError from briefy.ws to briefy.common.exceptions (ericof).
+    * Card #504: Add Phone number validation to mobile and additional_phone attributes on ContactInfoMixin (ericof).
+    * Added new Base model attribute to easy include property or association proxy fields in the to_dict payload (rudaporto).
+    * Added new dynamic relationship on Item to return all local roles for one instance including from all parents (rudaporto).
+    * Added Item.to_dict to append _roles key with all local roles and user ids (rudaporto).
+    * Fix: obj.path instance shadowing from parent on LocalRole.create classmethod, now the attribute is copied (rudaporto).
+    * Refactor local role mixin functions to avoid repetition and allow code reuse (rudaporto).
+    * Fix a bug set_local_roles_by_principal function of model local roles mixin (rudaporto).
+    * New base class to create custom comparators to change the query for some hybrid property columns (rudaporto).
+    * Created a new comparator for local roles fields to filter items with principal_id the role_name of the local role atttribute (rudaporto).
+    * Improve local roles attributes creation using hybrid_property init method (rudaporto).
+    * Added a new to_dict method in the BaseEvent class to allow payload customization by subclasses (rudaporto).
+    * Add "all" attributes to the list of possible attributes that can be summarized (rudaporto).
+
 2.0.9 (2017-07-28)
 ------------------
 
@@ -31,6 +68,8 @@ History
 2.0.4 (2017-07-20)
 ------------------
 
+    * Enhancements to Objectify: "contains", equality, dottet attr retrieval and mapping interface (jsbueno).
+    * Adds monkey-patch override for JSON serialization - JSON works for: uuid, datetime, Objectify (jsbueno).
     * Fix to_dict default serialization: now using sqlalchemy inspect function to list all attributes that should be serialized (rudaporto).
 
 2.0.3 (2017-06-28)
@@ -74,7 +113,7 @@ History
     * Changing local role for professional to use professional_user attribute (rudaporto).
     * Fix entity_id value in the add_local_role method from LocalRolesMixin (rudaporto).
     * Update db person.NameMixin fullname attribute to be orm.column_property based on first and last name (rudaporto).
-    * Move new method _summarize_relationships to base Model class and add new attribute  __summary_attributes_relations__ (rudaporto).
+    * Move new method _summarize_relationships to base Model class and add new attribute __summary_attributes_relations__ (rudaporto).
     * Add formatted_address attribute to Address Mixin. (ericof).
     * Fix briefy.common.utils.data.generate_contextual_slug to be used as default in the BaseMetadata._slug column argument (rudaporto).
     * Change briefy.common.db.mixins.identifiable.GUID.id column to be binary (default and less alocation space) (rudaporto).

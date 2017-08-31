@@ -12,7 +12,19 @@ class BaseMetadata:
     These fields are used by most, if not all, content objects.
     """
 
-    title = sa.Column('title', sa.String(), index=True, nullable=False)
+    _title = sa.Column(
+        'title',
+        sa.String(),
+        index=True,
+        nullable=True,
+        info={
+            'colanderalchemy': {
+                'title': 'Title',
+                'missing': colander.drop,
+                'typ': colander.String
+            }
+        }
+    )
     """Title for the object.
 
     This is the main display information for the object and it can have UI aliases for each usage
@@ -20,7 +32,7 @@ class BaseMetadata:
     i.e.: Job Name, Display Name
     """
 
-    description = sa.Column(
+    _description = sa.Column(
         'description',
         sa.Text,
         nullable=True,
@@ -34,7 +46,7 @@ class BaseMetadata:
     )
     """Description for the object.
 
-    Text field allowing a small, but meaninful description for an object.
+    Text field allowing a small, but meaningful description for an object.
     """
 
     _slug = sa.Column('slug',
@@ -51,6 +63,43 @@ class BaseMetadata:
 
     To be used in url.
     """
+
+    @hybrid_property
+    def title(self) -> str:
+        """Title for the object.
+
+        This is the main display information for the object and it can have
+        UI aliases for each usage i.e.: Job Name, Display Name
+
+        :return: The title string.
+        """
+        return self._title
+
+    @title.setter
+    def title(self, value: str):
+        """Set a new title for this object.
+
+        :param value: Value of the new title
+        """
+        self._title = value
+
+    @hybrid_property
+    def description(self) -> str:
+        """Description for the object.
+
+        Text field allowing a small, but meaningful description for an object.
+
+        :return: The description string.
+        """
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        """Set a new description for this object.
+
+        :param value: Value of the new description
+        """
+        self._description = value
 
     @hybrid_property
     def slug(self) -> str:
@@ -72,3 +121,18 @@ class BaseMetadata:
             data = dict(id=self.id, title=self.title)
             value = generate_contextual_slug(data)
         self._slug = value
+
+    def to_dict(self, excludes: list=None, includes: list=None) -> dict:
+        """Return a dictionary with fields and values used by this Class.
+
+        :param excludes: attributes to exclude from dict representation.
+        :param includes: attributes to include from dict representation.
+        :returns: Dictionary with fields and values used by this Class
+        """
+        add_fields = ('title', 'description', 'slug', )
+        data = super().to_dict(excludes, includes)
+        excludes = excludes if excludes else []
+        for field in add_fields:
+            if field not in excludes and field not in data:
+                data[field] = getattr(self, field)
+        return data

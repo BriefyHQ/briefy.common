@@ -43,7 +43,8 @@ requires_db = [
     'pylibmc',
     'python-memcached',
     'redis',
-    'sqlalchemy',
+    'sqlalchemy==1.2.0b2',
+    'sqlalchemy_continuum',
     'sqlalchemy-utils',
     'zope.sqlalchemy',
 ]
@@ -55,7 +56,7 @@ test_requirements = [
 
 setup(
     name='briefy.common',
-    version='2.0.9',
+    version='2.1.0',
     description='Common utilities to be used by Briefy packages.',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[

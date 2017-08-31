@@ -20,12 +20,11 @@ class LocalRolesMixin:
         """Get Local Role permission relationship."""
         return sa.orm.relationship(
             'LocalRole',
-            foreign_keys='LocalRole.entity_id',
+            foreign_keys='LocalRole.item_id',
             viewonly=viewonly,
             uselist=uselist,
             primaryjoin="""and_(
-                        LocalRole.entity_id=={entity}.id,
-                        LocalRole.entity_type=="{entity}",
+                        LocalRole.item_id=={entity}.id,
                         LocalRole.{permission_name}==True,
                     )""".format(
                 entity=cls.__name__,
@@ -182,14 +181,14 @@ class LocalRolesMixin:
 
         :return: List of actor ids.
         """
-        from briefy.common.db.models.roles import LocalRole
+        from briefy.common.db.models.roles import LocalRoleDeprecated
 
         return sa.select(
-            [LocalRole.user_id]
+            [LocalRoleDeprecated.user_id]
         ).where(
             sa.and_(
-                cls.__name__ == LocalRole.entity_type,
-                cls.id == LocalRole.entity_id,
+                cls.__name__ == LocalRoleDeprecated.entity_type,
+                cls.id == LocalRoleDeprecated.entity_id,
             )
         ).as_scalar()
 

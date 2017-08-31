@@ -1,14 +1,13 @@
 from briefy import common
 from briefy.common.db import Base
+from briefy.common.db import datetime_utcnow
 from briefy.common.db.mixins import Mixin
-from briefy.common.db.mixins.workflow import WorkflowBase
 from briefy.common.workflow import BriefyWorkflow
 from briefy.common.workflow import WorkflowState
 from briefy.common.workflow import WorkflowStateGroup
 from briefy.common.workflow.exceptions import WorkflowStateException
 from briefy.common.workflow.exceptions import WorkflowTransitionException
 from conftest import queue_url
-from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from zope.configuration.xmlconfig import XMLConfig
@@ -17,19 +16,25 @@ import botocore
 import pytest
 
 
-class Content(WorkflowBase):
+class Content(Mixin, Base):
     """A base content."""
 
-    id = '123'
-    created_at = datetime.now()
-    updated_at = datetime.now()
+    __tablename__ = 'wfcontents'
 
-    def to_dict(self) -> dict:
+    def __init__(self, *args, **kwargs):
+        """Initilize content."""
+        super().__init__(*args, **kwargs)
+        now = datetime_utcnow
+        self.created_at = now
+        self.updated_at = now
+        self.update(kwargs)
+
+    def to_dict(self, excludes=None, includes=None) -> dict:
         """Return a dictionary with fields and values used by this Class.
 
         :returns: Dictionary with fields and values used by this Class
         """
-        data = self.__dict__.copy()
+        data = super().to_dict(includes=includes, excludes=excludes)
         data['state_history'] = self.state_history
         return data
 
