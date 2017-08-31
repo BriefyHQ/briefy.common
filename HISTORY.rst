@@ -2,7 +2,7 @@
 History
 =======
 
-2.1.0 (unreleased)
+2.1.0 (2017-08-31)
 ------------------
 
     * Change LocalRole model and LocalRoleMixin implementation (rudaporto).
