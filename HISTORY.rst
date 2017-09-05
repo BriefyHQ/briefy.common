@@ -2,6 +2,10 @@
 History
 =======
 
+2.1.1 (2017-09-04)
+------------------
+    * Always include obj.state_history in the workflow transition event data payload (rudaporto).
+
 2.1.0 (2017-08-31)
 ------------------
 
