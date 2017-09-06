@@ -2,6 +2,10 @@
 History
 =======
 
+2.1.2 (2017-09-06)
+------------------
+    * Change invalidate cache log from info to debug (rudaporto).
+
 2.1.1 (2017-09-04)
 ------------------
     * Always include obj.state_history in the workflow transition event data payload (rudaporto).
