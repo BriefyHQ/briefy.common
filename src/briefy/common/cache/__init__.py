@@ -114,7 +114,7 @@ class BaseCacheManager:
             'name': klass_name,
             'uid': uid
         }
-        logger.info('Invalidate model {name} : {uid}'.format(
+        logger.debug('Invalidate model {name} : {uid}'.format(
             **log_kwargs
         ))
         if self._enable_refresh:
