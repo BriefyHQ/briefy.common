@@ -8,6 +8,7 @@ History
     * Added new utilities to deal with rolleiflex authentication and remote rest items manipulation (rudaporto).
     * Fix: make sure briefy.common.db.model.Base.__colanderalchemy_config__ exists as class attribute with default value (rudaporto).
     * Fix: in briefy.common.event.BaseEvent.to_dict check for to_dict attr in the obj and only if it is not a dict instance already (rudaporto).
+    * Added to briefy.common.utilities.remote.RemoteRestEndopoint.query to list items using in collection_get using a payload filter (rudaporto).
 
 2.1.2 (2017-09-06)
 ------------------
