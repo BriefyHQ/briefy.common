@@ -2,7 +2,7 @@
 History
 =======
 
-2.1.3 (Unreleased)
+2.1.3 (2017-10-03)
 ------------------
 
     * Added new utilities to deal with rolleiflex authentication and remote rest items manipulation (rudaporto).
