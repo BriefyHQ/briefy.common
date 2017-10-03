@@ -43,3 +43,6 @@ class IRemoteRestEndpoint(Interface):
 
     def put(uid: str, data: dict):
         """Update un item in the service endpoint based in the uid."""
+
+    def query(payload: dict=None, items_per_page: int=25) -> dict:
+        """Get items using key:value payload as filter and number of results per page."""

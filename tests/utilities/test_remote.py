@@ -14,7 +14,10 @@ PUT_DATA = [
     ({'title': 'New Title', 'description': 'New Description'}, uuid.uuid4(), )
 ]
 ITEM_UUID = [
-    uuid.uuid4()
+    str(uuid.uuid4())
+]
+FILTER_DATA = [
+    {'some_id': str(uuid.uuid4()), 'some_field': 'some_value'}
 ]
 
 
@@ -56,3 +59,12 @@ class TestRemoteRestEndoint:
         remote = get_remote_rest_utility
         result = remote.put(uid, data)
         assert isinstance(result, dict)
+
+    @pytest.mark.parametrize('payload', FILTER_DATA)
+    def test_query_items(self, get_remote_rest_utility, payload):
+        """Test query items in the remote rest endpoint."""
+        remote = get_remote_rest_utility
+        result = remote.query(payload)
+        assert isinstance(result, dict)
+        assert 'data' in result
+        assert 'pagination' in result

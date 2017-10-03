@@ -215,7 +215,23 @@ def _mock_test_endpoint(self, method, url, *args, **kwargs):
     status_code = 200
 
     if method == 'get':
-        data = {'title': 'The Title', 'description': 'The Description'}
+        params = kwargs.get('params')
+        result = {'title': 'The Title', 'description': 'The Description'}
+        # this is a query in collection_get
+        if params and params.get('_items_per_page'):
+            data = {
+                'data': [result],
+                'pagination': {
+                    'total': 1,
+                    'page': 1,
+                    'page_count': 1,
+                    'items_per_page': params.get('_items_per_page'),
+                    'previous_page': None,
+                    'next_page': None,
+                }
+            }
+        else:
+            data = result
     elif method in ('post', 'put'):
         data = kwargs['data']
         data = json.loads(data)

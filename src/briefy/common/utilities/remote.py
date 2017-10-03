@@ -44,14 +44,14 @@ class RemoteRestEndpoint:
         """Update remote item."""
         uri = f'{self.absolute_url}/'
         name = self.name
-        logger.info(f'Updating {name}: {uri}')
+        logger.info(f'Add item in {name}: {uri}')
         kwargs = self._requests_kwargs(data)
         response = requests.post(uri, **kwargs)
         if response.status_code == 200:
             return response.json()
         else:
             response = response.text
-            error_msg = f'Fail to update {name}: {uri}. Response: {response}'
+            error_msg = f'Fail to add item in {name}: {uri}. Response: {response}'
             logger.exception(error_msg)
             raise RuntimeError(error_msg)
 
@@ -59,14 +59,14 @@ class RemoteRestEndpoint:
         """Update remote item."""
         uri = f'{self.absolute_url}/{uid}'
         name = self.name
-        logger.info(f'Updating {name}: {uri}')
+        logger.info(f'Updating item in {name}: {uri}')
         kwargs = self._requests_kwargs(data)
         response = requests.put(uri, **kwargs)
         if response.status_code == 200:
             return response.json()
         else:
             response = response.text
-            error_msg = f'Fail to update {name}: {uri}. Response: {response}'
+            error_msg = f'Fail to update item in {name}: {uri}. Response: {response}'
             logger.exception(error_msg)
             raise RuntimeError(error_msg)
 
@@ -74,7 +74,7 @@ class RemoteRestEndpoint:
         """Get remote item."""
         uri = f'{self.absolute_url}/{uid}'
         name = self.name
-        logger.info(f'Requesting {name}: {uri}')
+        logger.info(f'Get item from {name}: {uri}')
         kwargs = self._requests_kwargs()
         response = requests.get(uri, **kwargs)
         if response.status_code == 200:
@@ -82,6 +82,27 @@ class RemoteRestEndpoint:
             return data
         else:
             response = response.text
-            error_msg = f'Fail to get {name}: {uri}. Response: {response}'
+            error_msg = f'Fail to get item from {name}: {uri}. Response: {response}'
+            logger.exception(error_msg)
+            raise RuntimeError(error_msg)
+
+    def query(self, payload: dict=None, items_per_page=25) -> dict:
+        """Get items using key:value payload as filter and number of results per page."""
+        uri = f'{self.absolute_url}'
+        name = self.name
+        logger.info(f'Listing items from {name}: {uri}')
+        kwargs = self._requests_kwargs()
+        if not payload:
+            payload = {}
+
+        payload['_items_per_page'] = items_per_page
+        kwargs['params'] = payload
+        response = requests.get(uri, **kwargs)
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            response = response.text
+            error_msg = f'Fail list items from {name}: {uri}. Response: {response}'
             logger.exception(error_msg)
             raise RuntimeError(error_msg)
