@@ -1,0 +1,17 @@
+{
+    "status": "success",
+    "message": "Authentication success.",
+    "user": {
+        "last_name": "User",
+        "email": "app@briefy.co",
+        "locale": "en_GB",
+        "first_name": "System",
+        "id": "be319e15-d256-4587-a871-c3476affa309",
+        "fullname": "System User",
+        "groups": [
+            "g:system"
+        ]
+    },
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJmdWxsbmFtZSI6IkFyaWFuYSBTaGF1aCIsImZpcnN0X25hbWUiOiJBcmlhbmEiLCJsYXN0X25hbWUiOiJTaGF1aCIsImVtYWlsIjoiYXJpYW5hQGJyaWVmeS5jbyIsImxvY2FsZSI6ImVuX0dCIiwiZ3JvdXBzIjpbImc6YnJpZWZ5IiwiZzpicmllZnlfcG0iXSwicHJvdmlkZXIiOiJlbWFpbCIsInN1YiI6ImViMWE4YzFmLWM5ZDctNDg1NC1hYmY2LTAzYWUyYWVhOTBkZSIsImlhdCI6MTQ5NzUzOTE0MiwiZXhwIjoxNDk3NjIzNzQyfQ.16z5QzmXrqu2TQwgOz_ot0-BwfMVYEpshdmbCzSxj1wvrqnBS0G7na711gi6O9A_GRm2CTWl8A_zkmBcS-hhXQ",
+    "provider": "system"
+}

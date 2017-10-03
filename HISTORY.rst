@@ -2,12 +2,21 @@
 History
 =======
 
+2.1.3 (2017-10-03)
+------------------
+
+    * Added new utilities to deal with rolleiflex authentication and remote rest items manipulation (rudaporto).
+    * Fix: make sure briefy.common.db.model.Base.__colanderalchemy_config__ exists as class attribute with default value (rudaporto).
+    * Fix: in briefy.common.event.BaseEvent.to_dict check for to_dict attr in the obj and only if it is not a dict instance already (rudaporto).
+
 2.1.2 (2017-09-06)
 ------------------
+
     * Change invalidate cache log from info to debug (rudaporto).
 
 2.1.1 (2017-09-04)
 ------------------
+
     * Always include obj.state_history in the workflow transition event data payload (rudaporto).
 
 2.1.0 (2017-08-31)

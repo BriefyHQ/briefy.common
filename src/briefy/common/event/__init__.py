@@ -138,7 +138,10 @@ class BaseEvent(Event):
         :param includes: attributes to include from dict representation.
         :returns: Dictionary with fields and values used by this Class
         """
-        return self.obj.to_dict(excludes=excludes, includes=includes)
+        obj = data = self.obj
+        if not isinstance(self.obj, dict) and hasattr(obj, 'to_dict'):
+            data = self.obj.to_dict(excludes=excludes, includes=includes)
+        return data
 
 
 class TaskEvent(Event):

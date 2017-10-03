@@ -3,9 +3,7 @@ from briefy.common.db import Base
 from briefy.common.db.mixins import Image
 from briefy.common.db.mixins import Mixin
 from conftest import DBSession
-from conftest import mock_thumbor
 
-import httmock
 import pytest
 
 
@@ -257,9 +255,7 @@ class TestImageMixin:
         asset.width = 0
         asset.height = 0
         asset.raw_metadata = {}
-
-        with httmock.HTTMock(mock_thumbor):
-            asset.update_metadata()
+        asset.update_metadata()
 
         assert asset.width == 5760
         assert asset.height == 3840
