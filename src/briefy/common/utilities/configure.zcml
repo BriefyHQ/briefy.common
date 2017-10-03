@@ -1,8 +1,26 @@
 <configure xmlns="http://namespaces.zope.org/zope">
 
     <!-- UserProfileQuery Utility -->
-    <utility factory="briefy.common.utilities.userprofile.get_user_profile_service"
-    provides="briefy.common.utilities.interfaces.IUserProfileQuery" />
+    <utility
+        factory="briefy.common.utilities.userprofile.factory"
+        provides="briefy.common.utilities.interfaces.IUserProfileQuery" />
+
+    <!-- RolleiflexAuthService Utility -->
+    <utility
+        factory="briefy.common.utilities.auth_service.factory"
+        provides="briefy.common.utilities.interfaces.IAuthService" />
+
+
+    <!-- RequestsAuthFactory Utility -->
+    <utility
+        component="briefy.common.utilities.auth_service.RequestsAuthFactory"
+        provides="briefy.common.utilities.interfaces.IRequestsAuthFactory" />
+
+
+    <!-- RemoteRestEndpoint Utility -->
+    <utility
+        component="briefy.common.utilities.remote.RemoteRestEndpoint"
+        provides="briefy.common.utilities.interfaces.IRemoteRestEndpoint" />
 
 
 </configure>

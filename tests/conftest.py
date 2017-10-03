@@ -17,9 +17,10 @@ from zope.configuration.xmlconfig import XMLConfig
 
 import boto3
 import botocore.endpoint
-import httmock
+import json
 import os
 import pytest
+import requests
 
 
 XMLConfig('configure.zcml', briefy.common)()
@@ -193,12 +194,74 @@ class BriefyQueueBaseTest(BaseSQSTest):
         component.provideUtility(EventQueue, IQueue, 'events.queue')
 
 
-@httmock.urlmatch(netloc=r'briefy-thumbor')
-def mock_thumbor(url, request):
+def _mock_thumbor(self, method, url, *args, **kwargs):
     """Mock request to briefy-thumbor."""
     status_code = 200
+    filename = 'utils/thumbor.json'
     headers = {
         'content-type': 'application/json',
     }
-    data = open(os.path.join(__file__.rsplit('/', 1)[0], 'utils/thumbor.json')).read()
-    return httmock.response(status_code, data, headers, None, 5, request)
+    data = open(os.path.join(__file__.rsplit('/', 1)[0], filename)).read()
+    resp = requests.Response()
+    resp.status_code = status_code
+    resp.headers = headers
+    resp._content = data.encode('utf8')
+    return resp
+
+
+def _mock_test_endpoint(self, method, url, *args, **kwargs):
+    """Mock test endpoint."""
+    data = None
+    status_code = 200
+
+    if method == 'get':
+        data = {'title': 'The Title', 'description': 'The Description'}
+    elif method in ('post', 'put'):
+        data = kwargs['data']
+        data = json.loads(data)
+    else:
+        status_code = 404
+
+    headers = {
+        'content-type': 'application/json',
+    }
+    resp = requests.Response()
+    resp.status_code = status_code
+    resp.headers = headers
+    resp._content = json.dumps(data).encode('utf8')
+    return resp
+
+
+def _mock_rolleiflex(self, method, url, *args, **kwargs):
+    status_code = 200
+    filename = 'data/rolleiflex_login.json'
+    headers = {
+        'content-type': 'application/json',
+    }
+    data = open(os.path.join(__file__.rsplit('/', 1)[0], filename)).read()
+    resp = requests.Response()
+    resp.status_code = status_code
+    resp.headers = headers
+    resp._content = data.encode('utf8')
+    return resp
+
+
+@pytest.fixture(scope='session')
+def mock_requests():
+    """Mock external requests."""
+    def mock_requests_response(self, method, url, *args, **kwargs):
+        """Mock a response"""
+        if 'briefy-rolleiflex' in url or 'login/email' in url:
+            return _mock_rolleiflex(self, method, url, *args, **kwargs)
+        elif 'test-service' in url:
+            return _mock_test_endpoint(self, method, url, *args, **kwargs)
+        elif 'briefy-thumbor' in url:
+            return _mock_thumbor(self, method, url, *args, **kwargs)
+
+    return mock_requests_response
+
+
+@pytest.fixture(autouse=True)
+def mock_api(monkeypatch, mock_requests):
+    """Mock all api calls."""
+    monkeypatch.setattr(requests.sessions.Session, 'request', mock_requests)

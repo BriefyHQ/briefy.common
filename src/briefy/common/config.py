@@ -52,3 +52,15 @@ CACHE_MEMCACHED_PORT = config('CACHE_MEMCACHED_PORT', default='11211')
 CACHE_BACKEND = config('CACHE_BACKEND', default='dogpile.cache.redis')
 CACHE_EXPIRATION_TIME = config('CACHE_EXPIRATION_TIME', default=3600)
 CACHE_ASYNC_REFRESH = config('CACHE_ASYNC_REFRESH', casts.Boolean(), default=False)
+
+# AuthService utility config
+API_USERNAME = config('API_USERNAME', default='app@briefy.co')
+API_PASSWORD = config('API_PASSWORD', default='')
+
+LOGIN_ENDPOINT = config(
+    'LOGIN_ENDPOINT', default='http://briefy-rolleiflex.briefy-rolleiflex/internal/login'
+)
+
+USER_AGENT = config('USER_AGENT', default='Briefy-SyncBot/0.1')
+
+LOGIN_TIMEOUT = config('LOGIN_TIMEOUT', default=3600)

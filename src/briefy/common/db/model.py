@@ -65,6 +65,7 @@ class Base(Security):
         'path', 'can_view', 'type'
 
     ]
+    __colanderalchemy_config__ = {}
     __exclude_attributes__ = []
     __summary_attributes__ = []
     __summary_attributes_relations__ = []

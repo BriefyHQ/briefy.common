@@ -49,6 +49,6 @@ class BaseUserProfileQuery:
         return state_history
 
 
-def get_user_profile_service():
+def factory():
     """Create a new instance of IUserProfileQuery service."""
     return BaseUserProfileQuery()

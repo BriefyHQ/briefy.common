@@ -2,9 +2,7 @@
 from briefy.common.config import THUMBOR_BASE_URL
 from briefy.common.config import THUMBOR_INTERNAL_URL
 from briefy.common.utils import imaging
-from conftest import mock_thumbor
 
-import httmock
 import json
 import os
 import pytest
@@ -77,9 +75,7 @@ def test_get_metadata_from_thumbor():
     """Test get_metadata_from_thumbor."""
     func = imaging.get_metadata_from_thumbor
     source_path = 'source/files/jobs/1234.jpg'
-
-    with httmock.HTTMock(mock_thumbor):
-        resp = func(source_path)
+    resp = func(source_path)
 
     assert resp['width'] == 5760
     assert resp['height'] == 3840
