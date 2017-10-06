@@ -80,6 +80,8 @@ class RemoteRestEndpoint:
         if response.status_code == 200:
             data = response.json()
             return data
+        elif response.status_code == 404:
+            return None
         else:
             response = response.text
             error_msg = f'Fail to get item from {name}: {uri}. Response: {response}'
