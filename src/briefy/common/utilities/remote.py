@@ -42,7 +42,7 @@ class RemoteRestEndpoint:
 
     def post(self, data: dict) -> dict:
         """Update remote item."""
-        uri = f'{self.absolute_url}/'
+        uri = f'{self.absolute_url}'
         name = self.name
         logger.info(f'Add item in {name}: {uri}')
         kwargs = self._requests_kwargs(data)
