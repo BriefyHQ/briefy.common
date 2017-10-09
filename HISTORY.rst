@@ -2,6 +2,11 @@
 History
 =======
 
+2.1.4 (2017-10-09)
+------------------
+
+    * Fix query method from utilities.remote.RemoteRestEndpoint (rudaporto).
+
 2.1.3 (2017-10-03)
 ------------------
 
