@@ -3,7 +3,7 @@ from prettyconf import casts
 from prettyconf import config
 
 
-ENV = config('ENV', default='staging')
+ENV = config('ENV', default='development')
 MOCK_SQS = config('MOCK_SQS', default=False)
 
 # used to disable on update in the timestamp mixin
@@ -12,8 +12,25 @@ IMPORT_KNACK = config('IMPORT_KNACK', casts.Boolean(), default=False)
 # NewRelic
 NEW_RELIC_ENVIRONMENT = ENV
 
-_region = 'us-east-1' if NEW_RELIC_ENVIRONMENT == 'staging' else 'eu-central-1'
-_queue_suffix = 'stg' if NEW_RELIC_ENVIRONMENT == 'staging' else 'live'
+ENV_MAP = {
+    'staging': {
+        'suffix': 'stg',
+        'region': 'us-east-1'
+    },
+    'production': {
+        'suffix': 'live',
+        'region': 'eu-central-1'
+    },
+    'development': {
+        'suffix': 'dev',
+        'region': 'eu-west-1'
+    },
+
+}
+
+# compute this based on environment config
+_region = ENV_MAP.get(ENV).get('region')
+_queue_suffix = ENV_MAP.get(ENV).get('suffix')
 
 # AWS Credentials
 AWS_ACCESS_KEY = config('AWS_ACCESS_KEY', default='')

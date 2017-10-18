@@ -2,6 +2,11 @@
 History
 =======
 
+2.1.5 (Unreleased)
+------------------
+
+    * Fix config to support development ENV and setup proper queue suffix and AWS region (rudaporto).
+
 2.1.4 (2017-10-09)
 ------------------
 
