@@ -25,12 +25,15 @@ ENV_MAP = {
         'suffix': 'dev',
         'region': 'eu-west-1'
     },
-
+    'test': {
+        'suffix': 'test',
+        'region': 'eu-west-1'
+    },
 }
 
 # compute this based on environment config
-_region = ENV_MAP.get(ENV).get('region', 'us-east-1')
-_queue_suffix = ENV_MAP.get(ENV).get('suffix', 'dev')
+_region = ENV_MAP.get(ENV, {}).get('region', 'us-east-1')
+_queue_suffix = ENV_MAP.get(ENV, {}).get('suffix', 'dev')
 
 # AWS Credentials
 AWS_ACCESS_KEY = config('AWS_ACCESS_KEY', default='')
