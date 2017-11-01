@@ -29,8 +29,8 @@ ENV_MAP = {
 }
 
 # compute this based on environment config
-_region = ENV_MAP.get(ENV).get('region')
-_queue_suffix = ENV_MAP.get(ENV).get('suffix')
+_region = ENV_MAP.get(ENV).get('region', 'us-east-1')
+_queue_suffix = ENV_MAP.get(ENV).get('suffix', 'dev')
 
 # AWS Credentials
 AWS_ACCESS_KEY = config('AWS_ACCESS_KEY', default='')
