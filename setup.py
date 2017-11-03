@@ -43,7 +43,7 @@ requires_db = [
     'pylibmc',
     'python-memcached',
     'redis',
-    'sqlalchemy==1.2.0b2',
+    'sqlalchemy==1.2.0b3',
     'sqlalchemy_continuum',
     'sqlalchemy-utils',
     'zope.sqlalchemy',
