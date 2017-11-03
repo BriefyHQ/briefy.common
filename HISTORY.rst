@@ -2,7 +2,12 @@
 History
 =======
 
-2.1.5 (Unreleased)
+2.1.6 (2017-11-03)
+------------------
+
+    * Upgrade SQLAlchemy to version 1.2.0b3 (rudaporto).
+
+2.1.5 (2017-11-01)
 ------------------
 
     * Fix config to support development ENV and setup proper queue suffix and AWS region (rudaporto).
