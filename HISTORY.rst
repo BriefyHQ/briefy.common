@@ -2,7 +2,7 @@
 History
 =======
 
-2.1.6 (2017-11-03)
+2.1.6 (2017-11-08)
 ------------------
 
     * Upgrade SQLAlchemy to version 1.2.0b3 (rudaporto).
