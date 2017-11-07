@@ -198,7 +198,7 @@ class Queue:
         if not os.path.exists(dirs):
             os.makedirs(dirs)
         with open('{0}/{1}.json'.format(dirs, message.body['guid']), 'w') as fo:
-            foo = json_dumps(message.body)
+            foo = json_dumps(message.body, indent=2, sort_keys=True)
             fo.write(foo)
 
     def __repr__(self):
