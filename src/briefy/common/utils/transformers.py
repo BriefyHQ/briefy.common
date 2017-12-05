@@ -71,6 +71,8 @@ def ts_objectify(val: Objectify) -> str:
     return val._get()
 
 
-def json_dumps(obj: t.Any) -> str:
+def json_dumps(obj: t.Any, *args, **kwargs) -> str:
     """Transform an obj to a JSON representation."""
-    return json.dumps(obj, default=to_serializable)
+    if 'default' not in kwargs:
+        kwargs['default'] = to_serializable
+    return json.dumps(obj, *args, **kwargs)
