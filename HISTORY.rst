@@ -2,10 +2,9 @@
 History
 =======
 
-2.1.7 (unreleased)
+2.1.7 (2017-12-05)
 ------------------
     * Make sure mock_sqs uses SQS_IP and SQS_PORT configuration from the environment (rudaporto).
-
 
 2.1.6 (2017-11-08)
 ------------------
