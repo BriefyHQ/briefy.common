@@ -1,6 +1,8 @@
 """Briefy Queue."""
 from botocore.exceptions import ClientError
 from briefy.common.config import MOCK_SQS
+from briefy.common.config import SQS_IP
+from briefy.common.config import SQS_PORT
 from briefy.common.config import SQS_REGION
 from briefy.common.queue.message import SQSMessage
 from briefy.common.utils.transformers import json_dumps
@@ -19,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 def mock_sqs():
     """Use Mocked SQS."""
-    host = '127.0.0.1'
-    port = 5000
+    host = SQS_IP
+    port = SQS_PORT
     queue_url = 'http://{host}:{port}'.format(host=host, port=port)
 
     class MockEndpoint(botocore.endpoint.Endpoint):
