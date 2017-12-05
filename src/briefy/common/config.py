@@ -42,6 +42,8 @@ AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
 
 # SQS Integration
 SQS_REGION = config('SQS_REGION', default=_region)
+SQS_IP = config('SQS_IP', default='127.0.0.1')
+SQS_PORT = config('SQS_PORT', default='5000')
 
 # Queues
 EVENT_QUEUE = config('EVENT_QUEUE', default='event-{0}'.format(_queue_suffix))
